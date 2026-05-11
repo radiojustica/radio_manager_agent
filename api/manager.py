@@ -23,7 +23,8 @@ from routers.downloader import router as downloader_router
 
 logger = logging.getLogger("OmniCore.APIManager")
 
-# ... (rest of imports and setup)
+app = FastAPI(title="Omni Core V2", version="2.0.0", redirect_slashes=True)
+app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
 class RuleSchema(BaseModel):
     bloco: str
@@ -94,9 +95,6 @@ BASE_PATH = Path(__file__).resolve().parent.parent
 FRONTEND_PATH = BASE_PATH / "frontend" / "dist"
 
 Base.metadata.create_all(bind=engine)
-
-app = FastAPI(title="Omni Core V2", version="2.0.0", redirect_slashes=True)
-app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
 app.include_router(acervo.router)
 app.include_router(status.router)
