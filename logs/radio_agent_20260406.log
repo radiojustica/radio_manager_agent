@@ -1,0 +1,50 @@
+2026-04-06 10:43:22,772 | INFO | Radio Manager Agent started.
+2026-04-06 10:43:24,481 | INFO | System sleep/display timeout prevented.
+2026-04-06 10:43:24,482 | ERROR | Need admin privileges to apply registry blocks.
+2026-04-06 10:43:24,482 | INFO | --- Monitoring Cycle ---
+2026-04-06 10:43:24,967 | INFO | Process Status: {'zararadio': 'Running', 'butt': 'Running'}
+2026-04-06 10:43:25,003 | INFO | Latest log entry: ['10:42:39\tincio\tD:\\RADIO\\MUSICAS\\NACIONAL\\Karnak - O mundo muda.mp3']
+2026-04-06 10:43:25,004 | ERROR | Error limiting volume: [WinError -2147221008] CoInitialize não foi chamado
+2026-04-06 10:43:25,776 | INFO | System sleep/display timeout prevented.
+2026-04-06 10:45:31,399 | INFO | Radio Manager Agent started.
+2026-04-06 10:45:32,159 | INFO | System sleep/display timeout prevented.
+2026-04-06 10:45:32,161 | ERROR | Need admin privileges to apply registry blocks.
+2026-04-06 10:45:32,161 | INFO | --- Monitoring Cycle ---
+2026-04-06 10:45:32,934 | INFO | Process Status: {'zararadio': 'Running', 'butt': 'Running'}
+2026-04-06 10:45:32,938 | INFO | Latest log entry: ['10:42:39\tincio\tD:\\RADIO\\MUSICAS\\NACIONAL\\Karnak - O mundo muda.mp3']
+2026-04-06 10:45:32,940 | ERROR | Error limiting volume: [WinError -2147221008] CoInitialize não foi chamado
+2026-04-06 10:45:33,404 | INFO | System sleep/display timeout prevented.
+2026-04-06 11:32:46,710 | INFO | Radio Manager Agent started.
+2026-04-06 11:32:47,340 | INFO | System sleep/display timeout prevented.
+2026-04-06 11:32:47,340 | INFO | Registry block 'NoAutoRebootWithLoggedOnUsers' applied.
+2026-04-06 11:32:47,341 | INFO | --- Manual/Routine Monitoring Cycle ---
+2026-04-06 11:32:47,665 | INFO | Process Status: {'zararadio': 'Running', 'butt': 'Running'}
+2026-04-06 11:32:47,668 | INFO | Latest log entry: ['11:29:58\tincio\tD:\\RADIO\\MUSICAS\\NACIONAL\\U2 - Sunday Bloody Sunday.mp3']
+2026-04-06 11:32:47,724 | INFO | Task 'Reiniciar computadores semanalmente' has been disabled.
+2026-04-06 11:32:47,996 | INFO | System sleep/display timeout prevented.
+2026-04-06 11:32:54,049 | INFO | Radio Manager Agent started.
+2026-04-06 11:32:54,649 | INFO | System sleep/display timeout prevented.
+2026-04-06 11:32:54,649 | INFO | Registry block 'NoAutoRebootWithLoggedOnUsers' applied.
+2026-04-06 11:32:54,650 | INFO | --- Manual/Routine Monitoring Cycle ---
+2026-04-06 11:32:54,990 | INFO | Process Status: {'zararadio': 'Running', 'butt': 'Running'}
+2026-04-06 11:32:54,993 | INFO | Latest log entry: ['11:29:58\tincio\tD:\\RADIO\\MUSICAS\\NACIONAL\\U2 - Sunday Bloody Sunday.mp3']
+2026-04-06 11:32:55,047 | INFO | Task 'Reiniciar computadores semanalmente' has been disabled.
+2026-04-06 11:32:55,332 | INFO | System sleep/display timeout prevented.
+2026-04-06 11:33:00,323 | INFO | --- Manual/Routine Monitoring Cycle ---
+2026-04-06 11:33:00,503 | WARNING | BUTT Instance 'butt 1.46.0' was IDLE. Forcing Connect (Ctrl+S)...
+2026-04-06 11:33:00,854 | INFO | Process Status: {'zararadio': 'Running', 'butt': 'Running'}
+2026-04-06 11:33:00,858 | INFO | Latest log entry: ['11:29:58\tincio\tD:\\RADIO\\MUSICAS\\NACIONAL\\U2 - Sunday Bloody Sunday.mp3']
+2026-04-06 11:33:00,904 | INFO | Task 'Reiniciar computadores semanalmente' has been disabled.
+2026-04-06 11:33:01,189 | INFO | System sleep/display timeout prevented.
+2026-04-06 11:33:10,410 | INFO | --- Manual/Routine Monitoring Cycle ---
+2026-04-06 11:33:10,590 | WARNING | BUTT Instance 'butt 1.46.0' was IDLE. Forcing Connect (Ctrl+S)...
+2026-04-06 11:33:10,930 | INFO | Process Status: {'zararadio': 'Running', 'butt': 'Running'}
+2026-04-06 11:33:10,933 | INFO | Latest log entry: ['11:29:58\tincio\tD:\\RADIO\\MUSICAS\\NACIONAL\\U2 - Sunday Bloody Sunday.mp3']
+2026-04-06 11:33:10,980 | INFO | Task 'Reiniciar computadores semanalmente' has been disabled.
+2026-04-06 11:33:11,256 | INFO | System sleep/display timeout prevented.
+2026-04-06 11:33:19,306 | INFO | --- Manual/Routine Monitoring Cycle ---
+2026-04-06 11:33:19,490 | WARNING | BUTT Instance 'butt 1.46.0' was IDLE. Forcing Connect (Ctrl+S)...
+2026-04-06 11:33:19,819 | INFO | Process Status: {'zararadio': 'Running', 'butt': 'Running'}
+2026-04-06 11:33:19,822 | INFO | Latest log entry: ['11:29:58\tincio\tD:\\RADIO\\MUSICAS\\NACIONAL\\U2 - Sunday Bloody Sunday.mp3']
+2026-04-06 11:33:19,867 | INFO | Task 'Reiniciar computadores semanalmente' has been disabled.
+2026-04-06 11:33:20,128 | INFO | System sleep/display timeout prevented.

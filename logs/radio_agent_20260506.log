@@ -1,0 +1,31 @@
+2026-05-06 09:49:21,607 | INFO | Radio Manager Agent started.
+2026-05-06 10:08:26,440 | INFO | Radio Manager Agent started.
+2026-05-06 12:06:21,906 | INFO | Radio Manager Agent started.
+2026-05-06 12:06:23,977 | INFO | Reward store carregado de C:\Users\STREAMING\.gemini\antigravity\scratch\radio_manager_agent\worker_rewards.json
+2026-05-06 12:06:23,993 | INFO | Iniciando Orquestrador de Workers (Fase 3)...
+2026-05-06 12:06:23,993 | INFO | Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-05-06 12:06:23,993 | INFO | Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-05-06 12:06:23,994 | INFO | Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-05-06 12:06:23,994 | INFO | Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-05-06 12:06:23,994 | INFO | Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-05-06 12:06:23,994 | INFO | Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-05-06 12:06:23,995 | INFO | Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-05-06 12:06:23,995 | INFO | Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-05-06 12:06:23,996 | INFO | Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-05-06 12:06:23,997 | INFO | Added job "WorkerManager.start_orchestrator.<locals>.<lambda>" to job store "default"
+2026-05-06 12:06:23,998 | INFO | Added job "GuardianWorker.high_frequency_checks" to job store "default"
+2026-05-06 12:06:23,998 | INFO | Added job "WorkerManager.start_orchestrator.<locals>.<lambda>" to job store "default"
+2026-05-06 12:06:23,998 | INFO | Added job "WorkerManager.start_orchestrator.<locals>.weather_job" to job store "default"
+2026-05-06 12:06:23,998 | INFO | Added job "WorkerManager.start_orchestrator.<locals>.<lambda>" to job store "default"
+2026-05-06 12:06:23,998 | INFO | Added job "WorkerManager.start_orchestrator.<locals>.<lambda>" to job store "default"
+2026-05-06 12:06:23,999 | INFO | Added job "WorkerManager.start_orchestrator.<locals>.daily_playlist_job" to job store "default"
+2026-05-06 12:06:23,999 | INFO | Added job "GuardianService.reconnect_idle_butts" to job store "default"
+2026-05-06 12:06:23,999 | INFO | Added job "GuardianService.disable_weekly_reboot_task" to job store "default"
+2026-05-06 12:06:23,999 | INFO | Scheduler started
+2026-05-06 12:06:24,000 | INFO | Orquestrador iniciado com sucesso.
+2026-05-06 12:06:24,002 | INFO | Scheduler has been shut down
+2026-05-06 12:06:24,002 | INFO | Orquestrador encerrado.
+2026-05-06 12:58:38,769 | INFO | Radio Manager Agent started.
+2026-05-06 12:58:39,873 | INFO | Reward store carregado de C:\Users\STREAMING\.gemini\antigravity\scratch\radio_manager_agent\worker_rewards.json
+2026-05-06 12:58:39,883 | ERROR | Erro crítico no orquestrador para o worker FakeWorker_123: Worker desconhecido: FakeWorker_123
+2026-05-06 12:58:39,884 | INFO | [FakeWorker_123] Reward recorded: score=-10, total=-10

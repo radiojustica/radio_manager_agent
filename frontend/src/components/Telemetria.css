@@ -1,0 +1,209 @@
+/* Telemetria CSS - Omni Core V2 Premium Cockpit */
+
+.now-playing-card.playing { border-left: 6px solid var(--accent-success); }
+.now-playing-card.frozen { border-left: 6px solid var(--accent-warning); }
+.now-playing-card.stopped { border-left: 6px solid var(--accent-danger); }
+
+.card-header-flex {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2.5rem;
+}
+
+.module-tag {
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: var(--text-secondary);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.status-pill {
+  padding: 6px 14px;
+  border-radius: 100px;
+  font-size: 0.7rem;
+  font-weight: 900;
+  letter-spacing: 1px;
+}
+
+.status-pill.playing { background: rgba(16, 185, 129, 0.15); color: var(--accent-success); }
+.status-pill.frozen { background: rgba(245, 158, 11, 0.15); color: var(--accent-warning); }
+.status-pill.stopped { background: rgba(239, 68, 68, 0.15); color: var(--accent-danger); }
+
+.track-info {
+  margin-bottom: 3rem;
+}
+
+.track-title {
+  font-family: 'Outfit', sans-serif;
+  font-size: 2.8rem;
+  font-weight: 800;
+  line-height: 1;
+  color: #fff;
+  white-space: normal;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  max-width: 100%;
+  word-break: break-word;
+  margin-bottom: 12px;
+  filter: drop-shadow(0 4px 10px rgba(0,0,0,0.3));
+}
+
+.track-meta {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+
+/* Premium VU Meter */
+.vu-meter-section {
+  margin-bottom: 2.5rem;
+  background: rgba(0,0,0,0.2);
+  padding: 1.5rem;
+  border-radius: 20px;
+  border: 1px solid rgba(255,255,255,0.03);
+}
+
+.vu-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 1rem;
+}
+
+.vu-label {
+  font-size: 0.65rem;
+  font-weight: 800;
+  color: var(--text-muted);
+  letter-spacing: 1px;
+}
+
+.vu-value {
+  font-size: 1.4rem;
+  font-weight: 800;
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--accent-primary);
+}
+
+.vu-container {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+  height: 14px;
+}
+
+.vu-segment {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.vu-segment.active.s1 { background: #38bdf8; box-shadow: 0 0 15px rgba(56, 189, 248, 0.4); }
+.vu-segment.active.s2 { background: #10b981; box-shadow: 0 0 15px rgba(16, 185, 129, 0.4); }
+.vu-segment.active.s3 { background: #f59e0b; box-shadow: 0 0 15px rgba(245, 158, 11, 0.4); }
+.vu-segment.active.s4 { background: #f97316; box-shadow: 0 0 15px rgba(249, 115, 22, 0.4); }
+.vu-segment.active.s5 { background: #ef4444; box-shadow: 0 0 15px rgba(239, 68, 68, 0.4); }
+
+/* Card Footer */
+.card-footer-stats {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 2rem;
+  border-top: 1px solid var(--border-glass);
+}
+
+.butt-status-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.stat-icon { font-size: 1.5rem; }
+
+.stat-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-label {
+  font-size: 0.6rem;
+  font-weight: 800;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.stat-value {
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.worker-status-banner {
+  margin-top: 2rem;
+  background: rgba(0,0,0,0.3);
+  padding: 12px 18px;
+  border-radius: 14px;
+  font-size: 0.75rem;
+  font-family: 'JetBrains Mono', monospace;
+  border: 1px solid rgba(255,255,255,0.02);
+}
+
+.worker-label { color: var(--accent-primary); margin-right: 10px; font-weight: 800; }
+.worker-value { color: var(--text-secondary); }
+
+/* Real-Time VU Meter Below Title */
+.real-vu-meter {
+    margin-top: 1.5rem;
+    margin-bottom: 1.5rem;
+    width: 100%;
+}
+
+.vu-bar-bg {
+    height: 10px;
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 4px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    position: relative;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
+}
+
+.vu-bar-fill {
+    height: 100%;
+    width: 0%;
+    transition: width 0.08s ease-out;
+    border-radius: 2px;
+}
+
+.vu-scale {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.5rem;
+    color: var(--text-muted);
+    font-weight: 800;
+    margin-top: 6px;
+    padding: 0 4px;
+    letter-spacing: 1px;
+}
+
+.vu-scale span {
+    position: relative;
+}
+
+.vu-scale span::after {
+    content: '';
+    position: absolute;
+    top: -8px;
+    left: 50%;
+    width: 1px;
+    height: 3px;
+    background: rgba(255,255,255,0.2);
+}

@@ -1,0 +1,130 @@
+{
+    "paths": {
+        "programacao": "D:\\RADIO\\PROGRAMACAO",
+        "programa_musicas": "D:\\PROGRAMA_MUSICAS"
+    },
+    "grade": {
+        "pasta_musicas": "D:\\RADIO\\MUSICAS",
+        "pasta_programacao": "D:\\RADIO\\PROGRAMACAO",
+        "pasta_vinhetas": "D:\\RADIO\\VINHETAS",
+        "pasta_spots": "D:\\RADIO\\SPOTS",
+        "pasta_boletins_raiz": "D:\\SERVIDOR\\BOLETINS",
+        "pasta_quarentena": "D:\\RADIO\\QUARENTENA_TJ",
+        "mood_padrao": "Ensolarado",
+        "duracao_bloco_segundos": 8000,
+        "min_bloco_extra_segundos": 1800,
+        "vinheta_a_cada_n": 1,
+        "spot_a_cada_n": 4,
+        "boletim_a_cada_n": 8,
+        "max_historico_artistas": 80,
+        "max_historico_musicas": 200,
+        "regional_a_cada_n": 8,
+        "duracao_estimada_musica_s": 210,
+        "duracao_estimada_vinheta_s": 5,
+        "duracao_estimada_spot_s": 30,
+        "duracao_estimada_boletim_s": 120
+    },
+    "apps": {
+        "zararadio": {
+            "process_name": "ZaraRadio.exe",
+            "install_dir": "D:\\ZaraRadio",
+            "executable_path": "D:\\ZaraRadio\\ZaraRadio.exe",
+            "log_path": "D:\\RADIO\\LOG ZARARADIO",
+            "search_log_pattern": "*.log"
+        },
+        "butt": {
+            "process_name": "butt.exe",
+            "config_path": "%APPDATA%\\butt",
+            "log_path": ""
+        }
+    },
+    "monitoring": {
+        "interval_seconds": 60,
+        "check_cpu": true,
+        "cpu_threshold": 90,
+        "check_ram": true,
+        "ram_threshold": 95,
+        "forbidden_tasks": [
+            "Reiniciar computadores semanalmente"
+        ]
+    },
+    "reboot_prevention": {
+        "prevent_sleep": true,
+        "block_shutdown": true,
+        "registry_no_auto_reboot": true,
+        "abort_shutdown_periodically": true
+    },
+    "notifications": {
+        "telegram": {
+            "enabled": true,
+            "bot_token": "YOUR_BOT_TOKEN_HERE",
+            "chat_id": "YOUR_CHAT_ID_HERE",
+            "phone_target": "+5584996066876",
+            "notify_on_restart": true,
+            "notify_on_error": true
+        },
+        "email": {
+            "enabled": true,
+            "smtp_server": "smtp.gmail.com",
+            "smtp_port": 587,
+            "sender_email": "YOUR_GMAIL@gmail.com",
+            "sender_password": "YOUR_APP_PASSWORD",
+            "target_email": "radiojusticapotiguar@gmail.com",
+            "report_time": "07:00"
+        }
+    },
+    "vmix": {
+        "enabled": false,
+        "ip": "172.16.217.226",
+        "port": 8088,
+        "trigger_keywords": [
+            "SESSAO",
+            "VINHETA",
+            "ABERTURA",
+            "CAM_ABERTA"
+        ],
+        "auto_switch_audio": true,
+        "track_triggers": {
+            "ABERTURA": {
+                "function": "Cut",
+                "input": "CENA_ABERTURA"
+            },
+            "ENCERRAMENTO": {
+                "function": "Fade",
+                "input": "CENA_ENCERRAMENTO"
+            },
+            "VINHETA": {
+                "function": "Cut",
+                "input": "CENA_VINHETA"
+            }
+        }
+    },
+    "workers": {
+        "GuardianWorker": {
+            "interval_seconds": 30,
+            "high_freq_seconds": 2
+        },
+        "CuradoriaWorker": {
+            "interval_minutes": 5
+        },
+        "WeatherWorker": {
+            "interval_minutes": 30
+        },
+        "SyncWorker": {
+            "interval_hours": 4
+        },
+        "AuditWorker": {
+            "interval_hours": 1
+        },
+        "PlaylistWorker": {
+            "daily_hour": 0,
+            "daily_minute": 0
+        },
+        "ButtWorker": {
+            "interval_minutes": 2
+        },
+        "ButtReconnect": {
+            "interval_minutes": 2
+        }
+    }
+}

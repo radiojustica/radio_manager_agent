@@ -1,0 +1,41 @@
+from fastapi import APIRouter, BackgroundTasks, HTTPException
+from pydantic import BaseModel
+from typing import List
+from director.recommender import recommender_instance
+from worker_manager import worker_manager_instance
+import logging
+
+router = APIRouter(prefix="/api/downloader", tags=["Downloader"])
+logger = logging.getLogger("OmniCore.DownloaderAPI")
+
+class DownloadRequest(BaseModel):
+    queries: list[str] # Lista de termos de busca ou links
+    estilo: str = "outros"
+
+@router.get("/recommendations")
+async def get_recommendations(days: int = 5):
+    """Analisa logs e retorna sugestões de músicas para baixar."""
+    try:
+        analysis = recommender_instance.analyze_last_days(days)
+        recs = recommender_instance.generate_recommendations(analysis)
+        return {
+            "success": True,
+            "analysis": analysis,
+            "recommendations": recs
+        }
+    except Exception as e:
+        logger.error(f"Erro ao gerar recomendações: {e}")
+        return {"success": False, "error": str(e)}
+
+def _process_downloads(queries: list[str], estilo: str):
+    """Processo em background para baixar e catalogar músicas via DownloaderWorker."""
+    try:
+        worker_manager_instance.run_cycle("DownloaderWorker", queries=queries, estilo=estilo)
+    except Exception as e:
+        logger.error(f"Falha ao acionar DownloaderWorker: {e}")
+
+@router.post("/download")
+async def trigger_downloads(req: DownloadRequest, background_tasks: BackgroundTasks):
+    """Dispara o download das músicas selecionadas."""
+    background_tasks.add_task(_process_downloads, req.queries, req.estilo)
+    return {"success": True, "message": f"Download de {len(req.queries)} músicas iniciado em background."}

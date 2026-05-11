@@ -1,0 +1,408 @@
+2026-04-13 11:39:44,910 | INFO | Radio Manager Agent started.
+2026-04-13 11:39:45,025 | INFO | --- INICIALIZAÇÃO OMNI SYSTEM LOG ---
+2026-04-13 12:10:35,858 | INFO | Radio Manager Agent started.
+2026-04-13 12:10:36,044 | INFO | --- INICIALIZAÇÃO OMNI SYSTEM LOG ---
+2026-04-13 12:10:36,060 | INFO | Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-04-13 12:10:36,060 | INFO | Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-04-13 12:10:36,060 | INFO | Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-04-13 12:10:36,061 | INFO | Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-04-13 12:10:36,061 | INFO | Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-04-13 12:10:36,061 | INFO | Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-04-13 12:10:36,062 | INFO | Added job "GuardianService.run_cycle" to job store "default"
+2026-04-13 12:10:36,062 | INFO | Added job "GuardianService.reconnect_idle_butts" to job store "default"
+2026-04-13 12:10:36,062 | INFO | Added job "CuradoriaManager.iniciar_worker" to job store "default"
+2026-04-13 12:10:36,062 | INFO | Added job "PlaylistEngine.gerar_programacao_diaria" to job store "default"
+2026-04-13 12:10:36,063 | INFO | Added job "PlaylistEngine.auto_gerar_proximos_blocos" to job store "default"
+2026-04-13 12:10:36,063 | INFO | Added job "GuardianService.disable_weekly_reboot_task" to job store "default"
+2026-04-13 12:10:36,063 | INFO | Scheduler started
+2026-04-13 12:10:36,063 | INFO | Aguardando inicialização do servidor FastAPI...
+2026-04-13 12:11:06,061 | INFO | Running job "GuardianService.run_cycle (trigger: interval[0:00:30], next run at: 2026-04-13 12:11:06 -03)" (scheduled at 2026-04-13 12:11:06.060403-03:00)
+2026-04-13 12:11:06,061 | INFO | --- Monitoring Cycle START ---
+2026-04-13 12:11:06,094 | ERROR | Timeout ao aguardar servidor FastAPI.
+2026-04-13 12:11:06,221 | INFO | Process Status: {'zararadio': 'Running', 'butt': 'Running'}
+2026-04-13 12:11:06,256 | INFO | Latest ZaraRadio log entry: 12:10:19	incio	D:\RADIO\MUSICAS\NACIONAL\Paula Fernandes - Sensaes.mp3
+2026-04-13 12:11:06,370 | WARNING | ⚠️  Forbidden task 'Reiniciar computadores semanalmente' found! DELETING...
+2026-04-13 12:11:06,441 | INFO | ✅ Forbidden task 'Reiniciar computadores semanalmente' successfully DELETED.
+2026-04-13 12:11:06,572 | INFO | [EVENT:TASK_DELETED] Scheduled task 'Reiniciar computadores semanalmente' was deleted.
+2026-04-13 12:11:07,578 | INFO | Health — CPU: 14.1% | RAM: 65.5% used | Free RAM: 2782 MB
+2026-04-13 12:11:07,579 | INFO | System sleep/display timeout prevented.
+2026-04-13 12:11:07,664 | INFO | --- Monitoring Cycle END ---
+2026-04-13 12:11:07,669 | INFO | Job "GuardianService.run_cycle (trigger: interval[0:00:30], next run at: 2026-04-13 12:11:36 -03)" executed successfully
+2026-04-13 12:11:36,061 | INFO | Running job "GuardianService.run_cycle (trigger: interval[0:00:30], next run at: 2026-04-13 12:12:06 -03)" (scheduled at 2026-04-13 12:11:36.060403-03:00)
+2026-04-13 12:11:36,061 | INFO | --- Monitoring Cycle START ---
+2026-04-13 12:11:36,268 | INFO | Process Status: {'zararadio': 'Running', 'butt': 'Running'}
+2026-04-13 12:11:36,272 | INFO | Latest ZaraRadio log entry: 12:10:19	incio	D:\RADIO\MUSICAS\NACIONAL\Paula Fernandes - Sensaes.mp3
+2026-04-13 12:11:37,357 | INFO | Health — CPU: 10.5% | RAM: 65.4% used | Free RAM: 2790 MB
+2026-04-13 12:11:37,357 | INFO | System sleep/display timeout prevented.
+2026-04-13 12:11:37,504 | INFO | --- Monitoring Cycle END ---
+2026-04-13 12:11:37,510 | INFO | Job "GuardianService.run_cycle (trigger: interval[0:00:30], next run at: 2026-04-13 12:12:06 -03)" executed successfully
+2026-04-13 12:12:06,061 | INFO | Running job "GuardianService.run_cycle (trigger: interval[0:00:30], next run at: 2026-04-13 12:12:36 -03)" (scheduled at 2026-04-13 12:12:06.060403-03:00)
+2026-04-13 12:12:06,061 | INFO | --- Monitoring Cycle START ---
+2026-04-13 12:12:06,254 | INFO | Process Status: {'zararadio': 'Running', 'butt': 'Running'}
+2026-04-13 12:12:06,262 | INFO | Latest ZaraRadio log entry: 12:10:19	incio	D:\RADIO\MUSICAS\NACIONAL\Paula Fernandes - Sensaes.mp3
+2026-04-13 12:12:07,346 | INFO | Health — CPU: 11.7% | RAM: 66.4% used | Free RAM: 2707 MB
+2026-04-13 12:12:07,346 | INFO | System sleep/display timeout prevented.
+2026-04-13 12:12:07,416 | INFO | --- Monitoring Cycle END ---
+2026-04-13 12:12:07,421 | INFO | Job "GuardianService.run_cycle (trigger: interval[0:00:30], next run at: 2026-04-13 12:12:36 -03)" executed successfully
+2026-04-13 12:12:36,062 | INFO | Running job "GuardianService.run_cycle (trigger: interval[0:00:30], next run at: 2026-04-13 12:13:06 -03)" (scheduled at 2026-04-13 12:12:36.060403-03:00)
+2026-04-13 12:12:36,063 | INFO | Running job "GuardianService.reconnect_idle_butts (trigger: interval[0:02:00], next run at: 2026-04-13 12:14:36 -03)" (scheduled at 2026-04-13 12:12:36.060682-03:00)
+2026-04-13 12:12:36,063 | INFO | --- Monitoring Cycle START ---
+2026-04-13 12:12:36,271 | INFO | Process Status: {'zararadio': 'Running', 'butt': 'Running'}
+2026-04-13 12:12:36,278 | INFO | Latest ZaraRadio log entry: 12:10:19	incio	D:\RADIO\MUSICAS\NACIONAL\Paula Fernandes - Sensaes.mp3
+2026-04-13 12:12:36,381 | INFO | Job "GuardianService.reconnect_idle_butts (trigger: interval[0:02:00], next run at: 2026-04-13 12:14:36 -03)" executed successfully
+2026-04-13 12:12:37,362 | INFO | Health — CPU: 12.4% | RAM: 66.3% used | Free RAM: 2717 MB
+2026-04-13 12:12:37,363 | INFO | System sleep/display timeout prevented.
+2026-04-13 12:12:37,441 | INFO | --- Monitoring Cycle END ---
+2026-04-13 12:12:37,445 | INFO | Job "GuardianService.run_cycle (trigger: interval[0:00:30], next run at: 2026-04-13 12:13:06 -03)" executed successfully
+2026-04-13 12:13:06,062 | INFO | Running job "GuardianService.run_cycle (trigger: interval[0:00:30], next run at: 2026-04-13 12:13:36 -03)" (scheduled at 2026-04-13 12:13:06.060403-03:00)
+2026-04-13 12:13:06,062 | INFO | --- Monitoring Cycle START ---
+2026-04-13 12:13:06,329 | INFO | Process Status: {'zararadio': 'Running', 'butt': 'Running'}
+2026-04-13 12:13:06,333 | INFO | Latest ZaraRadio log entry: 12:10:19	incio	D:\RADIO\MUSICAS\NACIONAL\Paula Fernandes - Sensaes.mp3
+2026-04-13 12:13:07,470 | INFO | Health — CPU: 15.1% | RAM: 68.0% used | Free RAM: 2584 MB
+2026-04-13 12:13:07,471 | INFO | System sleep/display timeout prevented.
+2026-04-13 12:13:07,561 | INFO | --- Monitoring Cycle END ---
+2026-04-13 12:13:07,565 | INFO | Job "GuardianService.run_cycle (trigger: interval[0:00:30], next run at: 2026-04-13 12:13:36 -03)" executed successfully
+2026-04-13 12:13:36,061 | INFO | Running job "GuardianService.run_cycle (trigger: interval[0:00:30], next run at: 2026-04-13 12:14:06 -03)" (scheduled at 2026-04-13 12:13:36.060403-03:00)
+2026-04-13 12:13:36,061 | INFO | --- Monitoring Cycle START ---
+2026-04-13 12:13:36,299 | INFO | Process Status: {'zararadio': 'Running', 'butt': 'Running'}
+2026-04-13 12:13:36,303 | INFO | Latest ZaraRadio log entry: 12:10:19	incio	D:\RADIO\MUSICAS\NACIONAL\Paula Fernandes - Sensaes.mp3
+2026-04-13 12:13:37,391 | INFO | Health — CPU: 33.2% | RAM: 69.8% used | Free RAM: 2434 MB
+2026-04-13 12:13:37,391 | INFO | System sleep/display timeout prevented.
+2026-04-13 12:13:37,468 | INFO | --- Monitoring Cycle END ---
+2026-04-13 12:13:37,470 | INFO | Job "GuardianService.run_cycle (trigger: interval[0:00:30], next run at: 2026-04-13 12:14:06 -03)" executed successfully
+2026-04-13 12:14:06,061 | INFO | Running job "GuardianService.run_cycle (trigger: interval[0:00:30], next run at: 2026-04-13 12:14:36 -03)" (scheduled at 2026-04-13 12:14:06.060403-03:00)
+2026-04-13 12:14:06,061 | INFO | --- Monitoring Cycle START ---
+2026-04-13 12:14:06,213 | INFO | Process Status: {'zararadio': 'Running', 'butt': 'Running'}
+2026-04-13 12:14:06,217 | INFO | Latest ZaraRadio log entry: 12:14:04	incio	D:\RADIO\MUSICAS\NACIONAL\Tits - Sonfera ilha.mp3
+2026-04-13 12:14:07,300 | INFO | Health — CPU: 34.6% | RAM: 71.1% used | Free RAM: 2334 MB
+2026-04-13 12:14:07,300 | INFO | System sleep/display timeout prevented.
+2026-04-13 12:14:07,375 | INFO | --- Monitoring Cycle END ---
+2026-04-13 12:14:07,379 | INFO | Job "GuardianService.run_cycle (trigger: interval[0:00:30], next run at: 2026-04-13 12:14:36 -03)" executed successfully
+2026-04-13 12:14:36,061 | INFO | Running job "GuardianService.run_cycle (trigger: interval[0:00:30], next run at: 2026-04-13 12:15:06 -03)" (scheduled at 2026-04-13 12:14:36.060403-03:00)
+2026-04-13 12:14:36,061 | INFO | Running job "GuardianService.reconnect_idle_butts (trigger: interval[0:02:00], next run at: 2026-04-13 12:16:36 -03)" (scheduled at 2026-04-13 12:14:36.060682-03:00)
+2026-04-13 12:14:36,061 | INFO | --- Monitoring Cycle START ---
+2026-04-13 12:14:36,277 | INFO | Process Status: {'zararadio': 'Running', 'butt': 'Running'}
+2026-04-13 12:14:36,281 | INFO | Latest ZaraRadio log entry: 12:14:04	incio	D:\RADIO\MUSICAS\NACIONAL\Tits - Sonfera ilha.mp3
+2026-04-13 12:14:36,371 | INFO | Job "GuardianService.reconnect_idle_butts (trigger: interval[0:02:00], next run at: 2026-04-13 12:16:36 -03)" executed successfully
+2026-04-13 12:14:37,374 | INFO | Health — CPU: 42.5% | RAM: 72.7% used | Free RAM: 2199 MB
+2026-04-13 12:14:37,374 | INFO | System sleep/display timeout prevented.
+2026-04-13 12:14:37,452 | INFO | --- Monitoring Cycle END ---
+2026-04-13 12:14:37,457 | INFO | Job "GuardianService.run_cycle (trigger: interval[0:00:30], next run at: 2026-04-13 12:15:06 -03)" executed successfully
+2026-04-13 12:15:06,061 | INFO | Running job "GuardianService.run_cycle (trigger: interval[0:00:30], next run at: 2026-04-13 12:15:36 -03)" (scheduled at 2026-04-13 12:15:06.060403-03:00)
+2026-04-13 12:15:06,062 | INFO | --- Monitoring Cycle START ---
+2026-04-13 12:15:06,263 | INFO | Process Status: {'zararadio': 'Running', 'butt': 'Running'}
+2026-04-13 12:15:06,267 | INFO | Latest ZaraRadio log entry: 12:14:04	incio	D:\RADIO\MUSICAS\NACIONAL\Tits - Sonfera ilha.mp3
+2026-04-13 12:15:07,367 | INFO | Health — CPU: 32.0% | RAM: 73.3% used | Free RAM: 2156 MB
+2026-04-13 12:15:07,367 | INFO | System sleep/display timeout prevented.
+2026-04-13 12:15:07,447 | INFO | --- Monitoring Cycle END ---
+2026-04-13 12:15:07,451 | INFO | Job "GuardianService.run_cycle (trigger: interval[0:00:30], next run at: 2026-04-13 12:15:36 -03)" executed successfully
+2026-04-13 12:15:36,061 | INFO | Running job "GuardianService.run_cycle (trigger: interval[0:00:30], next run at: 2026-04-13 12:16:06 -03)" (scheduled at 2026-04-13 12:15:36.060403-03:00)
+2026-04-13 12:15:36,061 | INFO | Running job "CuradoriaManager.iniciar_worker (trigger: interval[0:05:00], next run at: 2026-04-13 12:20:36 -03)" (scheduled at 2026-04-13 12:15:36.060872-03:00)
+2026-04-13 12:15:36,061 | INFO | --- Monitoring Cycle START ---
+2026-04-13 12:15:36,086 | INFO | Job "CuradoriaManager.iniciar_worker (trigger: interval[0:05:00], next run at: 2026-04-13 12:20:36 -03)" executed successfully
+2026-04-13 12:15:36,263 | INFO | Process Status: {'zararadio': 'Running', 'butt': 'Running'}
+2026-04-13 12:15:36,268 | INFO | Latest ZaraRadio log entry: 12:14:04	incio	D:\RADIO\MUSICAS\NACIONAL\Tits - Sonfera ilha.mp3
+2026-04-13 12:15:37,363 | INFO | Health — CPU: 43.0% | RAM: 77.4% used | Free RAM: 1822 MB
+2026-04-13 12:15:37,363 | INFO | System sleep/display timeout prevented.
+2026-04-13 12:15:37,449 | INFO | --- Monitoring Cycle END ---
+2026-04-13 12:15:37,452 | INFO | Job "GuardianService.run_cycle (trigger: interval[0:00:30], next run at: 2026-04-13 12:16:06 -03)" executed successfully
+2026-04-13 12:16:06,061 | INFO | Running job "GuardianService.run_cycle (trigger: interval[0:00:30], next run at: 2026-04-13 12:16:36 -03)" (scheduled at 2026-04-13 12:16:06.060403-03:00)
+2026-04-13 12:16:06,061 | INFO | --- Monitoring Cycle START ---
+2026-04-13 12:16:06,264 | INFO | Process Status: {'zararadio': 'Running', 'butt': 'Running'}
+2026-04-13 12:16:06,268 | INFO | Latest ZaraRadio log entry: 12:14:04	incio	D:\RADIO\MUSICAS\NACIONAL\Tits - Sonfera ilha.mp3
+2026-04-13 12:16:07,359 | INFO | Health — CPU: 28.7% | RAM: 75.4% used | Free RAM: 1986 MB
+2026-04-13 12:16:07,360 | INFO | System sleep/display timeout prevented.
+2026-04-13 12:16:07,434 | INFO | --- Monitoring Cycle END ---
+2026-04-13 12:16:07,440 | INFO | Job "GuardianService.run_cycle (trigger: interval[0:00:30], next run at: 2026-04-13 12:16:36 -03)" executed successfully
+2026-04-13 12:16:36,061 | INFO | Running job "GuardianService.run_cycle (trigger: interval[0:00:30], next run at: 2026-04-13 12:17:06 -03)" (scheduled at 2026-04-13 12:16:36.060403-03:00)
+2026-04-13 12:16:36,062 | INFO | Running job "GuardianService.reconnect_idle_butts (trigger: interval[0:02:00], next run at: 2026-04-13 12:18:36 -03)" (scheduled at 2026-04-13 12:16:36.060682-03:00)
+2026-04-13 12:16:36,062 | INFO | --- Monitoring Cycle START ---
+2026-04-13 12:16:36,235 | INFO | Process Status: {'zararadio': 'Running', 'butt': 'Running'}
+2026-04-13 12:16:36,239 | INFO | Latest ZaraRadio log entry: 12:14:04	incio	D:\RADIO\MUSICAS\NACIONAL\Tits - Sonfera ilha.mp3
+2026-04-13 12:16:36,371 | INFO | Job "GuardianService.reconnect_idle_butts (trigger: interval[0:02:00], next run at: 2026-04-13 12:18:36 -03)" executed successfully
+2026-04-13 12:16:37,320 | INFO | Health — CPU: 36.3% | RAM: 78.4% used | Free RAM: 1744 MB
+2026-04-13 12:16:37,321 | INFO | System sleep/display timeout prevented.
+2026-04-13 12:16:37,396 | INFO | --- Monitoring Cycle END ---
+2026-04-13 12:16:37,398 | INFO | Job "GuardianService.run_cycle (trigger: interval[0:00:30], next run at: 2026-04-13 12:17:06 -03)" executed successfully
+2026-04-13 12:17:06,061 | INFO | Running job "GuardianService.run_cycle (trigger: interval[0:00:30], next run at: 2026-04-13 12:17:36 -03)" (scheduled at 2026-04-13 12:17:06.060403-03:00)
+2026-04-13 12:17:06,061 | INFO | --- Monitoring Cycle START ---
+2026-04-13 12:17:06,249 | INFO | Process Status: {'zararadio': 'Running', 'butt': 'Running'}
+2026-04-13 12:17:06,254 | INFO | Latest ZaraRadio log entry: 12:17:00	incio	D:\RADIO\MUSICAS\REGIONAL\JOO JUVANKLIN-INTERROGATIVO.mp3
+2026-04-13 12:17:07,335 | INFO | Health — CPU: 34.1% | RAM: 78.3% used | Free RAM: 1751 MB
+2026-04-13 12:17:07,335 | INFO | System sleep/display timeout prevented.
+2026-04-13 12:17:07,410 | INFO | --- Monitoring Cycle END ---
+2026-04-13 12:17:07,414 | INFO | Job "GuardianService.run_cycle (trigger: interval[0:00:30], next run at: 2026-04-13 12:17:36 -03)" executed successfully
+2026-04-13 12:17:36,061 | INFO | Running job "GuardianService.run_cycle (trigger: interval[0:00:30], next run at: 2026-04-13 12:18:06 -03)" (scheduled at 2026-04-13 12:17:36.060403-03:00)
+2026-04-13 12:17:36,061 | INFO | --- Monitoring Cycle START ---
+2026-04-13 12:17:36,218 | INFO | Process Status: {'zararadio': 'Running', 'butt': 'Running'}
+2026-04-13 12:17:36,222 | INFO | Latest ZaraRadio log entry: 12:17:00	incio	D:\RADIO\MUSICAS\REGIONAL\JOO JUVANKLIN-INTERROGATIVO.mp3
+2026-04-13 12:17:37,310 | INFO | Health — CPU: 31.2% | RAM: 80.0% used | Free RAM: 1616 MB
+2026-04-13 12:17:37,310 | INFO | System sleep/display timeout prevented.
+2026-04-13 12:17:37,382 | INFO | --- Monitoring Cycle END ---
+2026-04-13 12:17:37,386 | INFO | Job "GuardianService.run_cycle (trigger: interval[0:00:30], next run at: 2026-04-13 12:18:06 -03)" executed successfully
+2026-04-13 12:18:06,061 | INFO | Running job "GuardianService.run_cycle (trigger: interval[0:00:30], next run at: 2026-04-13 12:18:36 -03)" (scheduled at 2026-04-13 12:18:06.060403-03:00)
+2026-04-13 12:18:06,061 | INFO | --- Monitoring Cycle START ---
+2026-04-13 12:18:06,205 | INFO | Process Status: {'zararadio': 'Running', 'butt': 'Running'}
+2026-04-13 12:18:06,209 | INFO | Latest ZaraRadio log entry: 12:17:00	incio	D:\RADIO\MUSICAS\REGIONAL\JOO JUVANKLIN-INTERROGATIVO.mp3
+2026-04-13 12:18:07,298 | INFO | Health — CPU: 41.1% | RAM: 80.8% used | Free RAM: 1551 MB
+2026-04-13 12:18:07,298 | INFO | System sleep/display timeout prevented.
+2026-04-13 12:18:07,378 | INFO | --- Monitoring Cycle END ---
+2026-04-13 12:18:07,383 | INFO | Job "GuardianService.run_cycle (trigger: interval[0:00:30], next run at: 2026-04-13 12:18:36 -03)" executed successfully
+2026-04-13 12:18:36,061 | INFO | Running job "GuardianService.run_cycle (trigger: interval[0:00:30], next run at: 2026-04-13 12:19:06 -03)" (scheduled at 2026-04-13 12:18:36.060403-03:00)
+2026-04-13 12:18:36,062 | INFO | Running job "GuardianService.reconnect_idle_butts (trigger: interval[0:02:00], next run at: 2026-04-13 12:20:36 -03)" (scheduled at 2026-04-13 12:18:36.060682-03:00)
+2026-04-13 12:18:36,062 | INFO | --- Monitoring Cycle START ---
+2026-04-13 12:18:36,217 | INFO | Process Status: {'zararadio': 'Running', 'butt': 'Running'}
+2026-04-13 12:18:36,221 | INFO | Latest ZaraRadio log entry: 12:17:00	incio	D:\RADIO\MUSICAS\REGIONAL\JOO JUVANKLIN-INTERROGATIVO.mp3
+2026-04-13 12:18:36,370 | INFO | Job "GuardianService.reconnect_idle_butts (trigger: interval[0:02:00], next run at: 2026-04-13 12:20:36 -03)" executed successfully
+2026-04-13 12:18:37,304 | INFO | Health — CPU: 35.9% | RAM: 77.9% used | Free RAM: 1786 MB
+2026-04-13 12:18:37,304 | INFO | System sleep/display timeout prevented.
+2026-04-13 12:18:37,381 | INFO | --- Monitoring Cycle END ---
+2026-04-13 12:18:37,385 | INFO | Job "GuardianService.run_cycle (trigger: interval[0:00:30], next run at: 2026-04-13 12:19:06 -03)" executed successfully
+2026-04-13 12:19:06,061 | INFO | Running job "GuardianService.run_cycle (trigger: interval[0:00:30], next run at: 2026-04-13 12:19:36 -03)" (scheduled at 2026-04-13 12:19:06.060403-03:00)
+2026-04-13 12:19:06,062 | INFO | --- Monitoring Cycle START ---
+2026-04-13 12:19:06,276 | INFO | Process Status: {'zararadio': 'Running', 'butt': 'Running'}
+2026-04-13 12:19:06,279 | INFO | Latest ZaraRadio log entry: 12:17:00	incio	D:\RADIO\MUSICAS\REGIONAL\JOO JUVANKLIN-INTERROGATIVO.mp3
+2026-04-13 12:19:07,370 | INFO | Health — CPU: 20.6% | RAM: 75.8% used | Free RAM: 1950 MB
+2026-04-13 12:19:07,370 | INFO | System sleep/display timeout prevented.
+2026-04-13 12:19:07,459 | INFO | --- Monitoring Cycle END ---
+2026-04-13 12:19:07,461 | INFO | Job "GuardianService.run_cycle (trigger: interval[0:00:30], next run at: 2026-04-13 12:19:36 -03)" executed successfully
+2026-04-13 12:19:36,061 | INFO | Running job "GuardianService.run_cycle (trigger: interval[0:00:30], next run at: 2026-04-13 12:20:06 -03)" (scheduled at 2026-04-13 12:19:36.060403-03:00)
+2026-04-13 12:19:36,061 | INFO | --- Monitoring Cycle START ---
+2026-04-13 12:19:36,254 | INFO | Process Status: {'zararadio': 'Running', 'butt': 'Running'}
+2026-04-13 12:19:36,258 | INFO | Latest ZaraRadio log entry: 12:17:00	incio	D:\RADIO\MUSICAS\REGIONAL\JOO JUVANKLIN-INTERROGATIVO.mp3
+2026-04-13 12:19:37,342 | INFO | Health — CPU: 8.5% | RAM: 76.4% used | Free RAM: 1900 MB
+2026-04-13 12:19:37,343 | INFO | System sleep/display timeout prevented.
+2026-04-13 12:19:37,433 | INFO | --- Monitoring Cycle END ---
+2026-04-13 12:19:37,438 | INFO | Job "GuardianService.run_cycle (trigger: interval[0:00:30], next run at: 2026-04-13 12:20:06 -03)" executed successfully
+2026-04-13 12:20:06,061 | INFO | Running job "GuardianService.run_cycle (trigger: interval[0:00:30], next run at: 2026-04-13 12:20:36 -03)" (scheduled at 2026-04-13 12:20:06.060403-03:00)
+2026-04-13 12:20:06,061 | INFO | --- Monitoring Cycle START ---
+2026-04-13 12:20:06,216 | INFO | Process Status: {'zararadio': 'Running', 'butt': 'Running'}
+2026-04-13 12:20:06,220 | INFO | Latest ZaraRadio log entry: 12:20:05	incio	D:\RADIO\MUSICAS\NACIONAL\LAFAYETTE E OS TREMENDOES - FORA ESTRANHA.mp3
+2026-04-13 12:20:07,304 | INFO | Health — CPU: 5.9% | RAM: 76.3% used | Free RAM: 1912 MB
+2026-04-13 12:20:07,305 | INFO | System sleep/display timeout prevented.
+2026-04-13 12:20:07,390 | INFO | --- Monitoring Cycle END ---
+2026-04-13 12:20:07,393 | INFO | Job "GuardianService.run_cycle (trigger: interval[0:00:30], next run at: 2026-04-13 12:20:36 -03)" executed successfully
+2026-04-13 12:20:36,067 | INFO | Running job "GuardianService.reconnect_idle_butts (trigger: interval[0:02:00], next run at: 2026-04-13 12:22:36 -03)" (scheduled at 2026-04-13 12:20:36.060682-03:00)
+2026-04-13 12:20:36,072 | INFO | Running job "GuardianService.run_cycle (trigger: interval[0:00:30], next run at: 2026-04-13 12:21:06 -03)" (scheduled at 2026-04-13 12:20:36.060403-03:00)
+2026-04-13 12:20:36,072 | INFO | --- Monitoring Cycle START ---
+2026-04-13 12:20:36,105 | INFO | Running job "CuradoriaManager.iniciar_worker (trigger: interval[0:05:00], next run at: 2026-04-13 12:20:36 -03)" (scheduled at 2026-04-13 12:20:36.060872-03:00)
+2026-04-13 12:20:36,110 | INFO | Job "CuradoriaManager.iniciar_worker (trigger: interval[0:05:00], next run at: 2026-04-13 12:25:36 -03)" executed successfully
+2026-04-13 12:20:36,220 | INFO | Process Status: {'zararadio': 'Running', 'butt': 'Running'}
+2026-04-13 12:20:36,224 | INFO | Latest ZaraRadio log entry: 12:20:05	incio	D:\RADIO\MUSICAS\NACIONAL\LAFAYETTE E OS TREMENDOES - FORA ESTRANHA.mp3
+2026-04-13 12:20:36,381 | INFO | Job "GuardianService.reconnect_idle_butts (trigger: interval[0:02:00], next run at: 2026-04-13 12:22:36 -03)" executed successfully
+2026-04-13 12:20:37,319 | INFO | Health — CPU: 32.8% | RAM: 76.6% used | Free RAM: 1890 MB
+2026-04-13 12:20:37,319 | INFO | System sleep/display timeout prevented.
+2026-04-13 12:20:37,397 | INFO | --- Monitoring Cycle END ---
+2026-04-13 12:20:37,402 | INFO | Job "GuardianService.run_cycle (trigger: interval[0:00:30], next run at: 2026-04-13 12:21:06 -03)" executed successfully
+2026-04-13 12:21:06,061 | INFO | Running job "GuardianService.run_cycle (trigger: interval[0:00:30], next run at: 2026-04-13 12:21:36 -03)" (scheduled at 2026-04-13 12:21:06.060403-03:00)
+2026-04-13 12:21:06,062 | INFO | --- Monitoring Cycle START ---
+2026-04-13 12:21:06,300 | INFO | Process Status: {'zararadio': 'Running', 'butt': 'Running'}
+2026-04-13 12:21:06,303 | INFO | Latest ZaraRadio log entry: 12:20:05	incio	D:\RADIO\MUSICAS\NACIONAL\LAFAYETTE E OS TREMENDOES - FORA ESTRANHA.mp3
+2026-04-13 12:21:07,390 | INFO | Health — CPU: 7.3% | RAM: 74.8% used | Free RAM: 2032 MB
+2026-04-13 12:21:07,391 | INFO | System sleep/display timeout prevented.
+2026-04-13 12:21:07,467 | INFO | --- Monitoring Cycle END ---
+2026-04-13 12:21:07,473 | INFO | Job "GuardianService.run_cycle (trigger: interval[0:00:30], next run at: 2026-04-13 12:21:36 -03)" executed successfully
+2026-04-13 12:21:36,062 | INFO | Running job "GuardianService.run_cycle (trigger: interval[0:00:30], next run at: 2026-04-13 12:22:06 -03)" (scheduled at 2026-04-13 12:21:36.060403-03:00)
+2026-04-13 12:21:36,062 | INFO | --- Monitoring Cycle START ---
+2026-04-13 12:21:36,233 | INFO | Process Status: {'zararadio': 'Running', 'butt': 'Running'}
+2026-04-13 12:21:36,237 | INFO | Latest ZaraRadio log entry: 12:20:05	incio	D:\RADIO\MUSICAS\NACIONAL\LAFAYETTE E OS TREMENDOES - FORA ESTRANHA.mp3
+2026-04-13 12:21:37,323 | INFO | Health — CPU: 16.4% | RAM: 76.0% used | Free RAM: 1937 MB
+2026-04-13 12:21:37,324 | INFO | System sleep/display timeout prevented.
+2026-04-13 12:21:37,417 | INFO | --- Monitoring Cycle END ---
+2026-04-13 12:21:37,421 | INFO | Job "GuardianService.run_cycle (trigger: interval[0:00:30], next run at: 2026-04-13 12:22:06 -03)" executed successfully
+2026-04-13 12:22:06,062 | INFO | Running job "GuardianService.run_cycle (trigger: interval[0:00:30], next run at: 2026-04-13 12:22:36 -03)" (scheduled at 2026-04-13 12:22:06.060403-03:00)
+2026-04-13 12:22:06,063 | INFO | --- Monitoring Cycle START ---
+2026-04-13 12:22:06,257 | INFO | Process Status: {'zararadio': 'Running', 'butt': 'Running'}
+2026-04-13 12:22:06,261 | INFO | Latest ZaraRadio log entry: 12:20:05	incio	D:\RADIO\MUSICAS\NACIONAL\LAFAYETTE E OS TREMENDOES - FORA ESTRANHA.mp3
+2026-04-13 12:22:07,345 | INFO | Health — CPU: 13.8% | RAM: 76.0% used | Free RAM: 1936 MB
+2026-04-13 12:22:07,345 | INFO | System sleep/display timeout prevented.
+2026-04-13 12:22:07,418 | INFO | --- Monitoring Cycle END ---
+2026-04-13 12:22:07,424 | INFO | Job "GuardianService.run_cycle (trigger: interval[0:00:30], next run at: 2026-04-13 12:22:36 -03)" executed successfully
+2026-04-13 12:22:36,062 | INFO | Running job "GuardianService.run_cycle (trigger: interval[0:00:30], next run at: 2026-04-13 12:23:06 -03)" (scheduled at 2026-04-13 12:22:36.060403-03:00)
+2026-04-13 12:22:36,062 | INFO | Running job "GuardianService.reconnect_idle_butts (trigger: interval[0:02:00], next run at: 2026-04-13 12:24:36 -03)" (scheduled at 2026-04-13 12:22:36.060682-03:00)
+2026-04-13 12:22:36,062 | INFO | --- Monitoring Cycle START ---
+2026-04-13 12:22:36,249 | INFO | Process Status: {'zararadio': 'Running', 'butt': 'Running'}
+2026-04-13 12:22:36,253 | INFO | Latest ZaraRadio log entry: 12:20:05	incio	D:\RADIO\MUSICAS\NACIONAL\LAFAYETTE E OS TREMENDOES - FORA ESTRANHA.mp3
+2026-04-13 12:22:36,376 | INFO | Job "GuardianService.reconnect_idle_butts (trigger: interval[0:02:00], next run at: 2026-04-13 12:24:36 -03)" executed successfully
+2026-04-13 12:22:37,341 | INFO | Health — CPU: 13.1% | RAM: 76.8% used | Free RAM: 1874 MB
+2026-04-13 12:22:37,342 | INFO | System sleep/display timeout prevented.
+2026-04-13 12:22:37,425 | INFO | --- Monitoring Cycle END ---
+2026-04-13 12:22:37,429 | INFO | Job "GuardianService.run_cycle (trigger: interval[0:00:30], next run at: 2026-04-13 12:23:06 -03)" executed successfully
+2026-04-13 12:23:06,062 | INFO | Running job "GuardianService.run_cycle (trigger: interval[0:00:30], next run at: 2026-04-13 12:23:36 -03)" (scheduled at 2026-04-13 12:23:06.060403-03:00)
+2026-04-13 12:23:06,063 | INFO | --- Monitoring Cycle START ---
+2026-04-13 12:23:06,234 | INFO | Process Status: {'zararadio': 'Running', 'butt': 'Running'}
+2026-04-13 12:23:06,237 | INFO | Latest ZaraRadio log entry: 12:20:05	incio	D:\RADIO\MUSICAS\NACIONAL\LAFAYETTE E OS TREMENDOES - FORA ESTRANHA.mp3
+2026-04-13 12:23:07,518 | INFO | Health — CPU: 39.0% | RAM: 73.8% used | Free RAM: 2111 MB
+2026-04-13 12:23:07,519 | INFO | System sleep/display timeout prevented.
+2026-04-13 12:23:07,745 | INFO | --- Monitoring Cycle END ---
+2026-04-13 12:23:07,748 | INFO | Job "GuardianService.run_cycle (trigger: interval[0:00:30], next run at: 2026-04-13 12:23:36 -03)" executed successfully
+2026-04-13 12:23:36,060 | INFO | Running job "GuardianService.run_cycle (trigger: interval[0:00:30], next run at: 2026-04-13 12:24:06 -03)" (scheduled at 2026-04-13 12:23:36.060403-03:00)
+2026-04-13 12:23:36,060 | INFO | --- Monitoring Cycle START ---
+2026-04-13 12:23:36,226 | INFO | Process Status: {'zararadio': 'Running', 'butt': 'Running'}
+2026-04-13 12:23:36,230 | INFO | Latest ZaraRadio log entry: 12:20:05	incio	D:\RADIO\MUSICAS\NACIONAL\LAFAYETTE E OS TREMENDOES - FORA ESTRANHA.mp3
+2026-04-13 12:23:37,317 | INFO | Health — CPU: 50.0% | RAM: 73.6% used | Free RAM: 2129 MB
+2026-04-13 12:23:37,317 | INFO | System sleep/display timeout prevented.
+2026-04-13 12:23:37,395 | INFO | --- Monitoring Cycle END ---
+2026-04-13 12:23:37,399 | INFO | Job "GuardianService.run_cycle (trigger: interval[0:00:30], next run at: 2026-04-13 12:24:06 -03)" executed successfully
+2026-04-13 12:24:06,061 | INFO | Running job "GuardianService.run_cycle (trigger: interval[0:00:30], next run at: 2026-04-13 12:24:36 -03)" (scheduled at 2026-04-13 12:24:06.060403-03:00)
+2026-04-13 12:24:06,061 | INFO | --- Monitoring Cycle START ---
+2026-04-13 12:24:06,287 | INFO | Process Status: {'zararadio': 'Running', 'butt': 'Running'}
+2026-04-13 12:24:06,291 | INFO | Latest ZaraRadio log entry: 12:24:01	incio	D:\RADIO\SPOTS\SPOT - ABUSO SEXUAL INFANTIL.mp3
+2026-04-13 12:24:07,378 | INFO | Health — CPU: 33.1% | RAM: 74.6% used | Free RAM: 2047 MB
+2026-04-13 12:24:07,378 | INFO | System sleep/display timeout prevented.
+2026-04-13 12:24:07,454 | INFO | --- Monitoring Cycle END ---
+2026-04-13 12:24:07,458 | INFO | Job "GuardianService.run_cycle (trigger: interval[0:00:30], next run at: 2026-04-13 12:24:36 -03)" executed successfully
+2026-04-13 12:24:36,061 | INFO | Running job "GuardianService.run_cycle (trigger: interval[0:00:30], next run at: 2026-04-13 12:25:06 -03)" (scheduled at 2026-04-13 12:24:36.060403-03:00)
+2026-04-13 12:24:36,061 | INFO | Running job "GuardianService.reconnect_idle_butts (trigger: interval[0:02:00], next run at: 2026-04-13 12:26:36 -03)" (scheduled at 2026-04-13 12:24:36.060682-03:00)
+2026-04-13 12:24:36,061 | INFO | --- Monitoring Cycle START ---
+2026-04-13 12:24:36,269 | INFO | Process Status: {'zararadio': 'Running', 'butt': 'Running'}
+2026-04-13 12:24:36,274 | INFO | Latest ZaraRadio log entry: 12:24:01	incio	D:\RADIO\SPOTS\SPOT - ABUSO SEXUAL INFANTIL.mp3
+2026-04-13 12:24:36,373 | INFO | Job "GuardianService.reconnect_idle_butts (trigger: interval[0:02:00], next run at: 2026-04-13 12:26:36 -03)" executed successfully
+2026-04-13 12:24:37,358 | INFO | Health — CPU: 30.8% | RAM: 75.5% used | Free RAM: 1976 MB
+2026-04-13 12:24:37,358 | INFO | System sleep/display timeout prevented.
+2026-04-13 12:24:37,436 | INFO | --- Monitoring Cycle END ---
+2026-04-13 12:24:37,442 | INFO | Job "GuardianService.run_cycle (trigger: interval[0:00:30], next run at: 2026-04-13 12:25:06 -03)" executed successfully
+2026-04-13 12:25:06,061 | INFO | Running job "GuardianService.run_cycle (trigger: interval[0:00:30], next run at: 2026-04-13 12:25:36 -03)" (scheduled at 2026-04-13 12:25:06.060403-03:00)
+2026-04-13 12:25:06,061 | INFO | --- Monitoring Cycle START ---
+2026-04-13 12:25:06,226 | INFO | Process Status: {'zararadio': 'Running', 'butt': 'Running'}
+2026-04-13 12:25:06,229 | INFO | Latest ZaraRadio log entry: 12:25:01	incio	D:\RADIO\MUSICAS\NACIONAL\Tribalistas -  voc.mp3
+2026-04-13 12:25:07,313 | INFO | Health — CPU: 36.7% | RAM: 75.7% used | Free RAM: 1960 MB
+2026-04-13 12:25:07,314 | INFO | System sleep/display timeout prevented.
+2026-04-13 12:25:07,395 | INFO | --- Monitoring Cycle END ---
+2026-04-13 12:25:07,399 | INFO | Job "GuardianService.run_cycle (trigger: interval[0:00:30], next run at: 2026-04-13 12:25:36 -03)" executed successfully
+2026-04-13 12:25:36,062 | INFO | Running job "GuardianService.run_cycle (trigger: interval[0:00:30], next run at: 2026-04-13 12:26:06 -03)" (scheduled at 2026-04-13 12:25:36.060403-03:00)
+2026-04-13 12:25:36,062 | INFO | Running job "CuradoriaManager.iniciar_worker (trigger: interval[0:05:00], next run at: 2026-04-13 12:30:36 -03)" (scheduled at 2026-04-13 12:25:36.060872-03:00)
+2026-04-13 12:25:36,062 | INFO | --- Monitoring Cycle START ---
+2026-04-13 12:25:36,067 | INFO | Job "CuradoriaManager.iniciar_worker (trigger: interval[0:05:00], next run at: 2026-04-13 12:30:36 -03)" executed successfully
+2026-04-13 12:25:36,221 | INFO | Process Status: {'zararadio': 'Running', 'butt': 'Running'}
+2026-04-13 12:25:36,225 | INFO | Latest ZaraRadio log entry: 12:25:01	incio	D:\RADIO\MUSICAS\NACIONAL\Tribalistas -  voc.mp3
+2026-04-13 12:25:37,311 | INFO | Health — CPU: 43.0% | RAM: 80.4% used | Free RAM: 1582 MB
+2026-04-13 12:25:37,311 | INFO | System sleep/display timeout prevented.
+2026-04-13 12:25:37,384 | INFO | --- Monitoring Cycle END ---
+2026-04-13 12:25:37,388 | INFO | Job "GuardianService.run_cycle (trigger: interval[0:00:30], next run at: 2026-04-13 12:26:06 -03)" executed successfully
+2026-04-13 12:26:06,061 | INFO | Running job "GuardianService.run_cycle (trigger: interval[0:00:30], next run at: 2026-04-13 12:26:36 -03)" (scheduled at 2026-04-13 12:26:06.060403-03:00)
+2026-04-13 12:26:06,061 | INFO | --- Monitoring Cycle START ---
+2026-04-13 12:26:06,292 | INFO | Process Status: {'zararadio': 'Running', 'butt': 'Running'}
+2026-04-13 12:26:06,296 | INFO | Latest ZaraRadio log entry: 12:25:01	incio	D:\RADIO\MUSICAS\NACIONAL\Tribalistas -  voc.mp3
+2026-04-13 12:26:07,386 | INFO | Health — CPU: 31.9% | RAM: 77.2% used | Free RAM: 1841 MB
+2026-04-13 12:26:07,386 | INFO | System sleep/display timeout prevented.
+2026-04-13 12:26:07,514 | INFO | --- Monitoring Cycle END ---
+2026-04-13 12:26:07,514 | INFO | Job "GuardianService.run_cycle (trigger: interval[0:00:30], next run at: 2026-04-13 12:26:36 -03)" executed successfully
+2026-04-13 12:26:36,061 | INFO | Running job "GuardianService.run_cycle (trigger: interval[0:00:30], next run at: 2026-04-13 12:27:06 -03)" (scheduled at 2026-04-13 12:26:36.060403-03:00)
+2026-04-13 12:26:36,062 | INFO | Running job "GuardianService.reconnect_idle_butts (trigger: interval[0:02:00], next run at: 2026-04-13 12:28:36 -03)" (scheduled at 2026-04-13 12:26:36.060682-03:00)
+2026-04-13 12:26:36,062 | INFO | --- Monitoring Cycle START ---
+2026-04-13 12:26:36,310 | INFO | Process Status: {'zararadio': 'Running', 'butt': 'Running'}
+2026-04-13 12:26:36,314 | INFO | Latest ZaraRadio log entry: 12:25:01	incio	D:\RADIO\MUSICAS\NACIONAL\Tribalistas -  voc.mp3
+2026-04-13 12:26:36,376 | INFO | Job "GuardianService.reconnect_idle_butts (trigger: interval[0:02:00], next run at: 2026-04-13 12:28:36 -03)" executed successfully
+2026-04-13 12:26:37,397 | INFO | Health — CPU: 6.6% | RAM: 82.8% used | Free RAM: 1389 MB
+2026-04-13 12:26:37,397 | INFO | System sleep/display timeout prevented.
+2026-04-13 12:26:37,470 | INFO | --- Monitoring Cycle END ---
+2026-04-13 12:26:37,476 | INFO | Job "GuardianService.run_cycle (trigger: interval[0:00:30], next run at: 2026-04-13 12:27:06 -03)" executed successfully
+2026-04-13 12:27:06,060 | INFO | Running job "GuardianService.run_cycle (trigger: interval[0:00:30], next run at: 2026-04-13 12:27:36 -03)" (scheduled at 2026-04-13 12:27:06.060403-03:00)
+2026-04-13 12:27:06,061 | INFO | --- Monitoring Cycle START ---
+2026-04-13 12:27:06,262 | INFO | Process Status: {'zararadio': 'Running', 'butt': 'Running'}
+2026-04-13 12:27:06,266 | INFO | Latest ZaraRadio log entry: 12:25:01	incio	D:\RADIO\MUSICAS\NACIONAL\Tribalistas -  voc.mp3
+2026-04-13 12:27:07,348 | INFO | Health — CPU: 5.9% | RAM: 81.2% used | Free RAM: 1517 MB
+2026-04-13 12:27:07,348 | INFO | System sleep/display timeout prevented.
+2026-04-13 12:27:07,423 | INFO | --- Monitoring Cycle END ---
+2026-04-13 12:27:07,428 | INFO | Job "GuardianService.run_cycle (trigger: interval[0:00:30], next run at: 2026-04-13 12:27:36 -03)" executed successfully
+2026-04-13 12:27:36,062 | INFO | Running job "GuardianService.run_cycle (trigger: interval[0:00:30], next run at: 2026-04-13 12:28:06 -03)" (scheduled at 2026-04-13 12:27:36.060403-03:00)
+2026-04-13 12:27:36,062 | INFO | --- Monitoring Cycle START ---
+2026-04-13 12:27:36,211 | INFO | Process Status: {'zararadio': 'Running', 'butt': 'Running'}
+2026-04-13 12:27:36,215 | INFO | Latest ZaraRadio log entry: 12:25:01	incio	D:\RADIO\MUSICAS\NACIONAL\Tribalistas -  voc.mp3
+2026-04-13 12:27:37,299 | INFO | Health — CPU: 11.1% | RAM: 81.6% used | Free RAM: 1483 MB
+2026-04-13 12:27:37,300 | INFO | System sleep/display timeout prevented.
+2026-04-13 12:27:37,393 | INFO | --- Monitoring Cycle END ---
+2026-04-13 12:27:37,398 | INFO | Job "GuardianService.run_cycle (trigger: interval[0:00:30], next run at: 2026-04-13 12:28:06 -03)" executed successfully
+2026-04-13 12:28:06,062 | INFO | Running job "GuardianService.run_cycle (trigger: interval[0:00:30], next run at: 2026-04-13 12:28:36 -03)" (scheduled at 2026-04-13 12:28:06.060403-03:00)
+2026-04-13 12:28:06,062 | INFO | --- Monitoring Cycle START ---
+2026-04-13 12:28:06,273 | INFO | Process Status: {'zararadio': 'Running', 'butt': 'Running'}
+2026-04-13 12:28:06,277 | INFO | Latest ZaraRadio log entry: 12:27:57	incio	D:\RADIO\MUSICAS\NACIONAL\2 Unlimited - Get Ready for This.mp3
+2026-04-13 12:28:07,364 | INFO | Health — CPU: 12.8% | RAM: 82.0% used | Free RAM: 1456 MB
+2026-04-13 12:28:07,376 | INFO | System sleep/display timeout prevented.
+2026-04-13 12:28:07,456 | INFO | --- Monitoring Cycle END ---
+2026-04-13 12:28:07,462 | INFO | Job "GuardianService.run_cycle (trigger: interval[0:00:30], next run at: 2026-04-13 12:28:36 -03)" executed successfully
+2026-04-13 12:28:36,061 | INFO | Running job "GuardianService.run_cycle (trigger: interval[0:00:30], next run at: 2026-04-13 12:29:06 -03)" (scheduled at 2026-04-13 12:28:36.060403-03:00)
+2026-04-13 12:28:36,061 | INFO | Running job "GuardianService.reconnect_idle_butts (trigger: interval[0:02:00], next run at: 2026-04-13 12:30:36 -03)" (scheduled at 2026-04-13 12:28:36.060682-03:00)
+2026-04-13 12:28:36,061 | INFO | --- Monitoring Cycle START ---
+2026-04-13 12:28:36,304 | INFO | Process Status: {'zararadio': 'Running', 'butt': 'Running'}
+2026-04-13 12:28:36,322 | INFO | Latest ZaraRadio log entry: 12:27:57	incio	D:\RADIO\MUSICAS\NACIONAL\2 Unlimited - Get Ready for This.mp3
+2026-04-13 12:28:36,371 | INFO | Job "GuardianService.reconnect_idle_butts (trigger: interval[0:02:00], next run at: 2026-04-13 12:30:36 -03)" executed successfully
+2026-04-13 12:28:37,408 | INFO | Health — CPU: 21.0% | RAM: 75.0% used | Free RAM: 2014 MB
+2026-04-13 12:28:37,409 | INFO | System sleep/display timeout prevented.
+2026-04-13 12:28:37,498 | INFO | --- Monitoring Cycle END ---
+2026-04-13 12:28:37,503 | INFO | Job "GuardianService.run_cycle (trigger: interval[0:00:30], next run at: 2026-04-13 12:29:06 -03)" executed successfully
+2026-04-13 12:29:06,062 | INFO | Running job "GuardianService.run_cycle (trigger: interval[0:00:30], next run at: 2026-04-13 12:29:36 -03)" (scheduled at 2026-04-13 12:29:06.060403-03:00)
+2026-04-13 12:29:06,062 | INFO | --- Monitoring Cycle START ---
+2026-04-13 12:29:06,290 | INFO | Process Status: {'zararadio': 'Running', 'butt': 'Running'}
+2026-04-13 12:29:06,294 | INFO | Latest ZaraRadio log entry: 12:27:57	incio	D:\RADIO\MUSICAS\NACIONAL\2 Unlimited - Get Ready for This.mp3
+2026-04-13 12:29:07,380 | INFO | Health — CPU: 23.5% | RAM: 76.2% used | Free RAM: 1918 MB
+2026-04-13 12:29:07,380 | INFO | System sleep/display timeout prevented.
+2026-04-13 12:29:07,463 | INFO | --- Monitoring Cycle END ---
+2026-04-13 12:29:07,467 | INFO | Job "GuardianService.run_cycle (trigger: interval[0:00:30], next run at: 2026-04-13 12:29:36 -03)" executed successfully
+2026-04-13 12:29:36,074 | INFO | Running job "GuardianService.run_cycle (trigger: interval[0:00:30], next run at: 2026-04-13 12:30:06 -03)" (scheduled at 2026-04-13 12:29:36.060403-03:00)
+2026-04-13 12:29:36,074 | INFO | --- Monitoring Cycle START ---
+2026-04-13 12:29:36,273 | INFO | Process Status: {'zararadio': 'Running', 'butt': 'Running'}
+2026-04-13 12:29:36,278 | INFO | Latest ZaraRadio log entry: 12:27:57	incio	D:\RADIO\MUSICAS\NACIONAL\2 Unlimited - Get Ready for This.mp3
+2026-04-13 12:29:37,802 | WARNING | HIGH CPU: 100.0% (threshold: 90%)
+2026-04-13 12:29:37,803 | INFO | [EVENT:WARNING] CPU usage critical: 100.0%
+2026-04-13 12:29:37,805 | INFO | Health — CPU: 100.0% | RAM: 78.0% used | Free RAM: 1773 MB
+2026-04-13 12:29:37,808 | INFO | System sleep/display timeout prevented.
+2026-04-13 12:29:38,108 | INFO | --- Monitoring Cycle END ---
+2026-04-13 12:29:38,112 | INFO | Job "GuardianService.run_cycle (trigger: interval[0:00:30], next run at: 2026-04-13 12:30:06 -03)" executed successfully
+2026-04-13 12:30:06,066 | INFO | Running job "GuardianService.run_cycle (trigger: interval[0:00:30], next run at: 2026-04-13 12:30:36 -03)" (scheduled at 2026-04-13 12:30:06.060403-03:00)
+2026-04-13 12:30:06,067 | INFO | --- Monitoring Cycle START ---
+2026-04-13 12:30:06,505 | INFO | Process Status: {'zararadio': 'Running', 'butt': 'Running'}
+2026-04-13 12:30:06,509 | INFO | Latest ZaraRadio log entry: 12:27:57	incio	D:\RADIO\MUSICAS\NACIONAL\2 Unlimited - Get Ready for This.mp3
+2026-04-13 12:30:07,599 | INFO | Health — CPU: 11.7% | RAM: 76.9% used | Free RAM: 1860 MB
+2026-04-13 12:30:07,599 | INFO | System sleep/display timeout prevented.
+2026-04-13 12:30:07,682 | INFO | --- Monitoring Cycle END ---
+2026-04-13 12:30:07,685 | INFO | Job "GuardianService.run_cycle (trigger: interval[0:00:30], next run at: 2026-04-13 12:30:36 -03)" executed successfully
+2026-04-13 12:30:36,061 | INFO | Running job "CuradoriaManager.iniciar_worker (trigger: interval[0:05:00], next run at: 2026-04-13 12:35:36 -03)" (scheduled at 2026-04-13 12:30:36.060872-03:00)
+2026-04-13 12:30:36,062 | INFO | Running job "GuardianService.run_cycle (trigger: interval[0:00:30], next run at: 2026-04-13 12:31:06 -03)" (scheduled at 2026-04-13 12:30:36.060403-03:00)
+2026-04-13 12:30:36,063 | INFO | Running job "GuardianService.reconnect_idle_butts (trigger: interval[0:02:00], next run at: 2026-04-13 12:32:36 -03)" (scheduled at 2026-04-13 12:30:36.060682-03:00)
+2026-04-13 12:30:36,063 | INFO | --- Monitoring Cycle START ---
+2026-04-13 12:30:36,070 | INFO | Job "CuradoriaManager.iniciar_worker (trigger: interval[0:05:00], next run at: 2026-04-13 12:35:36 -03)" executed successfully
+2026-04-13 12:30:36,375 | INFO | Job "GuardianService.reconnect_idle_butts (trigger: interval[0:02:00], next run at: 2026-04-13 12:32:36 -03)" executed successfully
+2026-04-13 12:30:36,473 | INFO | Process Status: {'zararadio': 'Running', 'butt': 'Running'}
+2026-04-13 12:30:36,477 | INFO | Latest ZaraRadio log entry: 12:27:57	incio	D:\RADIO\MUSICAS\NACIONAL\2 Unlimited - Get Ready for This.mp3
+2026-04-13 12:30:37,557 | INFO | Health — CPU: 8.6% | RAM: 72.1% used | Free RAM: 2248 MB
+2026-04-13 12:30:37,557 | INFO | System sleep/display timeout prevented.
+2026-04-13 12:30:37,641 | INFO | --- Monitoring Cycle END ---
+2026-04-13 12:30:37,642 | INFO | Job "GuardianService.run_cycle (trigger: interval[0:00:30], next run at: 2026-04-13 12:31:06 -03)" executed successfully
+2026-04-13 12:31:06,061 | INFO | Running job "GuardianService.run_cycle (trigger: interval[0:00:30], next run at: 2026-04-13 12:31:36 -03)" (scheduled at 2026-04-13 12:31:06.060403-03:00)
+2026-04-13 12:31:06,061 | INFO | --- Monitoring Cycle START ---
+2026-04-13 12:31:06,434 | INFO | Process Status: {'zararadio': 'Running', 'butt': 'Running'}
+2026-04-13 12:31:06,437 | INFO | Latest ZaraRadio log entry: 12:27:57	incio	D:\RADIO\MUSICAS\NACIONAL\2 Unlimited - Get Ready for This.mp3
+2026-04-13 12:31:07,536 | INFO | Health — CPU: 23.4% | RAM: 73.5% used | Free RAM: 2135 MB
+2026-04-13 12:31:07,540 | INFO | System sleep/display timeout prevented.
+2026-04-13 12:31:07,694 | INFO | --- Monitoring Cycle END ---
+2026-04-13 12:31:07,695 | INFO | Job "GuardianService.run_cycle (trigger: interval[0:00:30], next run at: 2026-04-13 12:31:36 -03)" executed successfully
+2026-04-13 12:31:36,061 | INFO | Running job "GuardianService.run_cycle (trigger: interval[0:00:30], next run at: 2026-04-13 12:32:06 -03)" (scheduled at 2026-04-13 12:31:36.060403-03:00)
+2026-04-13 12:31:36,061 | INFO | --- Monitoring Cycle START ---
+2026-04-13 12:31:36,540 | INFO | Process Status: {'zararadio': 'Running', 'butt': 'Running'}
+2026-04-13 12:31:36,544 | INFO | Latest ZaraRadio log entry: 12:27:57	incio	D:\RADIO\MUSICAS\NACIONAL\2 Unlimited - Get Ready for This.mp3
+2026-04-13 12:31:37,663 | INFO | Health — CPU: 12.6% | RAM: 75.4% used | Free RAM: 1984 MB
+2026-04-13 12:31:37,663 | INFO | System sleep/display timeout prevented.
+2026-04-13 12:31:37,738 | INFO | --- Monitoring Cycle END ---
+2026-04-13 12:31:37,743 | INFO | Job "GuardianService.run_cycle (trigger: interval[0:00:30], next run at: 2026-04-13 12:32:06 -03)" executed successfully
+2026-04-13 12:32:06,063 | INFO | Running job "GuardianService.run_cycle (trigger: interval[0:00:30], next run at: 2026-04-13 12:32:36 -03)" (scheduled at 2026-04-13 12:32:06.060403-03:00)
+2026-04-13 12:32:06,063 | INFO | --- Monitoring Cycle START ---
+2026-04-13 12:32:06,581 | INFO | Process Status: {'zararadio': 'Running', 'butt': 'Running'}
+2026-04-13 12:32:06,585 | INFO | Latest ZaraRadio log entry: 12:31:46	incio	D:\RADIO\MUSICAS\NACIONAL\Djavan - A Ilha.mp3
+2026-04-13 12:32:07,675 | INFO | Health — CPU: 11.2% | RAM: 79.6% used | Free RAM: 1646 MB
+2026-04-13 12:32:07,676 | INFO | System sleep/display timeout prevented.
+2026-04-13 12:32:07,753 | INFO | --- Monitoring Cycle END ---
+2026-04-13 12:32:07,757 | INFO | Job "GuardianService.run_cycle (trigger: interval[0:00:30], next run at: 2026-04-13 12:32:36 -03)" executed successfully
+2026-04-13 12:32:36,061 | INFO | Running job "GuardianService.run_cycle (trigger: interval[0:00:30], next run at: 2026-04-13 12:33:06 -03)" (scheduled at 2026-04-13 12:32:36.060403-03:00)
+2026-04-13 12:32:36,062 | INFO | Running job "GuardianService.reconnect_idle_butts (trigger: interval[0:02:00], next run at: 2026-04-13 12:34:36 -03)" (scheduled at 2026-04-13 12:32:36.060682-03:00)
+2026-04-13 12:32:36,062 | INFO | --- Monitoring Cycle START ---
+2026-04-13 12:32:36,378 | INFO | Job "GuardianService.reconnect_idle_butts (trigger: interval[0:02:00], next run at: 2026-04-13 12:34:36 -03)" executed successfully
+2026-04-13 12:32:36,561 | INFO | Process Status: {'zararadio': 'Running', 'butt': 'Running'}
+2026-04-13 12:32:36,565 | INFO | Latest ZaraRadio log entry: 12:31:46	incio	D:\RADIO\MUSICAS\NACIONAL\Djavan - A Ilha.mp3
+2026-04-13 12:32:37,659 | INFO | Health — CPU: 9.3% | RAM: 80.4% used | Free RAM: 1582 MB
+2026-04-13 12:32:37,660 | INFO | System sleep/display timeout prevented.
+2026-04-13 12:32:37,748 | INFO | --- Monitoring Cycle END ---
+2026-04-13 12:32:37,751 | INFO | Job "GuardianService.run_cycle (trigger: interval[0:00:30], next run at: 2026-04-13 12:33:06 -03)" executed successfully
+2026-04-13 12:32:41,578 | INFO | Encerrando Omni Core via ícone de bandeja...
+2026-04-13 12:32:41,578 | INFO | Scheduler has been shut down

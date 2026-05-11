@@ -1,0 +1,82 @@
+import os
+import re
+import logging
+import subprocess
+from pathlib import Path
+import yt_dlp
+
+logger = logging.getLogger("OmniCore.DownloaderService")
+
+class DownloaderService:
+    def __init__(self, target_dir: str = r"D:\RADIO\QUARENTENA_TJ"):
+        self.target_dir = Path(target_dir)
+        self.target_dir.mkdir(exist_ok=True, parents=True)
+
+    def search_and_download(self, query: str, destination: str = None) -> dict:
+        """
+        Busca no YouTube pelo termo e faz o download.
+        Aplica filtro de silêncio e normalização básica.
+        """
+        dest_path = Path(destination) if destination else self.target_dir
+        dest_path.mkdir(exist_ok=True, parents=True)
+
+        # Limpa o nome do arquivo para o Windows
+        filename_base = re.sub(r'[\\/*?:"<>|]', "", query).strip()
+        
+        ydl_opts = {
+            'format': 'bestaudio/best',
+            'postprocessors': [{
+                'key': 'FFmpegExtractAudio',
+                'preferredcodec': 'mp3',
+                'preferredquality': '192',
+            }],
+            # Filtro de silêncio: corta início e fim
+            'postprocessor_args': ['-af', 'silenceremove=1:0:-50dB'],
+            'outtmpl': str(dest_path / f'{filename_base}.%(ext)s'),
+            'quiet': True,
+            'no_warnings': True,
+            'default_search': 'ytsearch1:', # Pega o primeiro resultado
+        }
+
+        try:
+            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                info = ydl.extract_info(query, download=True)
+                # Se for busca, o info['entries'] terá os dados
+                if 'entries' in info:
+                    video_info = info['entries'][0]
+                else:
+                    video_info = info
+                
+                actual_filename = dest_path / f"{filename_base}.mp3"
+                
+                logger.info(f"[Downloader] Sucesso: {query} -> {actual_filename}")
+                return {
+                    "success": True, 
+                    "path": str(actual_filename), 
+                    "title": video_info.get('title'),
+                    "duration": video_info.get('duration')
+                }
+        except Exception as e:
+            logger.error(f"[Downloader] Erro ao baixar {query}: {e}")
+            return {"success": False, "error": str(e)}
+
+    def trim_silence_manually(self, file_path: str):
+        """
+        Caso o postprocessor do yt-dlp falhe ou queiramos rodar depois.
+        Usa ffmpeg diretamente.
+        """
+        temp_output = file_path.replace(".mp3", "_trimmed.mp3")
+        cmd = [
+            'ffmpeg', '-y', '-i', file_path, 
+            '-af', 'silenceremove=1:0:-50dB', 
+            temp_output
+        ]
+        try:
+            subprocess.run(cmd, check=True, capture_output=True)
+            os.replace(temp_output, file_path)
+            return True
+        except Exception as e:
+            logger.error(f"[Downloader] Erro ao trimar silêncio: {e}")
+            return False
+
+downloader_instance = DownloaderService()

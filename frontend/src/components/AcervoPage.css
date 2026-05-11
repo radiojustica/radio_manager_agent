@@ -1,0 +1,163 @@
+.acervo-page {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    width: 100%;
+    min-height: calc(100vh - 150px);
+    position: relative;
+    z-index: 10;
+}
+
+.filtros-panel {
+    padding: 1.5rem;
+}
+
+.filtros-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.filtros-grid input,
+.filtros-grid select {
+    padding: 0.5rem;
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+    background: rgba(0, 0, 0, 0.2);
+    color: #fff;
+}
+
+.acoes-batch {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.acoes-batch button {
+    padding: 0.5rem 1rem;
+    background: var(--accent-violet);
+    border: none;
+    border-radius: 6px;
+    color: white;
+    cursor: pointer;
+}
+
+.acoes-batch button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.acervo-table-container {
+    padding: 1.5rem;
+    overflow-x: auto;
+}
+
+.acervo-table {
+    width: 100%;
+    border-collapse: collapse;
+    color: #e0e0e0;
+}
+
+.acervo-table th,
+.acervo-table td {
+    padding: 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.acervo-table th {
+    background: rgba(0, 0, 0, 0.3);
+    font-weight: 600;
+}
+
+.redflag-row {
+    background: rgba(244, 63, 94, 0.1);
+}
+
+.energia-cell {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 100px;
+}
+
+.energia-mini-bar {
+    width: 60px;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.energia-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #3b82f6, #f97316);
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.pagination button {
+    padding: 0.4rem 1rem;
+    background: var(--accent-violet);
+    border: none;
+    border-radius: 4px;
+    color: white;
+    cursor: pointer;
+}
+
+.pagination button:disabled {
+    opacity: 0.5;
+}
+
+.ai-insight-cell {
+    max-width: 250px !important;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+}
+
+.insight-text {
+    display: inline-block;
+    max-width: 180px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: middle;
+}
+
+.btn-mini-ai {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1rem;
+    padding: 2px;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.btn-mini-ai:hover {
+    background: rgba(255,255,255,0.1);
+    transform: scale(1.2);
+}
+
+.loading-spinner {
+    color: var(--accent-primary);
+    font-weight: 800;
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 0.5; }
+    50% { opacity: 1; }
+    100% { opacity: 0.5; }
+}
