@@ -19,6 +19,7 @@ from workers.weather_worker import WeatherWorker
 from workers.downloader_worker import DownloaderWorker
 from workers.butt_worker import ButtWorker
 from workers.update_worker import UpdateWorker
+from workers.daily_report_worker import DailyReportWorker
 
 logger = logging.getLogger("OmniCore.WorkerManager")
 
@@ -207,6 +208,15 @@ class WorkerManager:
             replace_existing=True
         )
 
+        # 9. DailyReportWorker (Relatório Gerencial às 18:00)
+        self.scheduler.add_job(
+            lambda: self.run_cycle("DailyReportWorker"),
+            trigger=CronTrigger(hour=18, minute=0),
+            id='worker_daily_report',
+            replace_existing=True,
+            misfire_grace_time=3600
+        )
+
         self.scheduler.start()
         logger.info("Orquestrador iniciado com sucesso dinamicamente.")
 
@@ -228,6 +238,7 @@ def create_default_manager() -> WorkerManager:
     manager.register_worker(DownloaderWorker(reward_store=manager.reward_store))
     manager.register_worker(ButtWorker(reward_store=manager.reward_store))
     manager.register_worker(UpdateWorker(reward_store=manager.reward_store))
+    manager.register_worker(DailyReportWorker(reward_store=manager.reward_store))
     return manager
 
 # Instância global para uso em todo o backend

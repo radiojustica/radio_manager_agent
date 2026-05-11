@@ -78,10 +78,12 @@ const ConfigPage = () => {
             <div className="config-tabs">
                 <button className={activeSubTab === 'badwords' ? 'active' : ''} onClick={() => setActiveSubTab('badwords')}>🛡️ Segurança (Badwords)</button>
                 <button className={activeSubTab === 'grade' ? 'active' : ''} onClick={() => setActiveSubTab('grade')}>📅 Regras de Grade</button>
+                <button className={activeSubTab === 'schedule' ? 'active' : ''} onClick={() => setActiveSubTab('schedule')}>⚡ Energia (Horário)</button>
                 <button className={activeSubTab === 'quarantine' ? 'active' : ''} onClick={() => setActiveSubTab('quarantine')}>☣️ Quarentena</button>
             </div>
 
             <div className="config-content glass-panel">
+                {activeSubTab === 'schedule' && <ScheduleEditor />}
                 {activeSubTab === 'badwords' && (
                     <div className="badwords-section">
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>

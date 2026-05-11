@@ -5,11 +5,7 @@ from typing import Any
 from core.worker_base import WorkerBase, WorkerResult
 from core.reward import RewardStore
 from services.guardian_service import guardian_instance
-from services.notification_service import send_whatsapp_notification
-import sounddevice as sd
-import numpy as np
-import time
-import threading
+from services.notification_service import send_whatsapp_alert
 
 logger = logging.getLogger("OmniCore.Workers.Guardian")
 
@@ -22,11 +18,18 @@ class GuardianWorker(WorkerBase):
         super().__init__(name="GuardianWorker", reward_store=reward_store, config=config)
         self.silence_threshold = self.config.get("silence_threshold", 0.005)
         self.silence_limit_seconds = self.config.get("silence_limit", 10)
+        # Importando aqui para evitar dependência circular se houver
+        import time
         self.last_audio_peak = time.time()
         self._start_audio_monitor()
 
     def _start_audio_monitor(self):
         """Inicia uma thread separada para monitorar o RMS do áudio de saída."""
+        import sounddevice as sd
+        import numpy as np
+        import threading
+        import time
+
         def callback(indata, frames, time_info, status):
             volume_norm = np.linalg.norm(indata) * 10
             if volume_norm > self.silence_threshold:
@@ -47,6 +50,7 @@ class GuardianWorker(WorkerBase):
         violations = []
         metadata = {}
         score = 0
+        import time
 
         try:
             # 1. Executa o ciclo principal do GuardianService
@@ -59,17 +63,6 @@ class GuardianWorker(WorkerBase):
             metadata["processes"] = process_status
             metadata["health"] = health_metrics
             
-            # Helper para enviar notificações assíncronas
-            def notify(msg):
-                try:
-                    import asyncio
-                    loop = asyncio.new_event_loop()
-                    asyncio.set_event_loop(loop)
-                    loop.run_until_complete(send_whatsapp_notification(msg))
-                    loop.close()
-                except Exception as ne:
-                    logger.error(f"Erro ao enviar notificação: {ne}")
-
             # 3. Verificação de Silêncio
             silence_duration = time.time() - self.last_audio_peak
             metadata["silence_seconds"] = round(silence_duration, 1)
@@ -78,39 +71,32 @@ class GuardianWorker(WorkerBase):
                 msg = f"🔇 ALERTA: Silêncio detectado por {int(silence_duration)}s! Tentando retomar Play."
                 violations.append(msg)
                 score -= 15
-                notify(msg)
+                send_whatsapp_alert(msg)
                 guardian_instance.trigger_play_on_zara()
-                # Reset temporário para não floodar
                 self.last_audio_peak = time.time() + 60 
 
-            # 4. Avaliação básica de processos
+            # 4. Detecção de Falha de Processo (ZaraRadio ou BUTT)
             zara_running = process_status.get("zararadio") == "Running"
-            if zara_running:
-                score += 5
-            else:
-                msg = "🚨 ALERTA: ZaraRadio não está rodando!"
+            if not zara_running:
+                msg = "🚨 ALERTA CRÍTICO: O processo ZaraRadio caiu e está sendo reiniciado pelo Guardian."
                 violations.append(msg)
                 score -= 10
-                notify(msg)
+                send_whatsapp_alert(msg)
                 
-            # Verifica BUTT (devem ser 3 instâncias)
-            # Acessamos psutil através do guardian_instance que já o importa
             import psutil
             butt_count = sum(1 for p in psutil.process_iter(['name']) if p.info['name'].lower() == 'butt.exe')
             if butt_count < 3:
-                msg = f"⚠️ ALERTA: Apenas {butt_count}/3 instâncias do BUTT rodando!"
+                msg = f"🚨 ALERTA CRÍTICO: O processo BUTT caiu (Apenas {butt_count}/3 rodando) e está sendo reiniciado pelo Guardian."
                 violations.append(msg)
                 score -= 5
-                notify(msg)
+                send_whatsapp_alert(msg)
 
-            # Verifica se houve algum evento de reinicialização ou erro recente
+            # Resto da lógica de avaliação
+            if zara_running: score += 5
+            
             recent_events = [e for e in guardian_instance.events_list if e['type'] in ('ERROR', 'WARNING', 'RESTART')][:5]
             if recent_events:
                 metadata["recent_alerts"] = recent_events
-                for e in recent_events:
-                    if e['type'] == 'ERROR':
-                        score -= 5
-                        violations.append(f"Erro detectado: {e['message']}")
             
             status = "success" if not violations else "partial_success"
             if not zara_running: status = "failed"
@@ -122,10 +108,6 @@ class GuardianWorker(WorkerBase):
             return WorkerResult(status="error", score=-20, violations=[str(e)], metadata={"error": str(e)})
 
     def high_frequency_checks(self):
-        """
-        Executa as checagens de alta frequência (vMix, NDI, Track).
-        Pode ser chamado separadamente pelo scheduler a cada 1-2 segundos.
-        """
         try:
             guardian_instance.check_vmix_and_switch()
             guardian_instance.check_ndi_session()

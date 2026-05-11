@@ -1,25 +1,29 @@
-import httpx
+import requests
 import logging
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("OmniCore.NotificationService")
 
-async def send_whatsapp_notification(message: str):
+def send_whatsapp_alert(message: str):
     """
-    Envia uma notificação de WhatsApp via CallMeBot API.
+    Envia um alerta de WhatsApp via CallMeBot API usando a biblioteca requests.
     """
     url = "https://api.callmebot.com/whatsapp.php"
     params = {
         "phone": "+5584996066876",
-        "text": message,
-        "apikey": "8552672"
+        "apikey": "8552672",
+        "text": message
     }
     
     try:
-        async with httpx.AsyncClient() as client:
-            response = await client.get(url, params=params)
-            if response.status_code == 200:
-                logger.info(f"Notificação enviada com sucesso: {message}")
-            else:
-                logger.error(f"Falha ao enviar notificação. Status: {response.status_code}, Response: {response.text}")
+        response = requests.get(url, params=params, timeout=10)
+        if response.status_code == 200:
+            logger.info(f"Alerta WhatsApp enviado com sucesso: {message[:50]}...")
+        else:
+            logger.error(f"Falha ao enviar alerta WhatsApp. Status: {response.status_code}, Resposta: {response.text}")
     except Exception as e:
-        logger.error(f"Erro ao conectar com a API do CallMeBot: {str(e)}")
+        logger.error(f"Erro ao conectar com a API do CallMeBot (requests): {e}")
+
+# Mantendo compatibilidade se necessário, mas focando no pedido atual
+async def send_whatsapp_notification(message: str):
+    # Wrapper síncrono para a nova função, já que o worker manager roda em threads
+    send_whatsapp_alert(message)
