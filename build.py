@@ -33,7 +33,7 @@ def build():
     # --noconsole: não abre janela de console (útil para GUI/Tray)
     # --hidden-import: garante que dependências dinâmicas sejam incluídas
     cmd = [
-        "pyinstaller",
+        sys.executable, "-m", "PyInstaller",
         "--noconfirm",
         "--onefile",
         "--console", # Mantemos console para debug por enquanto

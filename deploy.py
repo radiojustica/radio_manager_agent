@@ -64,40 +64,49 @@ def copy_files():
             shutil.copytree(src_path, dst_path)
             print(f"  ✓ {dst}/")
 
-def create_startup_shortcut():
-    """Cria atalho na pasta de Startup para iniciar automaticamente."""
-    print("\n⚡ Configurando inicialização automática...")
+def create_scheduled_task():
+    """Cria uma tarefa agendada no Windows para rodar como Administrador p001642."""
+    print("\n⚡ Configurando inicialização automática via Agendador de Tarefas...")
     
-    shortcut_path = SHORTCUT_PATH / "OmniCore.bat"
+    task_name = "OmniCore_Admin"
     exe_path = INSTALL_PATH / "omni_core.exe"
+    user = "p001642"
+    password = "Tjrn" # Conforme solicitado pelo usuário
     
-    bat_content = f"""@echo off
-REM Omni Core V2 Startup
-cd /d "{INSTALL_PATH}"
-"{exe_path}" %*
-"""
-    
-    shortcut_path.write_text(bat_content)
-    print(f"✓ Atalho criado: {shortcut_path}")
-
-def add_registry_entry():
-    """Adiciona entrada no Registro para fácil desinstalação."""
-    print("\n🔐 Registrando aplicação...")
+    # Comando para criar a tarefa:
+    # /sc onlogon: Inicia ao fazer logon
+    # /rl highest: Executa com privilégios máximos (Admin)
+    # /ru: Usuário alvo
+    # /rp: Senha do usuário
+    # /tr: Caminho do executável
+    # /f: Força a sobrescrita se a tarefa já existir
+    cmd = [
+        "schtasks", "/create", "/tn", task_name,
+        "/tr", f'"{exe_path}"',
+        "/sc", "onlogon",
+        "/rl", "highest",
+        "/ru", user,
+        "/rp", password,
+        "/f"
+    ]
     
     try:
-        key_path = r"Software\Microsoft\Windows\CurrentVersion\Uninstall\OmniCore"
-        reg_key = winreg.CreateKey(winreg.HKEY_LOCAL_MACHINE, key_path)
-        
-        exe_path = INSTALL_PATH / "omni_core.exe"
-        winreg.SetValueEx(reg_key, "DisplayName", 0, winreg.REG_SZ, "Omni Core V2")
-        winreg.SetValueEx(reg_key, "DisplayVersion", 0, winreg.REG_SZ, "1.0.0")
-        winreg.SetValueEx(reg_key, "InstallLocation", 0, winreg.REG_SZ, str(INSTALL_PATH))
-        winreg.SetValueEx(reg_key, "UninstallString", 0, winreg.REG_SZ, str(exe_path))
-        winreg.CloseKey(reg_key)
-        
-        print("✓ Aplicação registrada")
+        # Usamos shell=True para lidar melhor com argumentos no Windows se necessário, 
+        # mas a lista de argumentos costuma ser mais segura.
+        result = subprocess.run(cmd, capture_output=True, text=True)
+        if result.returncode == 0:
+            print(f"✓ Tarefa agendada '{task_name}' criada com sucesso!")
+            print(f"✓ O sistema iniciará como {user} com privilégios de Admin.")
+        else:
+            # Se falhar com a senha, tentamos criar sem a senha (o Windows pedirá na primeira execução manual se necessário)
+            # Ou apenas informamos o erro.
+            print(f"❌ Erro ao criar tarefa agendada: {result.stderr}")
+            print("💡 Tentando criar tarefa sem senha (pode exigir configuração manual no Task Scheduler)...")
+            cmd_no_pass = [c for c in cmd if c not in ["/rp", password]]
+            subprocess.run(cmd_no_pass)
+            
     except Exception as e:
-        print(f"⚠️  Erro ao registrar: {e} (continuando...)")
+        print(f"❌ Falha crítica ao configurar schtasks: {e}")
 
 def main():
     """Executa o deploy completo."""
@@ -112,7 +121,7 @@ def main():
     if os.name == 'nt':
         import ctypes
         if not ctypes.windll.shell32.IsUserAnAdmin():
-            print("❌ Erro: Execute como Administrador")
+            print("❌ Erro: Execute como Administrador para configurar o Agendador")
             sys.exit(1)
     
     print("✓ Privilégios de Administrador verificados\n")
@@ -125,7 +134,7 @@ def main():
     
     create_install_dir()
     copy_files()
-    create_startup_shortcut()
+    create_scheduled_task()
     
     try:
         add_registry_entry()
@@ -139,7 +148,7 @@ def main():
     print(f"🚀 Inicie com: {INSTALL_PATH / 'omni_core.exe'}")
     print(f"⚙️  Auto-início configurado via Startup")
     print(f"\n💡 Atualizações automáticas: A cada 1 hora")
-    print(f"📊 Logs: D:\\RADIO\\LOG ZAZAZADIO\\omni_system.log")
+    print(f"📊 Logs: D:\\RADIO\\LOG ZARARADIO\\omni_system.log")
 
 if __name__ == "__main__":
     main()
