@@ -222,8 +222,8 @@
             ]
         },
         "GuardianWorker": {
-            "score_total": 55625,
-            "cycles": 11125,
+            "score_total": 55660,
+            "cycles": 11132,
             "last_result": {
                 "score": 5,
                 "violations": [],
@@ -233,9 +233,9 @@
                         "butt": "Running"
                     },
                     "health": {
-                        "cpu_percent": 12.4,
-                        "ram_percent": 88.7,
-                        "ram_kb_free": 930136
+                        "cpu_percent": 30.8,
+                        "ram_percent": 78.0,
+                        "ram_kb_free": 1817988
                     },
                     "recent_alerts": [
                         {
@@ -244,137 +244,11 @@
                             "message": "CPU usage critical: 99.3%"
                         }
                     ],
-                    "cycle_id": "GuardianWorker_20260511_123953_820041"
+                    "cycle_id": "GuardianWorker_20260511_124323_822298"
                 },
-                "timestamp": "2026-05-11T12:40:00.255546+00:00"
+                "timestamp": "2026-05-11T12:43:30.164463+00:00"
             },
             "history": [
-                {
-                    "worker": "GuardianWorker",
-                    "timestamp": "2026-05-11T12:30:29.930620+00:00",
-                    "score": 5,
-                    "violations": [],
-                    "metadata": {
-                        "processes": {
-                            "zararadio": "Running",
-                            "butt": "Running"
-                        },
-                        "health": {
-                            "cpu_percent": 13.1,
-                            "ram_percent": 81.9,
-                            "ram_kb_free": 1495432
-                        },
-                        "cycle_id": "GuardianWorker_20260511_123023_816953"
-                    }
-                },
-                {
-                    "worker": "GuardianWorker",
-                    "timestamp": "2026-05-11T12:31:00.209549+00:00",
-                    "score": 5,
-                    "violations": [],
-                    "metadata": {
-                        "processes": {
-                            "zararadio": "Running",
-                            "butt": "Running"
-                        },
-                        "health": {
-                            "cpu_percent": 18.1,
-                            "ram_percent": 78.0,
-                            "ram_kb_free": 1818248
-                        },
-                        "cycle_id": "GuardianWorker_20260511_123053_820180"
-                    }
-                },
-                {
-                    "worker": "GuardianWorker",
-                    "timestamp": "2026-05-11T12:31:29.841693+00:00",
-                    "score": 5,
-                    "violations": [],
-                    "metadata": {
-                        "processes": {
-                            "zararadio": "Running",
-                            "butt": "Running"
-                        },
-                        "health": {
-                            "cpu_percent": 11.2,
-                            "ram_percent": 77.9,
-                            "ram_kb_free": 1822828
-                        },
-                        "cycle_id": "GuardianWorker_20260511_123123_817069"
-                    }
-                },
-                {
-                    "worker": "GuardianWorker",
-                    "timestamp": "2026-05-11T12:32:00.311954+00:00",
-                    "score": 5,
-                    "violations": [],
-                    "metadata": {
-                        "processes": {
-                            "zararadio": "Running",
-                            "butt": "Running"
-                        },
-                        "health": {
-                            "cpu_percent": 19.0,
-                            "ram_percent": 79.6,
-                            "ram_kb_free": 1688636
-                        },
-                        "cycle_id": "GuardianWorker_20260511_123153_827712"
-                    }
-                },
-                {
-                    "worker": "GuardianWorker",
-                    "timestamp": "2026-05-11T12:32:29.934926+00:00",
-                    "score": 5,
-                    "violations": [],
-                    "metadata": {
-                        "processes": {
-                            "zararadio": "Running",
-                            "butt": "Running"
-                        },
-                        "health": {
-                            "cpu_percent": 13.4,
-                            "ram_percent": 79.7,
-                            "ram_kb_free": 1675108
-                        },
-                        "cycle_id": "GuardianWorker_20260511_123223_817237"
-                    }
-                },
-                {
-                    "worker": "GuardianWorker",
-                    "timestamp": "2026-05-11T12:33:00.120805+00:00",
-                    "score": 5,
-                    "violations": [],
-                    "metadata": {
-                        "processes": {
-                            "zararadio": "Running",
-                            "butt": "Running"
-                        },
-                        "health": {
-                            "cpu_percent": 9.8,
-                            "ram_percent": 80.5,
-                            "ram_kb_free": 1608692
-                        },
-                        "cycle_id": "GuardianWorker_20260511_123253_825055"
-                    }
-                },
-                {
-                    "worker": "GuardianWorker",
-                    "timestamp": "2026-05-11T12:33:30.011213+00:00",
-                    "score": 5,
-                    "violations": [],
-                    "metadata": {
-                        "processes": {
-                            "zararadio": "Running",
-                            "butt": "Running"
-                        },
-                        "health": {
-                            "cpu_percent": 8.2,
-                            "ram_percent": 82.6,
-                            "ram_kb_free": 1434640
-                        },
-                        "cycle_id": "GuardianWorker_20260511_123323_816163"
-                    }
-                },
                 {
                     "worker": "GuardianWorker",
                     "timestamp": "2026-05-11T12:34:00.595028+00:00",
@@ -643,6 +517,181 @@
                         ],
                         "cycle_id": "GuardianWorker_20260511_123953_820041"
                     }
+                },
+                {
+                    "worker": "GuardianWorker",
+                    "timestamp": "2026-05-11T12:40:30.132419+00:00",
+                    "score": 5,
+                    "violations": [],
+                    "metadata": {
+                        "processes": {
+                            "zararadio": "Running",
+                            "butt": "Running"
+                        },
+                        "health": {
+                            "cpu_percent": 17.4,
+                            "ram_percent": 80.5,
+                            "ram_kb_free": 1613840
+                        },
+                        "recent_alerts": [
+                            {
+                                "time": "09:38:00",
+                                "type": "WARNING",
+                                "message": "CPU usage critical: 99.3%"
+                            }
+                        ],
+                        "cycle_id": "GuardianWorker_20260511_124023_815754"
+                    }
+                },
+                {
+                    "worker": "GuardianWorker",
+                    "timestamp": "2026-05-11T12:41:00.362150+00:00",
+                    "score": 5,
+                    "violations": [],
+                    "metadata": {
+                        "processes": {
+                            "zararadio": "Running",
+                            "butt": "Running"
+                        },
+                        "health": {
+                            "cpu_percent": 10.1,
+                            "ram_percent": 79.6,
+                            "ram_kb_free": 1682480
+                        },
+                        "recent_alerts": [
+                            {
+                                "time": "09:38:00",
+                                "type": "WARNING",
+                                "message": "CPU usage critical: 99.3%"
+                            }
+                        ],
+                        "cycle_id": "GuardianWorker_20260511_124053_815873"
+                    }
+                },
+                {
+                    "worker": "GuardianWorker",
+                    "timestamp": "2026-05-11T12:41:29.863466+00:00",
+                    "score": 5,
+                    "violations": [],
+                    "metadata": {
+                        "processes": {
+                            "zararadio": "Running",
+                            "butt": "Running"
+                        },
+                        "health": {
+                            "cpu_percent": 23.3,
+                            "ram_percent": 79.2,
+                            "ram_kb_free": 1720152
+                        },
+                        "recent_alerts": [
+                            {
+                                "time": "09:38:00",
+                                "type": "WARNING",
+                                "message": "CPU usage critical: 99.3%"
+                            }
+                        ],
+                        "cycle_id": "GuardianWorker_20260511_124123_818906"
+                    }
+                },
+                {
+                    "worker": "GuardianWorker",
+                    "timestamp": "2026-05-11T12:42:00.190791+00:00",
+                    "score": 5,
+                    "violations": [],
+                    "metadata": {
+                        "processes": {
+                            "zararadio": "Running",
+                            "butt": "Running"
+                        },
+                        "health": {
+                            "cpu_percent": 21.8,
+                            "ram_percent": 80.4,
+                            "ram_kb_free": 1619008
+                        },
+                        "recent_alerts": [
+                            {
+                                "time": "09:38:00",
+                                "type": "WARNING",
+                                "message": "CPU usage critical: 99.3%"
+                            }
+                        ],
+                        "cycle_id": "GuardianWorker_20260511_124153_815497"
+                    }
+                },
+                {
+                    "worker": "GuardianWorker",
+                    "timestamp": "2026-05-11T12:42:29.965020+00:00",
+                    "score": 5,
+                    "violations": [],
+                    "metadata": {
+                        "processes": {
+                            "zararadio": "Running",
+                            "butt": "Running"
+                        },
+                        "health": {
+                            "cpu_percent": 10.9,
+                            "ram_percent": 76.4,
+                            "ram_kb_free": 1949736
+                        },
+                        "recent_alerts": [
+                            {
+                                "time": "09:38:00",
+                                "type": "WARNING",
+                                "message": "CPU usage critical: 99.3%"
+                            }
+                        ],
+                        "cycle_id": "GuardianWorker_20260511_124223_820337"
+                    }
+                },
+                {
+                    "worker": "GuardianWorker",
+                    "timestamp": "2026-05-11T12:43:00.315577+00:00",
+                    "score": 5,
+                    "violations": [],
+                    "metadata": {
+                        "processes": {
+                            "zararadio": "Running",
+                            "butt": "Running"
+                        },
+                        "health": {
+                            "cpu_percent": 46.7,
+                            "ram_percent": 77.8,
+                            "ram_kb_free": 1837588
+                        },
+                        "recent_alerts": [
+                            {
+                                "time": "09:38:00",
+                                "type": "WARNING",
+                                "message": "CPU usage critical: 99.3%"
+                            }
+                        ],
+                        "cycle_id": "GuardianWorker_20260511_124253_815632"
+                    }
+                },
+                {
+                    "worker": "GuardianWorker",
+                    "timestamp": "2026-05-11T12:43:30.164463+00:00",
+                    "score": 5,
+                    "violations": [],
+                    "metadata": {
+                        "processes": {
+                            "zararadio": "Running",
+                            "butt": "Running"
+                        },
+                        "health": {
+                            "cpu_percent": 30.8,
+                            "ram_percent": 78.0,
+                            "ram_kb_free": 1817988
+                        },
+                        "recent_alerts": [
+                            {
+                                "time": "09:38:00",
+                                "type": "WARNING",
+                                "message": "CPU usage critical: 99.3%"
+                            }
+                        ],
+                        "cycle_id": "GuardianWorker_20260511_124323_822298"
+                    }
                 }
             ]
         },
@@ -766,8 +815,8 @@
             ]
         },
         "ButtWorker": {
-            "score_total": 2781,
-            "cycles": 2781,
+            "score_total": 2782,
+            "cycles": 2782,
             "last_result": {
                 "score": 1,
                 "violations": [
@@ -776,24 +825,11 @@
                 "metadata": {
                     "reconnected": 0,
                     "total_instances": 3,
-                    "cycle_id": "ButtWorker_20260511_123953_820302"
+                    "cycle_id": "ButtWorker_20260511_124153_819993"
                 },
-                "timestamp": "2026-05-11T12:39:54.141984+00:00"
+                "timestamp": "2026-05-11T12:41:54.145640+00:00"
             },
             "history": [
-                {
-                    "worker": "ButtWorker",
-                    "timestamp": "2026-05-11T11:41:09.069479+00:00",
-                    "score": 1,
-                    "violations": [
-                        "Nenhuma instância BUTT reconectada"
-                    ],
-                    "metadata": {
-                        "reconnected": 0,
-                        "total_instances": 3,
-                        "cycle_id": "ButtWorker_20260511_114108_751019"
-                    }
-                },
                 {
                     "worker": "ButtWorker",
                     "timestamp": "2026-05-11T11:43:09.067914+00:00",
@@ -1040,32 +1076,35 @@
                         "total_instances": 3,
                         "cycle_id": "ButtWorker_20260511_123953_820302"
                     }
+                },
+                {
+                    "worker": "ButtWorker",
+                    "timestamp": "2026-05-11T12:41:54.145640+00:00",
+                    "score": 1,
+                    "violations": [
+                        "Nenhuma instância BUTT reconectada"
+                    ],
+                    "metadata": {
+                        "reconnected": 0,
+                        "total_instances": 3,
+                        "cycle_id": "ButtWorker_20260511_124153_819993"
+                    }
                 }
             ]
         },
         "CuradoriaWorker": {
-            "score_total": 1114,
-            "cycles": 1111,
+            "score_total": 1115,
+            "cycles": 1112,
             "last_result": {
                 "score": 1,
                 "violations": [],
                 "metadata": {
                     "message": "Nenhuma música pendente.",
-                    "cycle_id": "CuradoriaWorker_20260511_123553_851800"
+                    "cycle_id": "CuradoriaWorker_20260511_124053_842198"
                 },
-                "timestamp": "2026-05-11T12:35:54.042429+00:00"
+                "timestamp": "2026-05-11T12:40:53.856166+00:00"
             },
             "history": [
-                {
-                    "worker": "CuradoriaWorker",
-                    "timestamp": "2026-05-11T10:37:08.781634+00:00",
-                    "score": 1,
-                    "violations": [],
-                    "metadata": {
-                        "message": "Nenhuma música pendente.",
-                        "cycle_id": "CuradoriaWorker_20260511_103708_753482"
-                    }
-                },
                 {
                     "worker": "CuradoriaWorker",
                     "timestamp": "2026-05-11T10:42:08.759346+00:00",
@@ -1254,6 +1293,16 @@
                     "metadata": {
                         "message": "Nenhuma música pendente.",
                         "cycle_id": "CuradoriaWorker_20260511_123553_851800"
+                    }
+                },
+                {
+                    "worker": "CuradoriaWorker",
+                    "timestamp": "2026-05-11T12:40:53.856166+00:00",
+                    "score": 1,
+                    "violations": [],
+                    "metadata": {
+                        "message": "Nenhuma música pendente.",
+                        "cycle_id": "CuradoriaWorker_20260511_124053_842198"
                     }
                 }
             ]
@@ -2484,312 +2533,6 @@
         }
     },
     "history": [
-        {
-            "worker": "GuardianWorker",
-            "timestamp": "2026-05-11T06:16:44.797371+00:00",
-            "score": 5,
-            "violations": [],
-            "metadata": {
-                "processes": {
-                    "zararadio": "Running",
-                    "butt": "Running"
-                },
-                "health": {
-                    "cpu_percent": 15.8,
-                    "ram_percent": 67.0,
-                    "ram_kb_free": 2723668
-                },
-                "recent_alerts": [
-                    {
-                        "time": "21:59:00",
-                        "type": "WARNING",
-                        "message": "Falha ao desabilitar '\\RADIO': ERRO: o nome de tarefa especificado, \"\\RADIO\", nÆo existe no sistema."
-                    },
-                    {
-                        "time": "21:59:00",
-                        "type": "WARNING",
-                        "message": "Falha ao desabilitar '\\Reiniciar computadores semanalmente': ERRO: o nome de tarefa especificado, \"\\Reiniciar computadores semanalmente\", nÆo existe no sistema."
-                    },
-                    {
-                        "time": "21:59:00",
-                        "type": "WARNING",
-                        "message": "Falha ao desabilitar '\\RADIO': ERRO: o nome de tarefa especificado, \"\\RADIO\", nÆo existe no sistema."
-                    },
-                    {
-                        "time": "21:59:00",
-                        "type": "WARNING",
-                        "message": "Falha ao desabilitar '\\Reiniciar computadores semanalmente': ERRO: o nome de tarefa especificado, \"\\Reiniciar computadores semanalmente\", nÆo existe no sistema."
-                    },
-                    {
-                        "time": "21:59:00",
-                        "type": "WARNING",
-                        "message": "Falha ao desabilitar '\\RADIO': ERRO: o nome de tarefa especificado, \"\\RADIO\", nÆo existe no sistema."
-                    }
-                ],
-                "cycle_id": "GuardianWorker_20260511_061638_747407"
-            }
-        },
-        {
-            "worker": "CuradoriaWorker",
-            "timestamp": "2026-05-11T06:17:08.759608+00:00",
-            "score": 1,
-            "violations": [],
-            "metadata": {
-                "message": "Nenhuma música pendente.",
-                "cycle_id": "CuradoriaWorker_20260511_061708_749730"
-            }
-        },
-        {
-            "worker": "ButtWorker",
-            "timestamp": "2026-05-11T06:17:09.083703+00:00",
-            "score": 1,
-            "violations": [
-                "Nenhuma instância BUTT reconectada"
-            ],
-            "metadata": {
-                "reconnected": 0,
-                "total_instances": 3,
-                "cycle_id": "ButtWorker_20260511_061708_755698"
-            }
-        },
-        {
-            "worker": "GuardianWorker",
-            "timestamp": "2026-05-11T06:17:14.920923+00:00",
-            "score": 5,
-            "violations": [],
-            "metadata": {
-                "processes": {
-                    "zararadio": "Running",
-                    "butt": "Running"
-                },
-                "health": {
-                    "cpu_percent": 9.4,
-                    "ram_percent": 65.8,
-                    "ram_kb_free": 2826548
-                },
-                "recent_alerts": [
-                    {
-                        "time": "21:59:00",
-                        "type": "WARNING",
-                        "message": "Falha ao desabilitar '\\RADIO': ERRO: o nome de tarefa especificado, \"\\RADIO\", nÆo existe no sistema."
-                    },
-                    {
-                        "time": "21:59:00",
-                        "type": "WARNING",
-                        "message": "Falha ao desabilitar '\\Reiniciar computadores semanalmente': ERRO: o nome de tarefa especificado, \"\\Reiniciar computadores semanalmente\", nÆo existe no sistema."
-                    },
-                    {
-                        "time": "21:59:00",
-                        "type": "WARNING",
-                        "message": "Falha ao desabilitar '\\RADIO': ERRO: o nome de tarefa especificado, \"\\RADIO\", nÆo existe no sistema."
-                    },
-                    {
-                        "time": "21:59:00",
-                        "type": "WARNING",
-                        "message": "Falha ao desabilitar '\\Reiniciar computadores semanalmente': ERRO: o nome de tarefa especificado, \"\\Reiniciar computadores semanalmente\", nÆo existe no sistema."
-                    },
-                    {
-                        "time": "21:59:00",
-                        "type": "WARNING",
-                        "message": "Falha ao desabilitar '\\RADIO': ERRO: o nome de tarefa especificado, \"\\RADIO\", nÆo existe no sistema."
-                    }
-                ],
-                "cycle_id": "GuardianWorker_20260511_061708_748994"
-            }
-        },
-        {
-            "worker": "GuardianWorker",
-            "timestamp": "2026-05-11T06:17:44.826555+00:00",
-            "score": 5,
-            "violations": [],
-            "metadata": {
-                "processes": {
-                    "zararadio": "Running",
-                    "butt": "Running"
-                },
-                "health": {
-                    "cpu_percent": 15.9,
-                    "ram_percent": 66.0,
-                    "ram_kb_free": 2812172
-                },
-                "recent_alerts": [
-                    {
-                        "time": "21:59:00",
-                        "type": "WARNING",
-                        "message": "Falha ao desabilitar '\\RADIO': ERRO: o nome de tarefa especificado, \"\\RADIO\", nÆo existe no sistema."
-                    },
-                    {
-                        "time": "21:59:00",
-                        "type": "WARNING",
-                        "message": "Falha ao desabilitar '\\Reiniciar computadores semanalmente': ERRO: o nome de tarefa especificado, \"\\Reiniciar computadores semanalmente\", nÆo existe no sistema."
-                    },
-                    {
-                        "time": "21:59:00",
-                        "type": "WARNING",
-                        "message": "Falha ao desabilitar '\\RADIO': ERRO: o nome de tarefa especificado, \"\\RADIO\", nÆo existe no sistema."
-                    },
-                    {
-                        "time": "21:59:00",
-                        "type": "WARNING",
-                        "message": "Falha ao desabilitar '\\Reiniciar computadores semanalmente': ERRO: o nome de tarefa especificado, \"\\Reiniciar computadores semanalmente\", nÆo existe no sistema."
-                    },
-                    {
-                        "time": "21:59:00",
-                        "type": "WARNING",
-                        "message": "Falha ao desabilitar '\\RADIO': ERRO: o nome de tarefa especificado, \"\\RADIO\", nÆo existe no sistema."
-                    }
-                ],
-                "cycle_id": "GuardianWorker_20260511_061738_748453"
-            }
-        },
-        {
-            "worker": "GuardianWorker",
-            "timestamp": "2026-05-11T06:18:14.784856+00:00",
-            "score": 5,
-            "violations": [],
-            "metadata": {
-                "processes": {
-                    "zararadio": "Running",
-                    "butt": "Running"
-                },
-                "health": {
-                    "cpu_percent": 12.0,
-                    "ram_percent": 65.9,
-                    "ram_kb_free": 2816760
-                },
-                "recent_alerts": [
-                    {
-                        "time": "21:59:00",
-                        "type": "WARNING",
-                        "message": "Falha ao desabilitar '\\RADIO': ERRO: o nome de tarefa especificado, \"\\RADIO\", nÆo existe no sistema."
-                    },
-                    {
-                        "time": "21:59:00",
-                        "type": "WARNING",
-                        "message": "Falha ao desabilitar '\\Reiniciar computadores semanalmente': ERRO: o nome de tarefa especificado, \"\\Reiniciar computadores semanalmente\", nÆo existe no sistema."
-                    },
-                    {
-                        "time": "21:59:00",
-                        "type": "WARNING",
-                        "message": "Falha ao desabilitar '\\RADIO': ERRO: o nome de tarefa especificado, \"\\RADIO\", nÆo existe no sistema."
-                    },
-                    {
-                        "time": "21:59:00",
-                        "type": "WARNING",
-                        "message": "Falha ao desabilitar '\\Reiniciar computadores semanalmente': ERRO: o nome de tarefa especificado, \"\\Reiniciar computadores semanalmente\", nÆo existe no sistema."
-                    },
-                    {
-                        "time": "21:59:00",
-                        "type": "WARNING",
-                        "message": "Falha ao desabilitar '\\RADIO': ERRO: o nome de tarefa especificado, \"\\RADIO\", nÆo existe no sistema."
-                    }
-                ],
-                "cycle_id": "GuardianWorker_20260511_061808_748068"
-            }
-        },
-        {
-            "worker": "GuardianWorker",
-            "timestamp": "2026-05-11T06:18:44.770066+00:00",
-            "score": 5,
-            "violations": [],
-            "metadata": {
-                "processes": {
-                    "zararadio": "Running",
-                    "butt": "Running"
-                },
-                "health": {
-                    "cpu_percent": 10.0,
-                    "ram_percent": 65.9,
-                    "ram_kb_free": 2818328
-                },
-                "recent_alerts": [
-                    {
-                        "time": "21:59:00",
-                        "type": "WARNING",
-                        "message": "Falha ao desabilitar '\\RADIO': ERRO: o nome de tarefa especificado, \"\\RADIO\", nÆo existe no sistema."
-                    },
-                    {
-                        "time": "21:59:00",
-                        "type": "WARNING",
-                        "message": "Falha ao desabilitar '\\Reiniciar computadores semanalmente': ERRO: o nome de tarefa especificado, \"\\Reiniciar computadores semanalmente\", nÆo existe no sistema."
-                    },
-                    {
-                        "time": "21:59:00",
-                        "type": "WARNING",
-                        "message": "Falha ao desabilitar '\\RADIO': ERRO: o nome de tarefa especificado, \"\\RADIO\", nÆo existe no sistema."
-                    },
-                    {
-                        "time": "21:59:00",
-                        "type": "WARNING",
-                        "message": "Falha ao desabilitar '\\Reiniciar computadores semanalmente': ERRO: o nome de tarefa especificado, \"\\Reiniciar computadores semanalmente\", nÆo existe no sistema."
-                    },
-                    {
-                        "time": "21:59:00",
-                        "type": "WARNING",
-                        "message": "Falha ao desabilitar '\\RADIO': ERRO: o nome de tarefa especificado, \"\\RADIO\", nÆo existe no sistema."
-                    }
-                ],
-                "cycle_id": "GuardianWorker_20260511_061838_750224"
-            }
-        },
-        {
-            "worker": "ButtWorker",
-            "timestamp": "2026-05-11T06:19:09.070786+00:00",
-            "score": 1,
-            "violations": [
-                "Nenhuma instância BUTT reconectada"
-            ],
-            "metadata": {
-                "reconnected": 0,
-                "total_instances": 3,
-                "cycle_id": "ButtWorker_20260511_061908_750427"
-            }
-        },
-        {
-            "worker": "GuardianWorker",
-            "timestamp": "2026-05-11T06:19:14.865088+00:00",
-            "score": 5,
-            "violations": [],
-            "metadata": {
-                "processes": {
-                    "zararadio": "Running",
-                    "butt": "Running"
-                },
-                "health": {
-                    "cpu_percent": 12.8,
-                    "ram_percent": 65.4,
-                    "ram_kb_free": 2861804
-                },
-                "recent_alerts": [
-                    {
-                        "time": "21:59:00",
-                        "type": "WARNING",
-                        "message": "Falha ao desabilitar '\\RADIO': ERRO: o nome de tarefa especificado, \"\\RADIO\", nÆo existe no sistema."
-                    },
-                    {
-                        "time": "21:59:00",
-                        "type": "WARNING",
-                        "message": "Falha ao desabilitar '\\Reiniciar computadores semanalmente': ERRO: o nome de tarefa especificado, \"\\Reiniciar computadores semanalmente\", nÆo existe no sistema."
-                    },
-                    {
-                        "time": "21:59:00",
-                        "type": "WARNING",
-                        "message": "Falha ao desabilitar '\\RADIO': ERRO: o nome de tarefa especificado, \"\\RADIO\", nÆo existe no sistema."
-                    },
-                    {
-                        "time": "21:59:00",
-                        "type": "WARNING",
-                        "message": "Falha ao desabilitar '\\Reiniciar computadores semanalmente': ERRO: o nome de tarefa especificado, \"\\Reiniciar computadores semanalmente\", nÆo existe no sistema."
-                    },
-                    {
-                        "time": "21:59:00",
-                        "type": "WARNING",
-                        "message": "Falha ao desabilitar '\\RADIO': ERRO: o nome de tarefa especificado, \"\\RADIO\", nÆo existe no sistema."
-                    }
-                ],
-                "cycle_id": "GuardianWorker_20260511_061908_748140"
-            }
-        },
         {
             "worker": "GuardianWorker",
             "timestamp": "2026-05-11T06:19:44.792279+00:00",
@@ -37894,6 +37637,204 @@
                     }
                 ],
                 "cycle_id": "GuardianWorker_20260511_123953_820041"
+            }
+        },
+        {
+            "worker": "GuardianWorker",
+            "timestamp": "2026-05-11T12:40:30.132419+00:00",
+            "score": 5,
+            "violations": [],
+            "metadata": {
+                "processes": {
+                    "zararadio": "Running",
+                    "butt": "Running"
+                },
+                "health": {
+                    "cpu_percent": 17.4,
+                    "ram_percent": 80.5,
+                    "ram_kb_free": 1613840
+                },
+                "recent_alerts": [
+                    {
+                        "time": "09:38:00",
+                        "type": "WARNING",
+                        "message": "CPU usage critical: 99.3%"
+                    }
+                ],
+                "cycle_id": "GuardianWorker_20260511_124023_815754"
+            }
+        },
+        {
+            "worker": "CuradoriaWorker",
+            "timestamp": "2026-05-11T12:40:53.856166+00:00",
+            "score": 1,
+            "violations": [],
+            "metadata": {
+                "message": "Nenhuma música pendente.",
+                "cycle_id": "CuradoriaWorker_20260511_124053_842198"
+            }
+        },
+        {
+            "worker": "GuardianWorker",
+            "timestamp": "2026-05-11T12:41:00.362150+00:00",
+            "score": 5,
+            "violations": [],
+            "metadata": {
+                "processes": {
+                    "zararadio": "Running",
+                    "butt": "Running"
+                },
+                "health": {
+                    "cpu_percent": 10.1,
+                    "ram_percent": 79.6,
+                    "ram_kb_free": 1682480
+                },
+                "recent_alerts": [
+                    {
+                        "time": "09:38:00",
+                        "type": "WARNING",
+                        "message": "CPU usage critical: 99.3%"
+                    }
+                ],
+                "cycle_id": "GuardianWorker_20260511_124053_815873"
+            }
+        },
+        {
+            "worker": "GuardianWorker",
+            "timestamp": "2026-05-11T12:41:29.863466+00:00",
+            "score": 5,
+            "violations": [],
+            "metadata": {
+                "processes": {
+                    "zararadio": "Running",
+                    "butt": "Running"
+                },
+                "health": {
+                    "cpu_percent": 23.3,
+                    "ram_percent": 79.2,
+                    "ram_kb_free": 1720152
+                },
+                "recent_alerts": [
+                    {
+                        "time": "09:38:00",
+                        "type": "WARNING",
+                        "message": "CPU usage critical: 99.3%"
+                    }
+                ],
+                "cycle_id": "GuardianWorker_20260511_124123_818906"
+            }
+        },
+        {
+            "worker": "ButtWorker",
+            "timestamp": "2026-05-11T12:41:54.145640+00:00",
+            "score": 1,
+            "violations": [
+                "Nenhuma instância BUTT reconectada"
+            ],
+            "metadata": {
+                "reconnected": 0,
+                "total_instances": 3,
+                "cycle_id": "ButtWorker_20260511_124153_819993"
+            }
+        },
+        {
+            "worker": "GuardianWorker",
+            "timestamp": "2026-05-11T12:42:00.190791+00:00",
+            "score": 5,
+            "violations": [],
+            "metadata": {
+                "processes": {
+                    "zararadio": "Running",
+                    "butt": "Running"
+                },
+                "health": {
+                    "cpu_percent": 21.8,
+                    "ram_percent": 80.4,
+                    "ram_kb_free": 1619008
+                },
+                "recent_alerts": [
+                    {
+                        "time": "09:38:00",
+                        "type": "WARNING",
+                        "message": "CPU usage critical: 99.3%"
+                    }
+                ],
+                "cycle_id": "GuardianWorker_20260511_124153_815497"
+            }
+        },
+        {
+            "worker": "GuardianWorker",
+            "timestamp": "2026-05-11T12:42:29.965020+00:00",
+            "score": 5,
+            "violations": [],
+            "metadata": {
+                "processes": {
+                    "zararadio": "Running",
+                    "butt": "Running"
+                },
+                "health": {
+                    "cpu_percent": 10.9,
+                    "ram_percent": 76.4,
+                    "ram_kb_free": 1949736
+                },
+                "recent_alerts": [
+                    {
+                        "time": "09:38:00",
+                        "type": "WARNING",
+                        "message": "CPU usage critical: 99.3%"
+                    }
+                ],
+                "cycle_id": "GuardianWorker_20260511_124223_820337"
+            }
+        },
+        {
+            "worker": "GuardianWorker",
+            "timestamp": "2026-05-11T12:43:00.315577+00:00",
+            "score": 5,
+            "violations": [],
+            "metadata": {
+                "processes": {
+                    "zararadio": "Running",
+                    "butt": "Running"
+                },
+                "health": {
+                    "cpu_percent": 46.7,
+                    "ram_percent": 77.8,
+                    "ram_kb_free": 1837588
+                },
+                "recent_alerts": [
+                    {
+                        "time": "09:38:00",
+                        "type": "WARNING",
+                        "message": "CPU usage critical: 99.3%"
+                    }
+                ],
+                "cycle_id": "GuardianWorker_20260511_124253_815632"
+            }
+        },
+        {
+            "worker": "GuardianWorker",
+            "timestamp": "2026-05-11T12:43:30.164463+00:00",
+            "score": 5,
+            "violations": [],
+            "metadata": {
+                "processes": {
+                    "zararadio": "Running",
+                    "butt": "Running"
+                },
+                "health": {
+                    "cpu_percent": 30.8,
+                    "ram_percent": 78.0,
+                    "ram_kb_free": 1817988
+                },
+                "recent_alerts": [
+                    {
+                        "time": "09:38:00",
+                        "type": "WARNING",
+                        "message": "CPU usage critical: 99.3%"
+                    }
+                ],
+                "cycle_id": "GuardianWorker_20260511_124323_822298"
             }
         }
     ]
