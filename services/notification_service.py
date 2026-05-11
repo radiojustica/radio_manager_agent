@@ -9,7 +9,7 @@ def send_whatsapp_alert(message: str):
     """
     url = "https://api.callmebot.com/whatsapp.php"
     params = {
-        "phone": "+5584996066876",
+        "phone": "558496066876",
         "apikey": "8552672",
         "text": message
     }

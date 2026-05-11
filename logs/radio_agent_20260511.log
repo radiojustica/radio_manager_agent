@@ -1,3 +1,10 @@
 2026-05-11 09:14:48,369 | INFO | Radio Manager Agent started.
 2026-05-11 09:25:51,921 | INFO | Radio Manager Agent started.
 2026-05-11 09:25:53,086 | INFO | Reward store carregado de C:\Users\STREAMING\.gemini\antigravity\scratch\radio_manager_agent\worker_rewards.json
+2026-05-11 10:19:04,919 | INFO | Radio Manager Agent started.
+2026-05-11 10:19:04,970 | INFO | Reward store carregado de C:\Users\STREAMING\.gemini\antigravity\scratch\radio_manager_agent\worker_rewards.json
+2026-05-11 10:19:07,038 | ERROR | Falha ao enviar alerta WhatsApp. Status: 203, Resposta: <p>Message to: +5584996066876<p>Text to send: 📊 *RELATÓRIO GERENCIAL - OMNI CORE V2*%0A• *DummyWorker*: 4 pts (0 ciclos)%0A• *FakeWorker_123*: -10 pts (0 ciclos)%0A• *TestHistoryWorker*: 300 pts (0 ciclos)%0A• *GuardianWorker*: 56015 pts (0 ciclos)%0A• *DownloaderWorker*: -14 pts (0 ciclos)%0A• *ButtWorker*: 2800 pts (0 ciclos)%0A• *CuradoriaWorker*: 1122 pts (0 ciclos)%0A• *WeatherWorker*: 185 pts (0 ciclos)%0A• *AuditWorker*: -92 pts (0 ciclos)%0A• *SyncWorker*: 25 pts (0 ciclos)%0A• *PlaylistWorker*: -12 pts (0 ciclos)%0A%0A📈 *Resumo Executivo*:%0A• Ações Processadas: 0%0A• Correções do Guardião: 0%0A• Eficiência Global: Alta%0A%0A_Omni Core V2 AI Intelligence_<p style="color:red"><b>APIKey is invalid.</b> Please create a new one or contact support if you lost it.
+2026-05-11 10:23:45,569 | INFO | Radio Manager Agent started.
+2026-05-11 10:23:45,600 | INFO | Reward store carregado de C:\Users\STREAMING\.gemini\antigravity\scratch\radio_manager_agent\worker_rewards.json
+2026-05-11 10:23:48,397 | INFO | Alerta WhatsApp enviado com sucesso: 📊 *RELATÓRIO GERENCIAL - OMNI CORE V2*
+• *DummyWor...
