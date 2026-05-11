@@ -10,8 +10,8 @@ Este documento define os padrões obrigatórios para a geração da grade musica
 *   **Quota Regional:** Pelo menos **1 música regional** a cada 8 faixas (~30 min).
 
 ## 2. Anti-Repetição (Crítico)
-*   **Separação de Artista:** Um artista não pode se repetir em um intervalo de **80 músicas** (aprox. 5 horas de programação).
-*   **Separação de Música:** A mesma faixa não pode se repetir em um intervalo de **200 músicas** (aprox. 12 horas).
+*   **Separação de Artista:** Um artista não pode se repetir em um intervalo de **30 músicas** (aprox. 2 horas de programação).
+*   **Separação de Música:** A mesma faixa não pode se repetir em um intervalo de **80 músicas** (aprox. 5 horas).
 *   **Normalização:** Nomes de artistas devem ser comparados em CAIXA ALTA e sem espaços extras.
 *   **Tratamento de Desconhecidos:** Caso o metadado do artista seja "Desconhecido" ou vazio, o sistema deve tentar extrair o nome do arquivo ou usar um fallback genérico, mas mantendo a restrição de repetição por título/caminho.
 

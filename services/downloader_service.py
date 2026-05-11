@@ -11,6 +11,8 @@ class DownloaderService:
     def __init__(self, target_dir: str = r"D:\RADIO\QUARENTENA_TJ"):
         self.target_dir = Path(target_dir)
         self.target_dir.mkdir(exist_ok=True, parents=True)
+        # Caminho detectado do FFmpeg para garantir funcionamento do yt-dlp
+        self.ffmpeg_path = r"C:\Users\STREAMING\OneDrive\ARQUIVOS STREAMING\PROGRAMA_MUSICAS"
 
     def search_and_download(self, query: str, destination: str = None) -> dict:
         """
@@ -20,11 +22,16 @@ class DownloaderService:
         dest_path = Path(destination) if destination else self.target_dir
         dest_path.mkdir(exist_ok=True, parents=True)
 
+        # Adiciona o diretório do FFmpeg ao PATH do processo atual
+        if self.ffmpeg_path not in os.environ["PATH"]:
+            os.environ["PATH"] += os.pathsep + self.ffmpeg_path
+
         # Limpa o nome do arquivo para o Windows
         filename_base = re.sub(r'[\\/*?:"<>|]', "", query).strip()
         
         ydl_opts = {
             'format': 'bestaudio/best',
+            'ffmpeg_location': os.path.join(self.ffmpeg_path, "ffmpeg.exe"),
             'postprocessors': [{
                 'key': 'FFmpegExtractAudio',
                 'preferredcodec': 'mp3',

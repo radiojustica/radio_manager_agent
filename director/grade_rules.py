@@ -33,8 +33,8 @@ def _carregar_config() -> dict:
         "vinheta_a_cada_n":         1,
         "spot_a_cada_n":            4,
         "boletim_a_cada_n":         8,
-        "max_historico_artistas":   80,    # Expandido de 15 para 80
-        "max_historico_musicas":    200,   # Novo limite de 200 músicas
+        "max_historico_artistas":   30,    # Reduzido de 80 para 30
+        "max_historico_musicas":    80,    # Reduzido de 200 para 80
         "regional_a_cada_n":        8,     # 1 regional a cada ~30min (8 faixas)
         "duracao_estimada_musica_s":  210,
         "duracao_estimada_vinheta_s": 5,

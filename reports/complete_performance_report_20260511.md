@@ -1,35 +1,35 @@
 # 🏆 RELATÓRIO COMPLETO DE DESEMPENHO - OMNI CORE V2
-**Extraído em:** 11/05/2026 10:27:37
+**Extraído em:** 11/05/2026 10:38:25
 
 Este relatório apresenta uma visão exaustiva da performance de todos os agentes (workers) do sistema Omni Core V2, baseando-se nos logs de recompensas e penalidades.
 
 ## 🤖 Worker: GuardianWorker
-- **Pontuação Total:** `56100`
-- **Ciclos Executados:** `11220`
+- **Pontuação Total:** `56205`
+- **Ciclos Executados:** `11241`
 - **Média de Eficiência:** `5.00 pts/ciclo`
-- **Última Atividade:** `11/05/2026 13:27:30`
+- **Última Atividade:** `11/05/2026 13:38:00`
 - **Último Resultado:** `Score: 5`
 
 ### 🕒 Linha do Tempo Recente (Últimos 10 Ciclos)
 | Timestamp | Score | Status |
 | :--- | :--- | :--- |
-| 13:27:30 | 5 | 🟢 OK |
-| 13:27:00 | 5 | 🟢 OK |
-| 13:26:29 | 5 | 🟢 OK |
-| 13:26:00 | 5 | 🟢 OK |
-| 13:25:30 | 5 | 🟢 OK |
-| 13:24:59 | 5 | 🟢 OK |
-| 13:24:29 | 5 | 🟢 OK |
-| 13:24:00 | 5 | 🟢 OK |
-| 13:23:30 | 5 | 🟢 OK |
-| 13:23:00 | 5 | 🟢 OK |
+| 13:38:00 | 5 | 🟢 OK |
+| 13:37:30 | 5 | 🟢 OK |
+| 13:37:00 | 5 | 🟢 OK |
+| 13:36:30 | 5 | 🟢 OK |
+| 13:36:00 | 5 | 🟢 OK |
+| 13:35:30 | 5 | 🟢 OK |
+| 13:35:00 | 5 | 🟢 OK |
+| 13:34:30 | 5 | 🟢 OK |
+| 13:34:00 | 5 | 🟢 OK |
+| 13:33:30 | 5 | 🟢 OK |
 
 ---
 ## 🤖 Worker: ButtWorker
-- **Pontuação Total:** `2804`
-- **Ciclos Executados:** `2804`
+- **Pontuação Total:** `2810`
+- **Ciclos Executados:** `2810`
 - **Média de Eficiência:** `1.00 pts/ciclo`
-- **Última Atividade:** `11/05/2026 13:25:54`
+- **Última Atividade:** `11/05/2026 13:37:54`
 - **Último Resultado:** `Score: 1`
   - **🚫 Violações Recentes:**
     - Nenhuma instância BUTT reconectada
@@ -37,28 +37,30 @@ Este relatório apresenta uma visão exaustiva da performance de todos os agente
 ### 🕒 Linha do Tempo Recente (Últimos 10 Ciclos)
 | Timestamp | Score | Status |
 | :--- | :--- | :--- |
+| 13:37:54 | 1 | 🔴 FALHA |
+| 13:35:54 | 1 | 🔴 FALHA |
+| 13:33:54 | 1 | 🔴 FALHA |
+| 13:31:54 | 1 | 🔴 FALHA |
+| 13:29:54 | 1 | 🔴 FALHA |
+| 13:27:54 | 1 | 🔴 FALHA |
 | 13:25:54 | 1 | 🔴 FALHA |
 | 13:23:54 | 1 | 🔴 FALHA |
 | 13:21:54 | 1 | 🔴 FALHA |
 | 13:19:54 | 1 | 🔴 FALHA |
-| 13:17:54 | 1 | 🔴 FALHA |
-| 13:15:54 | 1 | 🔴 FALHA |
-| 13:13:54 | 1 | 🔴 FALHA |
-| 13:11:54 | 1 | 🔴 FALHA |
-| 13:09:54 | 1 | 🔴 FALHA |
-| 13:07:54 | 1 | 🔴 FALHA |
 
 ---
 ## 🤖 Worker: CuradoriaWorker
-- **Pontuação Total:** `1124`
-- **Ciclos Executados:** `1121`
+- **Pontuação Total:** `1126`
+- **Ciclos Executados:** `1123`
 - **Média de Eficiência:** `1.00 pts/ciclo`
-- **Última Atividade:** `11/05/2026 13:25:53`
+- **Última Atividade:** `11/05/2026 13:35:53`
 - **Último Resultado:** `Score: 1`
 
 ### 🕒 Linha do Tempo Recente (Últimos 10 Ciclos)
 | Timestamp | Score | Status |
 | :--- | :--- | :--- |
+| 13:35:53 | 1 | 🟢 OK |
+| 13:30:53 | 1 | 🟢 OK |
 | 13:25:53 | 1 | 🟢 OK |
 | 13:20:53 | 1 | 🟢 OK |
 | 13:15:53 | 1 | 🟢 OK |
@@ -67,30 +69,6 @@ Este relatório apresenta uma visão exaustiva da performance de todos os agente
 | 13:00:53 | 1 | 🟢 OK |
 | 12:55:53 | 1 | 🟢 OK |
 | 12:50:53 | 1 | 🟢 OK |
-| 12:45:53 | 1 | 🟢 OK |
-| 12:40:53 | 1 | 🟢 OK |
-
----
-## 🤖 Worker: TestHistoryWorker
-- **Pontuação Total:** `300`
-- **Ciclos Executados:** `25`
-- **Média de Eficiência:** `12.00 pts/ciclo`
-- **Última Atividade:** `06/05/2026 16:03:12`
-- **Último Resultado:** `Score: 24`
-
-### 🕒 Linha do Tempo Recente (Últimos 10 Ciclos)
-| Timestamp | Score | Status |
-| :--- | :--- | :--- |
-| 16:03:12 | 24 | 🟢 OK |
-| 16:03:12 | 23 | 🟢 OK |
-| 16:03:12 | 22 | 🟢 OK |
-| 16:03:12 | 21 | 🟢 OK |
-| 16:03:12 | 20 | 🟢 OK |
-| 16:03:12 | 19 | 🟢 OK |
-| 16:03:12 | 18 | 🟢 OK |
-| 16:03:12 | 17 | 🟢 OK |
-| 16:03:12 | 16 | 🟢 OK |
-| 16:03:12 | 15 | 🟢 OK |
 
 ---
 ## 🤖 Worker: WeatherWorker
@@ -137,14 +115,6 @@ Este relatório apresenta uma visão exaustiva da performance de todos os agente
 | 23:37:09 | 1 | 🟢 OK |
 
 ---
-## 🤖 Worker: DummyWorker
-- **Pontuação Total:** `4`
-- **Ciclos Executados:** `2`
-- **Média de Eficiência:** `2.00 pts/ciclo`
-- **Última Atividade:** `06/05/2026 12:52:27`
-- **Último Resultado:** `Score: 2`
-
----
 ## 🤖 Worker: UpdateWorker
 - **Pontuação Total:** `-5`
 - **Ciclos Executados:** `1`
@@ -158,16 +128,6 @@ Este relatório apresenta uma visão exaustiva da performance de todos os agente
 | Timestamp | Score | Status |
 | :--- | :--- | :--- |
 | 13:25:54 | -5 | 🔴 FALHA |
-
----
-## 🤖 Worker: FakeWorker_123
-- **Pontuação Total:** `-10`
-- **Ciclos Executados:** `1`
-- **Média de Eficiência:** `-10.00 pts/ciclo`
-- **Última Atividade:** `06/05/2026 15:58:39`
-- **Último Resultado:** `Score: -10`
-  - **🚫 Violações Recentes:**
-    - CRITICAL_MANAGER_FAILURE
 
 ---
 ## 🤖 Worker: PlaylistWorker
