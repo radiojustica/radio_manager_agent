@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './ConfigPage.css';
+import ScheduleEditor from './ScheduleEditor';
 
 const ConfigPage = () => {
     const [activeSubTab, setActiveSubTab] = useState('badwords');

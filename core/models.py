@@ -16,6 +16,7 @@ class Musica(Base):
     # Flags de Curadoria
     auditado_acustica = Column(Boolean, default=False)
     redflag = Column(Boolean, default=False)
+    mood = Column(String, nullable=True, index=True) # Ex: Ensolarado, Sombrio, Foco
     
     # Anti-repetição (Lógica Musical)
     ultima_reproducao = Column(DateTime, nullable=True)
@@ -32,5 +33,13 @@ class Musica(Base):
                 val = val.isoformat() if val else None
             d[c.name] = val
         return d
+
+class RegraProgramacao(Base):
+    __tablename__ = "regras_programacao"
+    id = Column(Integer, primary_key=True)
+    bloco = Column(String, unique=True, nullable=False) # Madrugada, Manha, Tarde, Noite
+    hora_inicio = Column(Integer)
+    hora_fim = Column(Integer)
+    energia_alvo = Column(Integer, default=3)
 
 

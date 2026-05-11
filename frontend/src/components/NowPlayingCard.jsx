@@ -6,18 +6,18 @@ export default function NowPlayingCard() {
   const [isReconnecting, setIsReconnecting] = useState(false);
 
   useEffect(() => {
-    const interval = setInterval(async () => {
-      try {
-        const res = await fetch('/api/status/player/now');
-        if (res.ok) {
-          const json = await res.json();
-          setData(json);
-        }
-      } catch (e) {
-        console.error("Erro ao buscar NowPlaying", e);
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const ws = new WebSocket(`${protocol}//${window.location.host}/ws/status`);
+
+    ws.onmessage = (event) => {
+      const json = JSON.parse(event.data);
+      if (json.player) {
+        setData(json.player);
       }
-    }, 2000);
-    return () => clearInterval(interval);
+    };
+
+    ws.onerror = (err) => console.error("WebSocket Error:", err);
+    return () => ws.close();
   }, []);
 
   const handleForceReconnect = async () => {

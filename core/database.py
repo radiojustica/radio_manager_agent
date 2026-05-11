@@ -18,5 +18,22 @@ def get_db():
     finally:
         db.close()
 
+def init_db():
+    """Garante que as tabelas e colunas existam."""
+    Base.metadata.create_all(bind=engine)
+    
+    # Lógica de migração manual para SQLite (adiciona coluna se não existir)
+    import sqlite3
+    conn = sqlite3.connect("./core/radio_omni.db")
+    cursor = conn.cursor()
+    try:
+        cursor.execute("ALTER TABLE musicas ADD COLUMN mood TEXT")
+        print("Coluna 'mood' adicionada com sucesso.")
+    except sqlite3.OperationalError:
+        # Coluna já existe
+        pass
+    finally:
+        conn.close()
+
 
 

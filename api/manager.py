@@ -7,17 +7,88 @@ import time
 from datetime import datetime
 from pathlib import Path
 
-from fastapi import FastAPI
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel
 import uvicorn
+import asyncio
+import json
 
-from core.database import engine, Base
+from core.database import engine, Base, SessionLocal
+from core.models import RegraProgramacao
 from worker_manager import worker_manager_instance
 from routers import acervo, status, config, ai, workers, engine as engine_router
 from routers.downloader import router as downloader_router
 
 logger = logging.getLogger("OmniCore.APIManager")
+
+# ... (rest of imports and setup)
+
+class RuleSchema(BaseModel):
+    bloco: str
+    energia_alvo: int
+
+@app.post("/api/config/schedule")
+async def save_schedule_rules(rules: list[RuleSchema]):
+    db = SessionLocal()
+    try:
+        for rule in rules:
+            db_rule = db.query(RegraProgramacao).filter(RegraProgramacao.bloco == rule.bloco).first()
+            if db_rule:
+                db_rule.energia_alvo = rule.energia_alvo
+            else:
+                db.add(RegraProgramacao(bloco=rule.bloco, energia_alvo=rule.energia_alvo))
+        db.commit()
+        return {"success": True}
+    except Exception as e:
+        db.rollback()
+        return {"success": False, "error": str(e)}
+    finally:
+        db.close()
+
+# Gerenciador de conexões WebSocket
+class ConnectionManager:
+    def __init__(self):
+        self.active_connections: list[WebSocket] = []
+
+    async def connect(self, websocket: WebSocket):
+        await websocket.accept()
+        self.active_connections.append(websocket)
+
+    def disconnect(self, websocket: WebSocket):
+        self.active_connections.remove(websocket)
+
+    async def broadcast(self, message: str):
+        for connection in self.active_connections:
+            try:
+                await connection.send_text(message)
+            except:
+                pass
+
+manager = ConnectionManager()
+
+@app.websocket("/ws/status")
+async def websocket_endpoint(websocket: WebSocket):
+    await manager.connect(websocket)
+    try:
+        # Loop para manter a conexão aberta e enviar atualizações periódicas
+        while True:
+            # Coleta dados atuais
+            from routers.status import analisar_instancias_butt, get_zara_status
+            from services.guardian_service import guardian_instance
+            
+            data = {
+                "player": get_zara_status(),
+                "events": guardian_instance.events_list[:10],
+                "timestamp": datetime.now().strftime('%H:%M:%S')
+            }
+            await websocket.send_text(json.dumps(data))
+            await asyncio.sleep(2) # Atualiza a cada 2 segundos
+    except WebSocketDisconnect:
+        manager.disconnect(websocket)
+
+# ... (restante do arquivo)
 
 BASE_PATH = Path(__file__).resolve().parent.parent
 FRONTEND_PATH = BASE_PATH / "frontend" / "dist"

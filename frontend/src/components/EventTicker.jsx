@@ -5,18 +5,17 @@ export default function EventTicker() {
   const [events, setEvents] = useState([]);
 
   useEffect(() => {
-    const interval = setInterval(async () => {
-      try {
-        const res = await fetch('/api/status/guardian/events?limit=5');
-        if (res.ok) {
-          const json = await res.json();
-          setEvents(json.events || []);
-        }
-      } catch (e) {
-        console.error("Erro ao buscar Eventos", e);
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const ws = new WebSocket(`${protocol}//${window.location.host}/ws/status`);
+
+    ws.onmessage = (event) => {
+      const json = JSON.parse(event.data);
+      if (json.events) {
+        setEvents(json.events);
       }
-    }, 3000);
-    return () => clearInterval(interval);
+    };
+
+    return () => ws.close();
   }, []);
 
   return (

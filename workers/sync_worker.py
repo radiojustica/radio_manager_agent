@@ -7,17 +7,19 @@ from core.worker_base import WorkerBase, WorkerResult
 from core.reward import RewardStore
 from core.database import SessionLocal
 from core.models import Musica
+from scripts.audio_normalizer import normalize_audio
 
 logger = logging.getLogger("OmniCore.Workers.Sync")
 
 class SyncWorker(WorkerBase):
     """
     Worker responsável pela sincronização entre o banco de dados e os arquivos físicos em disco.
-    Adiciona novos arquivos e remove referências a arquivos inexistentes.
+    Normaliza arquivos novos e os move para o acervo.
     """
     def __init__(self, reward_store: RewardStore | None = None, config: dict[str, Any] | None = None):
         super().__init__(name="SyncWorker", reward_store=reward_store, config=config)
         self.music_path = self.config.get("music_path", r"D:\RADIO\MUSICAS")
+        self.inbox_path = self.config.get("inbox_path", r"D:\RADIO\INBOX")
 
     def run_cycle(self, **kwargs) -> WorkerResult:
         if not os.path.exists(self.music_path):
@@ -25,12 +27,28 @@ class SyncWorker(WorkerBase):
 
         db = SessionLocal()
         novos = 0
+        normalizados = 0
         removidos = 0
         mantidos = 0
         violations = []
 
         try:
-            # Mapeia caminhos no banco
+            # 1. Processa Inbox (Normalização)
+            if os.path.exists(self.inbox_path):
+                for file in os.listdir(self.inbox_path):
+                    if file.lower().endswith('.mp3'):
+                        in_p = os.path.join(self.inbox_path, file)
+                        out_p = os.path.join(self.music_path, file)
+                        
+                        if normalize_audio(in_p, out_p):
+                            normalizados += 1
+                            try:
+                                os.remove(in_p)
+                            except: pass
+                        else:
+                            violations.append(f"Falha ao normalizar: {file}")
+
+            # 2. Varredura no disco e sincronização com DB
             caminhos_db = {m.caminho for m in db.query(Musica.caminho).all()}
             caminhos_fisicos = set()
 
