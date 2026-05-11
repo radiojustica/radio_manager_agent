@@ -29,6 +29,20 @@ export default function AcquisitionPage() {
     setSelected(prev => ({ ...prev, [idx]: !prev[idx] }));
   };
 
+  const allSelected = recommendations.length > 0 && recommendations.every((_, idx) => selected[idx]);
+
+  const handleSelectAll = () => {
+    if (allSelected) {
+      setSelected({});
+    } else {
+      const newSelected = {};
+      recommendations.forEach((_, idx) => {
+        newSelected[idx] = true;
+      });
+      setSelected(newSelected);
+    }
+  };
+
   const triggerDownloads = async (type) => {
     setDownloading(true);
     let queries = [];
@@ -88,7 +102,14 @@ export default function AcquisitionPage() {
               <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                 <thead>
                   <tr style={{ textAlign: 'left', fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>
-                    <th style={{ padding: '10px' }}>Sel.</th>
+                    <th style={{ padding: '10px' }}>
+                      <input 
+                        type="checkbox" 
+                        checked={allSelected} 
+                        onChange={handleSelectAll} 
+                        title="Selecionar Todos" 
+                      />
+                    </th>
                     <th>Artista / Sugestão</th>
                     <th>Estilo</th>
                   </tr>
@@ -155,13 +176,38 @@ export default function AcquisitionPage() {
         </div>
       </div>
 
-      {statusMsg && (
+      {(downloading || statusMsg) && (
         <div style={{ 
           marginTop: '2rem', padding: '1rem', background: 'rgba(56, 189, 248, 0.1)', 
           borderRadius: '10px', border: '1px solid var(--accent-primary)', color: 'var(--accent-primary)',
-          fontSize: '0.8rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '10px'
+          fontSize: '0.8rem', fontWeight: 700, display: 'flex', flexDirection: 'column', gap: '10px'
         }}>
-          <span>ℹ️</span> {statusMsg}
+          {downloading ? (
+            <>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <span className="anim-pulse">⏳</span> Processando e baixando arquivos... aguarde
+              </div>
+              <div style={{ width: '100%', height: '8px', background: '#222', borderRadius: '4px', overflow: 'hidden', position: 'relative' }}>
+                <div style={{ 
+                  width: '30%', height: '100%', background: 'var(--accent-primary)',
+                  position: 'absolute',
+                  animation: 'indeterminate 1.5s infinite ease-in-out'
+                }} />
+              </div>
+              <style>{`
+                @keyframes indeterminate {
+                  0% { left: -30%; }
+                  100% { left: 100%; }
+                }
+                .anim-pulse { animation: pulse 1.5s infinite; }
+                @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
+              `}</style>
+            </>
+          ) : (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <span>{statusMsg.toLowerCase().includes('erro') || statusMsg.toLowerCase().includes('falha') ? '⚠️' : '✅'}</span> {statusMsg}
+            </div>
+          )}
         </div>
       )}
     </div>
