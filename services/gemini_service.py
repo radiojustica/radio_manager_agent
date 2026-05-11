@@ -1,5 +1,5 @@
 import logging
-import google.generativeai as genai
+from google import genai
 from typing import Optional
 import os
 
@@ -16,9 +16,13 @@ class GeminiService:
                 api_key = os.getenv("GOOGLE_API_KEY")
 
         if api_key:
-            genai.configure(api_key=api_key)
-            self.model = genai.GenerativeModel('gemini-1.5-flash')
-            self.enabled = True
+            try:
+                self.client = genai.Client(api_key=api_key)
+                self.model_name = 'gemini-2.5-flash'
+                self.enabled = True
+            except Exception as e:
+                logger.error(f"Erro ao inicializar cliente Gemini: {e}")
+                self.enabled = False
         else:
             logger.warning("Google API Key não encontrada. GeminiService desativado.")
             self.enabled = False
@@ -38,9 +42,11 @@ class GeminiService:
         )
 
         try:
-            # Nota: O SDK do Gemini é síncrono por padrão, mas podemos rodar em thread se necessário.
-            # Para este worker, rodar síncrono no loop async do worker está ok se não for massivo.
-            response = self.model.generate_content(prompt)
+            # Novo SDK do Gemini (google-genai)
+            response = self.client.models.generate_content(
+                model=self.model_name,
+                contents=prompt
+            )
             mood = response.text.strip()
             
             # Validação simples

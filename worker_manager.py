@@ -10,16 +10,35 @@ from apscheduler.triggers.cron import CronTrigger
 from core import state
 from core.reward import RewardStore
 from services.guardian_service import guardian_instance
-from workers.playlist_worker import PlaylistWorker
-from workers.audit_worker import AuditWorker
-from workers.curadoria_worker import CuradoriaWorker
-from workers.guardian_worker import GuardianWorker
-from workers.sync_worker import SyncWorker
-from workers.weather_worker import WeatherWorker
-from workers.downloader_worker import DownloaderWorker
-from workers.butt_worker import ButtWorker
-from workers.update_worker import UpdateWorker
-from workers.daily_report_worker import DailyReportWorker
+
+logger = logging.getLogger("OmniCore.WorkerManager")
+
+try:
+    logger.info("Importando PlaylistWorker...")
+    from workers.playlist_worker import PlaylistWorker
+    logger.info("Importando AuditWorker...")
+    from workers.audit_worker import AuditWorker
+    logger.info("Importando CuradoriaWorker...")
+    from workers.curadoria_worker import CuradoriaWorker
+    logger.info("Importando GuardianWorker...")
+    from workers.guardian_worker import GuardianWorker
+    logger.info("Importando SyncWorker...")
+    from workers.sync_worker import SyncWorker
+    logger.info("Importando WeatherWorker...")
+    from workers.weather_worker import WeatherWorker
+    logger.info("Importando DownloaderWorker...")
+    from workers.downloader_worker import DownloaderWorker
+    logger.info("Importando ButtWorker...")
+    from workers.butt_worker import ButtWorker
+    logger.info("Importando UpdateWorker...")
+    from workers.update_worker import UpdateWorker
+    logger.info("Importando DailyReportWorker...")
+    from workers.daily_report_worker import DailyReportWorker
+except Exception as e:
+    logger.error(f"ERRO FATAL DURANTE IMPORTAÇÃO DE WORKERS: {e}")
+    import traceback
+    logger.error(traceback.format_exc())
+    raise e
 
 logger = logging.getLogger("OmniCore.WorkerManager")
 
@@ -228,18 +247,30 @@ class WorkerManager:
 
 
 def create_default_manager() -> WorkerManager:
+    logger.info("Criando gerente de workers padrão...")
     manager = WorkerManager()
+    logger.info("Registrando PlaylistWorker...")
     manager.register_worker(PlaylistWorker(reward_store=manager.reward_store))
+    logger.info("Registrando AuditWorker...")
     manager.register_worker(AuditWorker(reward_store=manager.reward_store))
+    logger.info("Registrando CuradoriaWorker...")
     manager.register_worker(CuradoriaWorker(reward_store=manager.reward_store))
+    logger.info("Registrando GuardianWorker...")
     manager.register_worker(GuardianWorker(reward_store=manager.reward_store))
+    logger.info("Registrando SyncWorker...")
     manager.register_worker(SyncWorker(reward_store=manager.reward_store))
+    logger.info("Registrando WeatherWorker...")
     manager.register_worker(WeatherWorker(reward_store=manager.reward_store))
+    logger.info("Registrando DownloaderWorker...")
     manager.register_worker(DownloaderWorker(reward_store=manager.reward_store))
+    logger.info("Registrando ButtWorker...")
     manager.register_worker(ButtWorker(reward_store=manager.reward_store))
+    logger.info("Registrando UpdateWorker...")
     manager.register_worker(UpdateWorker(reward_store=manager.reward_store))
+    logger.info("Registrando DailyReportWorker...")
     manager.register_worker(DailyReportWorker(reward_store=manager.reward_store))
+    logger.info("Todos os workers registrados.")
     return manager
 
-# Instância global para uso em todo o backend
+logger.info("Inicializando worker_manager_instance...")
 worker_manager_instance = create_default_manager()

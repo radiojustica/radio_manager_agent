@@ -89,8 +89,6 @@ async def websocket_endpoint(websocket: WebSocket):
     except WebSocketDisconnect:
         manager.disconnect(websocket)
 
-# ... (restante do arquivo)
-
 BASE_PATH = Path(__file__).resolve().parent.parent
 FRONTEND_PATH = BASE_PATH / "frontend" / "dist"
 
