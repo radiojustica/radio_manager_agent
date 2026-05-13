@@ -13,6 +13,26 @@ class DownloaderService:
         self.target_dir.mkdir(exist_ok=True, parents=True)
         # Caminho detectado do FFmpeg para garantir funcionamento do yt-dlp
         self.ffmpeg_path = r"C:\Users\STREAMING\OneDrive\ARQUIVOS STREAMING\PROGRAMA_MUSICAS"
+        self.active_progress = {} # {query: {percentage: 0, status: 'idle', total_bytes: 0, downloaded_bytes: 0}}
+
+    def _progress_hook(self, d, query):
+        if d['status'] == 'downloading':
+            p = d.get('_percent_str', '0%').replace('%', '').strip()
+            try:
+                self.active_progress[query] = {
+                    "percentage": float(p),
+                    "status": "downloading",
+                    "speed": d.get('_speed_str', '0KB/s'),
+                    "eta": d.get('_eta_str', '00:00')
+                }
+            except: pass
+        elif d['status'] == 'finished':
+            self.active_progress[query] = {
+                "percentage": 100,
+                "status": "processing", # FFmpeg post-processing
+                "speed": "0KB/s",
+                "eta": "00:00"
+            }
 
     def search_and_download(self, query: str, destination: str = None) -> dict:
         """
@@ -21,6 +41,8 @@ class DownloaderService:
         """
         dest_path = Path(destination) if destination else self.target_dir
         dest_path.mkdir(exist_ok=True, parents=True)
+
+        self.active_progress[query] = {"percentage": 0, "status": "searching", "speed": "0KB/s", "eta": "00:00"}
 
         # Adiciona o diretório do FFmpeg ao PATH do processo atual
         if self.ffmpeg_path not in os.environ["PATH"]:
@@ -43,6 +65,7 @@ class DownloaderService:
             'quiet': True,
             'no_warnings': True,
             'default_search': 'ytsearch1:', # Pega o primeiro resultado
+            'progress_hooks': [lambda d: self._progress_hook(d, query)],
         }
 
         try:
@@ -56,6 +79,7 @@ class DownloaderService:
                 
                 actual_filename = dest_path / f"{filename_base}.mp3"
                 
+                self.active_progress[query] = {"percentage": 100, "status": "completed", "speed": "0KB/s", "eta": "00:00"}
                 logger.info(f"[Downloader] Sucesso: {query} -> {actual_filename}")
                 return {
                     "success": True, 
@@ -64,8 +88,13 @@ class DownloaderService:
                     "duration": video_info.get('duration')
                 }
         except Exception as e:
+            self.active_progress[query] = {"percentage": 0, "status": "failed", "error": str(e)}
             logger.error(f"[Downloader] Erro ao baixar {query}: {e}")
             return {"success": False, "error": str(e)}
+        finally:
+            # Mantém por um tempo para o frontend ler e depois remove
+            # Ou o chamador remove. Vamos deixar por enquanto.
+            pass
 
     def trim_silence_manually(self, file_path: str):
         """
