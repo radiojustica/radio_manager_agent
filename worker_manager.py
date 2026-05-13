@@ -248,6 +248,19 @@ class WorkerManager:
             replace_existing=True
         )
 
+        # 11. DownloaderWorker (Aquisição Proativa às 01:00)
+        downloader_cfg = self.config.get("DownloaderWorker", {})
+        self.scheduler.add_job(
+            lambda: self.run_cycle("DownloaderWorker"),
+            trigger=CronTrigger(
+                hour=downloader_cfg.get("proactive_hour", 1), 
+                minute=downloader_cfg.get("proactive_minute", 0)
+            ),
+            id='worker_proactive_downloader',
+            replace_existing=True,
+            misfire_grace_time=3600
+        )
+
         self.scheduler.start()
         logger.info("Orquestrador iniciado com sucesso dinamicamente.")
 

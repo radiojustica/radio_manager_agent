@@ -129,6 +129,11 @@
         },
         "BulletinWorker": {
             "interval_minutes": 15
+        },
+        "DownloaderWorker": {
+            "proactive_hour": 1,
+            "proactive_minute": 0,
+            "proactive_limit": 3
         }
     }
 }
