@@ -26,14 +26,24 @@ def init_db():
     import sqlite3
     conn = sqlite3.connect("./core/radio_omni.db")
     cursor = conn.cursor()
-    try:
-        cursor.execute("ALTER TABLE musicas ADD COLUMN mood TEXT")
-        print("Coluna 'mood' adicionada com sucesso.")
-    except sqlite3.OperationalError:
-        # Coluna já existe
-        pass
-    finally:
-        conn.close()
+    
+    colunas = [
+        ("mood", "TEXT"),
+        ("bpm", "INTEGER"),
+        ("valence", "REAL"),
+        ("danceability", "REAL")
+    ]
+    
+    for nome_col, tipo_col in colunas:
+        try:
+            cursor.execute(f"ALTER TABLE musicas ADD COLUMN {nome_col} {tipo_col}")
+            print(f"Coluna '{nome_col}' adicionada com sucesso.")
+        except sqlite3.OperationalError:
+            # Coluna já existe ou erro operacional (ignorar)
+            pass
+            
+    conn.commit()
+    conn.close()
 
 
 

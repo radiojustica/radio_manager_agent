@@ -1,7 +1,7 @@
 ---
 id: 7b8c9d0e
 title: "Dependency Update and Advanced Audio Analysis"
-status: Todo
+status: Done
 priority: High
 order: 20
 created: 2026-05-06

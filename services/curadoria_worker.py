@@ -31,14 +31,17 @@ def verificar_inadequacao(nome_arquivo):
     regras = carregar_badwords()
     return any(re.search(fr"\b{p}\b" if len(p) < 15 else p, check_str) for p in regras)
 
-def calcular_energia_librosa(caminho):
+def analisar_acustica_completa(caminho):
     """
-    Função pesada isolada. Somente importamos o Librosa DENTRO do worker
-    para evitar overhead global na RAM do Servidor REST.
+    Analisa BPM, Energia, Valência e Dançabilidade.
+    Somente importamos o Librosa DENTRO do worker para evitar overhead global na RAM.
     """
     import librosa
     try:
-        y, sr = librosa.load(caminho, sr=22050, offset=20.0, duration=5.0)
+        # Carregamos 10 segundos (offset 30s) para análise mais estável de BPM
+        y, sr = librosa.load(caminho, sr=22050, offset=30.0, duration=10.0)
+        
+        # 1. Energia (Baseado na lógica original)
         rms = np.mean(librosa.feature.rms(y=y))
         centroid = np.mean(librosa.feature.spectral_centroid(y=y, sr=sr))
         
@@ -55,14 +58,39 @@ def calcular_energia_librosa(caminho):
         elif centroid > 800: pontos += 20
         else: pontos += 10
 
-        if pontos <= 30: return 1      
-        elif pontos <= 50: return 2    
-        elif pontos <= 70: return 3    
-        elif pontos <= 85: return 4    
-        else: return 5                 
+        energia_score = 3
+        if pontos <= 30: energia_score = 1      
+        elif pontos <= 50: energia_score = 2    
+        elif pontos <= 70: energia_score = 3    
+        elif pontos <= 85: energia_score = 4    
+        else: energia_score = 5
+
+        # 2. BPM (Beat Tracking)
+        tempo, _ = librosa.beat.beat_track(y=y, sr=sr)
+        if isinstance(tempo, np.ndarray):
+            bpm = int(tempo.item())
+        else:
+            bpm = int(tempo)
+
+        # 3. Valence (Heurística: Brilho Espectral + Energia)
+        norm_centroid = min(centroid / 5000.0, 1.0)
+        norm_rms = min(rms / 0.4, 1.0)
+        valence = (norm_centroid + norm_rms) / 2.0
+
+        # 4. Danceability (Heurística: Regularidade/Força dos Onsets)
+        onset_env = librosa.onset.onset_strength(y=y, sr=sr)
+        dance_score = float(np.mean(onset_env))
+        danceability = min(dance_score / 1.5, 1.0)
+
+        return {
+            "energia": energia_score,
+            "bpm": bpm,
+            "valence": round(float(valence), 2),
+            "danceability": round(float(danceability), 2)
+        }
     except Exception as e:
-        print(f"[WORKER] Falha acústica em {caminho}: {e}")
-        return 3
+        print(f"[WORKER] Falha acústica completa em {caminho}: {e}")
+        return {"energia": 3, "bpm": 0, "valence": 0.5, "danceability": 0.5}
 
 LOG_QUARENTENA = os.path.join(PASTA_QUARENTENA, "audit_quarentena.log")
 
@@ -77,7 +105,7 @@ def registrar_log_quarentena(arquivo, motivo):
         print(f"Erro ao escrever log de quarentena: {e}")
 
 def processar_arquivo(id_musica, caminho):
-    """Verifica quarentena por badwords ou corrupção, calcula energia e duração."""
+    """Verifica quarentena por badwords ou corrupção, calcula métricas acústicas e duração."""
     from mutagen import File
     import librosa
     nome_arq = os.path.basename(caminho)
@@ -97,9 +125,9 @@ def processar_arquivo(id_musica, caminho):
         os.makedirs(PASTA_QUARENTENA, exist_ok=True)
         try:
             shutil.move(caminho, os.path.join(PASTA_QUARENTENA, nome_arq))
-            return {"id": id_musica, "status": "QUARANTINED", "motivo": "Corrompido", "energia": 3, "duracao": duracao}
+            return {"id": id_musica, "status": "QUARANTINED", "motivo": "Corrompido", "energia": 3, "duracao": duracao, "bpm": 0, "valence": 0.5, "danceability": 0.5}
         except Exception as move_err:
-            return {"id": id_musica, "status": "ERROR_MOVE", "energia": 3, "duracao": duracao}
+            return {"id": id_musica, "status": "ERROR_MOVE", "energia": 3, "duracao": duracao, "bpm": 0, "valence": 0.5, "danceability": 0.5}
 
     # 2. VERIFICAÇÃO DE BADWORDS (INADEQUAÇÃO)
     if verificar_inadequacao(nome_arq):
@@ -107,14 +135,21 @@ def processar_arquivo(id_musica, caminho):
         os.makedirs(PASTA_QUARENTENA, exist_ok=True)
         try:
             shutil.move(caminho, os.path.join(PASTA_QUARENTENA, nome_arq))
-            return {"id": id_musica, "status": "QUARANTINED", "motivo": "Inadequação", "energia": 3, "duracao": duracao}
+            return {"id": id_musica, "status": "QUARANTINED", "motivo": "Inadequação", "energia": 3, "duracao": duracao, "bpm": 0, "valence": 0.5, "danceability": 0.5}
         except:
-            return {"id": id_musica, "status": "ERROR_MOVE", "energia": 3, "duracao": duracao}
+            return {"id": id_musica, "status": "ERROR_MOVE", "energia": 3, "duracao": duracao, "bpm": 0, "valence": 0.5, "danceability": 0.5}
             
-    # 3. CÁLCULO DE ENERGIA (Para músicas saudáveis)
-    # Baixa energia NÃO é mais motivo de quarentena.
-    energia = calcular_energia_librosa(caminho)
-    return {"id": id_musica, "status": "OK", "energia": energia, "duracao": duracao}
+    # 3. ANÁLISE ACÚSTICA COMPLETA
+    analise = analisar_acustica_completa(caminho)
+    return {
+        "id": id_musica, 
+        "status": "OK", 
+        "energia": analise["energia"], 
+        "bpm": analise["bpm"],
+        "valence": analise["valence"],
+        "danceability": analise["danceability"],
+        "duracao": duracao
+    }
 
 def _job_processar_lote(lote_musicas):
     from core.database import SessionLocal
@@ -144,6 +179,9 @@ def _job_processar_lote(lote_musicas):
                     musica_db.energia = resultado["energia"]
                 
                 musica_db.duracao = resultado["duracao"]
+                musica_db.bpm = resultado["bpm"]
+                musica_db.valence = resultado["valence"]
+                musica_db.danceability = resultado["danceability"]
                 db.commit()
                 
         with open(status_path, "w", encoding="utf-8") as f:

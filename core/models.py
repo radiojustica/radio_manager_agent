@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Boolean, DateTime
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, Float
 from core.database import Base
 from datetime import datetime
 
@@ -12,6 +12,9 @@ class Musica(Base):
     estilo = Column(String, default="outros", index=True)
     energia = Column(Integer, default=3)
     duracao = Column(Integer, default=210) # Duração em segundos
+    bpm = Column(Integer, nullable=True)
+    valence = Column(Float, nullable=True)
+    danceability = Column(Float, nullable=True)
     
     # Flags de Curadoria
     auditado_acustica = Column(Boolean, default=False)
