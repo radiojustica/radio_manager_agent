@@ -15,6 +15,6 @@
   ],
   "started_at": "2026-05-13T11:30:00.000Z",
   "session_dir": "C:\\Users\\STREAMING\\.gemini\\antigravity\\scratch\\radio_manager_agent",
-  "jar_complete": false,
+  "jar_complete": true,
   "worker": false
 }

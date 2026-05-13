@@ -34,6 +34,8 @@ try:
     from workers.update_worker import UpdateWorker
     logger.info("Importando DailyReportWorker...")
     from workers.daily_report_worker import DailyReportWorker
+    logger.info("Importando BulletinWorker...")
+    from workers.bulletin_worker import BulletinWorker
 except Exception as e:
     logger.error(f"ERRO FATAL DURANTE IMPORTAÇÃO DE WORKERS: {e}")
     import traceback
@@ -60,7 +62,8 @@ class WorkerManager:
             "PlaylistWorker": {"daily_hour": 0, "daily_minute": 0},
             "ButtWorker": {"interval_minutes": 2},
             "ButtReconnect": {"interval_minutes": 2},
-            "UpdateWorker": {"interval_hours": 1}  # Verifica atualizações a cada 1 hora
+            "UpdateWorker": {"interval_hours": 1},  # Verifica atualizações a cada 1 hora
+            "BulletinWorker": {"interval_minutes": 30}
         }
         
         config_path = Path(__file__).resolve().parent / "config" / "settings.json"
@@ -236,6 +239,15 @@ class WorkerManager:
             misfire_grace_time=3600
         )
 
+        # 10. BulletinWorker (Sincronização de Boletins)
+        bulletin_cfg = self.config.get("BulletinWorker", {})
+        self.scheduler.add_job(
+            lambda: self.run_cycle("BulletinWorker"),
+            trigger=IntervalTrigger(minutes=bulletin_cfg.get("interval_minutes", 30)),
+            id='worker_bulletin',
+            replace_existing=True
+        )
+
         self.scheduler.start()
         logger.info("Orquestrador iniciado com sucesso dinamicamente.")
 
@@ -269,6 +281,8 @@ def create_default_manager() -> WorkerManager:
     manager.register_worker(UpdateWorker(reward_store=manager.reward_store))
     logger.info("Registrando DailyReportWorker...")
     manager.register_worker(DailyReportWorker(reward_store=manager.reward_store))
+    logger.info("Registrando BulletinWorker...")
+    manager.register_worker(BulletinWorker(reward_store=manager.reward_store))
     logger.info("Todos os workers registrados.")
     return manager
 

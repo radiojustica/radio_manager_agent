@@ -44,7 +44,7 @@
 
 ## 7b8c9d0e
 ### Dependency Update and Advanced Audio Analysis
-- Status: Todo
+- Status: Done
 - Prioridade: High
 - Descrição: Instalar libs de áudio avançadas e atualizar CuradoriaWorker para métricas musicais (BPM, Valence, etc).
 
@@ -84,7 +84,7 @@
 
 ## 9i0j1k2l
 ### Google Drive Bulletin Synchronization
-- Status: Todo
+- Status: Done
 - Prioridade: Medium
 - Descrição: Implementar BulletinWorker para download automático de boletins informativos do Google Drive.
 

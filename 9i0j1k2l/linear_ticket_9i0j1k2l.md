@@ -1,7 +1,7 @@
 ---
 id: 9i0j1k2l
 title: "Google Drive Bulletin Synchronization"
-status: Todo
+status: Done
 priority: Medium
 order: 50
 created: 2026-05-06

@@ -9,6 +9,7 @@
         "pasta_vinhetas": "D:\\RADIO\\VINHETAS",
         "pasta_spots": "D:\\RADIO\\SPOTS",
         "pasta_boletins_raiz": "D:\\SERVIDOR\\BOLETINS",
+        "pasta_drive_boletins": "D:\\SERVIDOR\\DRIVE\\RADIO TJRN CONTEÚDO\\EDIÇÃO\\BOLETINS",
         "pasta_quarentena": "D:\\RADIO\\QUARENTENA_TJ",
         "mood_padrao": "Ensolarado",
         "duracao_bloco_segundos": 8000,
@@ -125,6 +126,9 @@
         },
         "ButtReconnect": {
             "interval_minutes": 2
+        },
+        "BulletinWorker": {
+            "interval_minutes": 15
         }
     }
 }
