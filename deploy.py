@@ -65,45 +65,33 @@ def copy_files():
             print(f"  ✓ {dst}/")
 
 def create_scheduled_task():
-    """Cria uma tarefa agendada no Windows para rodar como Administrador p001642."""
-    print("\n⚡ Configurando inicialização automática via Agendador de Tarefas...")
+    """Cria uma tarefa agendada interativa para rodar como Administrador p001642."""
+    print("\n⚡ Configurando inicialização interativa (Desktop Visível)...")
     
     task_name = "OmniCore_Admin"
     exe_path = INSTALL_PATH / "omni_core.exe"
     user = "p001642"
-    password = "Tjrn" # Conforme solicitado pelo usuário
     
-    # Comando para criar a tarefa:
-    # /sc onlogon: Inicia ao fazer logon
-    # /rl highest: Executa com privilégios máximos (Admin)
-    # /ru: Usuário alvo
-    # /rp: Senha do usuário
-    # /tr: Caminho do executável
-    # /f: Força a sobrescrita se a tarefa já existir
+    # Para evitar o "Isolamento da Sessão 0":
+    # 1. NÃO fornecemos a senha (/rp) no comando, o que força o modo "Executar apenas quando logado".
+    # 2. Usamos /it (Interactive) para garantir que a GUI apareça.
     cmd = [
         "schtasks", "/create", "/tn", task_name,
         "/tr", f'"{exe_path}"',
         "/sc", "onlogon",
         "/rl", "highest",
         "/ru", user,
-        "/rp", password,
+        "/it", # Garante interatividade com o desktop
         "/f"
     ]
     
     try:
-        # Usamos shell=True para lidar melhor com argumentos no Windows se necessário, 
-        # mas a lista de argumentos costuma ser mais segura.
         result = subprocess.run(cmd, capture_output=True, text=True)
         if result.returncode == 0:
-            print(f"✓ Tarefa agendada '{task_name}' criada com sucesso!")
-            print(f"✓ O sistema iniciará como {user} com privilégios de Admin.")
+            print(f"✓ Tarefa agendada '{task_name}' configurada para modo INTERATIVO.")
+            print(f"✓ A interface será visível para o usuário {user}.")
         else:
-            # Se falhar com a senha, tentamos criar sem a senha (o Windows pedirá na primeira execução manual se necessário)
-            # Ou apenas informamos o erro.
-            print(f"❌ Erro ao criar tarefa agendada: {result.stderr}")
-            print("💡 Tentando criar tarefa sem senha (pode exigir configuração manual no Task Scheduler)...")
-            cmd_no_pass = [c for c in cmd if c not in ["/rp", password]]
-            subprocess.run(cmd_no_pass)
+            print(f"❌ Erro ao configurar visibilidade: {result.stderr}")
             
     except Exception as e:
         print(f"❌ Falha crítica ao configurar schtasks: {e}")

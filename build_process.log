@@ -421,3 +421,790 @@ FileNotFoundError: [WinError 2] O sistema não pode encontrar o arquivo especifi
 2026-05-11 12:28:15,404 | INFO | [PyInstaller] 185299 INFO: Build complete! The results are available in: C:\Users\STREAMING\.gemini\antigravity\scratch\radio_manager_agent\dist
 2026-05-11 12:28:15,407 | INFO | [PyInstaller] Adding imports: ['yt_dlp.compat._legacy', 'yt_dlp.compat._deprecated', 'yt_dlp.utils._legacy', 'yt_dlp.utils._deprecated', 'Cryptodome', 'websockets', 'websockets.__main__', 'websockets.asyncio', 'websockets.asyncio.async_timeout', 'websockets.asyncio.client', 'websockets.asyncio.compatibility', 'websockets.asyncio.connection', 'websockets.asyncio.messages', 'websockets.asyncio.router', 'websockets.asyncio.server', 'websockets.auth', 'websockets.cli', 'websockets.client', 'websockets.connection', 'websockets.datastructures', 'websockets.exceptions', 'websockets.extensions', 'websockets.extensions.base', 'websockets.extensions.permessage_deflate', 'websockets.frames', 'websockets.headers', 'websockets.http', 'websockets.http11', 'websockets.imports', 'websockets.legacy', 'websockets.legacy.auth', 'websockets.legacy.client', 'websockets.legacy.exceptions', 'websockets.legacy.framing', 'websockets.legacy.handshake', 'websockets.legacy.http', 'websockets.legacy.protocol', 'websockets.legacy.server', 'websockets.protocol', 'websockets.proxy', 'websockets.server', 'websockets.speedups', 'websockets.streams', 'websockets.sync', 'websockets.sync.client', 'websockets.sync.connection', 'websockets.sync.messages', 'websockets.sync.router', 'websockets.sync.server', 'websockets.sync.utils', 'websockets.typing', 'websockets.uri', 'websockets.utils', 'websockets.version', 'requests', 'requests.__version__', 'requests._internal_utils', 'requests.adapters', 'requests.api', 'requests.auth', 'requests.certs', 'requests.compat', 'requests.cookies', 'requests.exceptions', 'requests.help', 'requests.hooks', 'requests.models', 'requests.packages', 'requests.sessions', 'requests.status_codes', 'requests.structures', 'requests.utils', 'urllib3', 'urllib3._base_connection', 'urllib3._collections', 'urllib3._request_methods', 'urllib3._version', 'urllib3.connection', 'urllib3.connectionpool', 'urllib3.contrib', 'urllib3.contrib.pyopenssl', 'urllib3.contrib.socks', 'urllib3.exceptions', 'urllib3.fields', 'urllib3.filepost', 'urllib3.http2', 'urllib3.http2.connection', 'urllib3.http2.probe', 'urllib3.poolmanager', 'urllib3.response', 'urllib3.util', 'urllib3.util.connection', 'urllib3.util.proxy', 'urllib3.util.request', 'urllib3.util.response', 'urllib3.util.retry', 'urllib3.util.ssl_', 'urllib3.util.ssl_match_hostname', 'urllib3.util.ssltransport', 'urllib3.util.timeout', 'urllib3.util.url', 'urllib3.util.util', 'urllib3.util.wait', 'mutagen', 'brotli', 'certifi', 'secretstorage', 'curl_cffi']
 2026-05-11 12:28:15,992 | INFO | ✅ Build concluído com sucesso!
+2026-05-11 12:32:37,918 | INFO | Iniciando processo de build do Omni Core V2...
+2026-05-11 12:32:37,919 | INFO | Executando comando: C:\Python314\python.exe -m PyInstaller --noconfirm --onefile --console --name omni_core --clean --add-data config;config --add-data core;core --add-data frontend/dist;frontend/dist main.py
+2026-05-11 12:32:38,167 | INFO | [PyInstaller] 52 DEPRECATION: Running PyInstaller as admin is not necessary nor sensible. Run PyInstaller from a non-administrator terminal. PyInstaller 7.0 will block this.
+2026-05-11 12:32:38,401 | INFO | [PyInstaller] 286 INFO: PyInstaller: 6.19.0, contrib hooks: 2026.4
+2026-05-11 12:32:38,402 | INFO | [PyInstaller] 286 INFO: Python: 3.14.3
+2026-05-11 12:32:38,430 | INFO | [PyInstaller] 314 INFO: Platform: Windows-10-10.0.18363-SP0
+2026-05-11 12:32:38,430 | INFO | [PyInstaller] 314 INFO: Python environment: C:\Python314
+2026-05-11 12:32:38,432 | INFO | [PyInstaller] 316 INFO: wrote C:\Users\STREAMING\.gemini\antigravity\scratch\radio_manager_agent\omni_core.spec
+2026-05-11 12:32:38,436 | INFO | [PyInstaller] 320 INFO: Removing temporary files and cleaning cache in C:\Users\p001642\AppData\Local\pyinstaller
+2026-05-11 12:32:38,462 | INFO | [PyInstaller] 347 INFO: Module search paths (PYTHONPATH):
+2026-05-11 12:32:38,463 | INFO | [PyInstaller] ['C:\\Users\\STREAMING\\.gemini\\antigravity\\scratch\\radio_manager_agent',
+2026-05-11 12:32:38,464 | INFO | [PyInstaller] 'C:\\Python314\\python314.zip',
+2026-05-11 12:32:38,466 | INFO | [PyInstaller] 'C:\\Python314\\DLLs',
+2026-05-11 12:32:38,467 | INFO | [PyInstaller] 'C:\\Python314\\Lib',
+2026-05-11 12:32:38,467 | INFO | [PyInstaller] 'C:\\Python314',
+2026-05-11 12:32:38,467 | INFO | [PyInstaller] 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages',
+2026-05-11 12:32:38,468 | INFO | [PyInstaller] 'C:\\Python314\\Lib\\site-packages',
+2026-05-11 12:32:38,468 | INFO | [PyInstaller] 'C:\\Python314\\Lib\\site-packages\\win32',
+2026-05-11 12:32:38,469 | INFO | [PyInstaller] 'C:\\Python314\\Lib\\site-packages\\win32\\lib',
+2026-05-11 12:32:38,469 | INFO | [PyInstaller] 'C:\\Python314\\Lib\\site-packages\\Pythonwin',
+2026-05-11 12:32:38,470 | INFO | [PyInstaller] 'C:\\Users\\STREAMING\\.gemini\\antigravity\\scratch\\radio_manager_agent']
+2026-05-11 12:32:40,491 | INFO | [PyInstaller] 2375 INFO: Appending 'datas' from .spec
+2026-05-11 12:32:40,494 | INFO | [PyInstaller] 2378 INFO: checking Analysis
+2026-05-11 12:32:40,494 | INFO | [PyInstaller] 2378 INFO: Building Analysis because Analysis-00.toc is non existent
+2026-05-11 12:32:40,494 | INFO | [PyInstaller] 2378 INFO: Looking for Python shared library...
+2026-05-11 12:32:40,497 | INFO | [PyInstaller] 2378 INFO: Using Python shared library: C:\Python314\python314.dll
+2026-05-11 12:32:40,497 | INFO | [PyInstaller] 2378 INFO: Running Analysis Analysis-00.toc
+2026-05-11 12:32:40,498 | INFO | [PyInstaller] 2378 INFO: Target bytecode optimization level: 0
+2026-05-11 12:32:40,498 | INFO | [PyInstaller] 2378 INFO: Initializing module dependency graph...
+2026-05-11 12:32:40,499 | INFO | [PyInstaller] 2380 INFO: Initializing module graph hook caches...
+2026-05-11 12:32:40,561 | INFO | [PyInstaller] 2446 INFO: Analyzing modules for base_library.zip ...
+2026-05-11 12:32:42,910 | INFO | [PyInstaller] 4795 INFO: Processing standard module hook 'hook-encodings.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:32:43,448 | INFO | [PyInstaller] 5333 INFO: Processing standard module hook 'hook-pickle.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:32:43,797 | INFO | [PyInstaller] 5681 INFO: Processing standard module hook 'hook-difflib.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:32:43,817 | INFO | [PyInstaller] 5701 INFO: Processing standard module hook 'hook-heapq.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:32:48,176 | INFO | [PyInstaller] 10060 INFO: Caching module dependency graph...
+2026-05-11 12:32:48,222 | INFO | [PyInstaller] 10107 INFO: Analyzing C:\Users\STREAMING\.gemini\antigravity\scratch\radio_manager_agent\main.py
+2026-05-11 12:32:48,232 | INFO | [PyInstaller] 10116 INFO: Processing pre-find-module-path hook 'hook-tkinter.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks\\pre_find_module_path'
+2026-05-11 12:32:48,234 | INFO | [PyInstaller] 10119 INFO: TclTkInfo: initializing cached Tcl/Tk info...
+2026-05-11 12:32:48,746 | INFO | [PyInstaller] 10630 INFO: Processing standard module hook 'hook-_tkinter.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:32:48,818 | INFO | [PyInstaller] 10702 INFO: Processing standard module hook 'hook-sysconfig.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:32:48,826 | INFO | [PyInstaller] 10711 INFO: Processing standard module hook 'hook-_ctypes.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:32:49,542 | INFO | [PyInstaller] 11427 INFO: Processing standard module hook 'hook-anyio.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:32:50,259 | INFO | [PyInstaller] 12143 INFO: Processing pre-safe-import-module hook 'hook-typing_extensions.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
+2026-05-11 12:32:50,266 | INFO | [PyInstaller] 12147 INFO: SetuptoolsInfo: initializing cached setuptools info...
+2026-05-11 12:32:51,762 | INFO | [PyInstaller] 13646 INFO: Processing standard module hook 'hook-multiprocessing.util.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:32:51,919 | INFO | [PyInstaller] 13803 INFO: Processing standard module hook 'hook-xml.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:32:54,285 | INFO | [PyInstaller] 16169 INFO: Processing standard module hook 'hook-pydantic.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:32:55,418 | INFO | [PyInstaller] 17302 INFO: Processing standard module hook 'hook-platform.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:32:56,447 | INFO | [PyInstaller] 18332 INFO: Processing standard module hook 'hook-zoneinfo.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:33:00,375 | INFO | [PyInstaller] 22259 INFO: Processing standard module hook 'hook-uvicorn.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:33:03,551 | INFO | [PyInstaller] 25435 INFO: Processing standard module hook 'hook-websockets.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:33:05,515 | INFO | [PyInstaller] 27399 INFO: Processing standard module hook 'hook-sqlalchemy.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:33:07,125 | INFO | [PyInstaller] 29009 INFO: Processing pre-safe-import-module hook 'hook-importlib_metadata.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
+2026-05-11 12:33:07,126 | INFO | [PyInstaller] 29010 INFO: Setuptools: 'importlib_metadata' appears to be a setuptools-vendored copy - creating alias to 'setuptools._vendor.importlib_metadata'!
+2026-05-11 12:33:07,152 | INFO | [PyInstaller] 29036 INFO: Processing standard module hook 'hook-setuptools.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:33:07,182 | INFO | [PyInstaller] 29066 INFO: Processing pre-safe-import-module hook 'hook-distutils.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
+2026-05-11 12:33:07,295 | INFO | [PyInstaller] 29179 INFO: Processing pre-safe-import-module hook 'hook-jaraco.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
+2026-05-11 12:33:07,296 | INFO | [PyInstaller] 29181 INFO: Setuptools: 'jaraco' appears to be a full setuptools-vendored copy - creating alias to 'setuptools._vendor.jaraco'!
+2026-05-11 12:33:07,333 | INFO | [PyInstaller] 29217 INFO: Processing pre-safe-import-module hook 'hook-more_itertools.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
+2026-05-11 12:33:07,334 | INFO | [PyInstaller] 29218 INFO: Setuptools: 'more_itertools' appears to be a setuptools-vendored copy - creating alias to 'setuptools._vendor.more_itertools'!
+2026-05-11 12:33:08,006 | INFO | [PyInstaller] 29891 INFO: Processing pre-safe-import-module hook 'hook-packaging.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
+2026-05-11 12:33:08,552 | INFO | [PyInstaller] 30436 INFO: Processing standard module hook 'hook-setuptools._vendor.jaraco.text.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:33:08,554 | INFO | [PyInstaller] 30438 INFO: Processing pre-safe-import-module hook 'hook-importlib_resources.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
+2026-05-11 12:33:08,595 | INFO | [PyInstaller] 30479 INFO: Processing pre-safe-import-module hook 'hook-backports.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
+2026-05-11 12:33:08,596 | INFO | [PyInstaller] 30481 INFO: Setuptools: 'backports' appears to be a full setuptools-vendored copy - creating alias to 'setuptools._vendor.backports'!
+2026-05-11 12:33:09,722 | INFO | [PyInstaller] 31606 INFO: Processing pre-safe-import-module hook 'hook-tomli.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
+2026-05-11 12:33:09,725 | INFO | [PyInstaller] 31609 INFO: Setuptools: 'tomli' appears to be a setuptools-vendored copy - creating alias to 'setuptools._vendor.tomli'!
+2026-05-11 12:33:11,135 | INFO | [PyInstaller] 33020 INFO: Processing pre-safe-import-module hook 'hook-wheel.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
+2026-05-11 12:33:11,136 | INFO | [PyInstaller] 33021 INFO: Setuptools: 'wheel' appears to be a setuptools-vendored copy - creating alias to 'setuptools._vendor.wheel'!
+2026-05-11 12:33:11,332 | INFO | [PyInstaller] 33216 INFO: Processing standard module hook 'hook-setuptools._vendor.importlib_metadata.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:33:11,452 | INFO | [PyInstaller] 33336 INFO: Processing pre-safe-import-module hook 'hook-zipp.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
+2026-05-11 12:33:11,453 | INFO | [PyInstaller] 33337 INFO: Setuptools: 'zipp' appears to be a setuptools-vendored copy - creating alias to 'setuptools._vendor.zipp'!
+2026-05-11 12:33:19,587 | INFO | [PyInstaller] 41471 INFO: Processing standard module hook 'hook-sqlite3.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:33:19,981 | INFO | [PyInstaller] 41866 INFO: Processing standard module hook 'hook-apscheduler.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:33:21,044 | INFO | [PyInstaller] 42929 INFO: Processing standard module hook 'hook-psutil.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:33:21,400 | INFO | [PyInstaller] 43284 INFO: Processing standard module hook 'hook-numpy.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:33:27,823 | INFO | [PyInstaller] 49707 INFO: Processing standard module hook 'hook-charset_normalizer.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:33:28,894 | INFO | [PyInstaller] 50778 INFO: Processing standard module hook 'hook-comtypes.client.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:33:30,060 | INFO | [PyInstaller] 51945 INFO: Processing standard module hook 'hook-pythoncom.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:33:30,274 | INFO | [PyInstaller] 52158 INFO: Processing standard module hook 'hook-pywintypes.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:33:31,434 | INFO | [PyInstaller] 53318 INFO: Processing standard module hook 'hook-PIL.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:33:31,744 | INFO | [PyInstaller] 53628 INFO: Processing standard module hook 'hook-PIL.Image.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:33:32,307 | INFO | [PyInstaller] 54192 INFO: Processing standard module hook 'hook-xml.etree.cElementTree.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:33:32,709 | INFO | [PyInstaller] 54593 INFO: Processing standard module hook 'hook-PIL.ImageFilter.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:33:33,315 | INFO | [PyInstaller] C:\Python314\Lib\site-packages\pywinauto\keyboard.py:105: SyntaxWarning: "\;" is an invalid escape sequence. Such sequences will not work in the future. Did you mean "\\;"? A raw string is also an option.
+2026-05-11 12:33:33,316 | INFO | [PyInstaller] option only affects the behavior of keys matching [-=[]\;',./a-zA-Z0-9 ].  Note
+2026-05-11 12:33:33,359 | INFO | [PyInstaller] C:\Python314\Lib\site-packages\pywinauto\linux\keyboard.py:55: SyntaxWarning: "\e" is an invalid escape sequence. Such sequences will not work in the future. Did you mean "\\e"? A raw string is also an option.
+2026-05-11 12:33:33,359 | INFO | [PyInstaller] '\e': "Escape",
+2026-05-11 12:33:34,212 | INFO | [PyInstaller] 56097 INFO: Processing pre-safe-import-module hook 'hook-win32com.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\pre_safe_import_module'
+2026-05-11 12:33:34,379 | INFO | [PyInstaller] 56264 INFO: Processing standard module hook 'hook-win32com.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:33:34,862 | INFO | [PyInstaller] 56746 INFO: Processing standard module hook 'hook-urllib3.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:33:35,936 | INFO | [PyInstaller] 57820 INFO: Processing standard module hook 'hook-cryptography.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:33:37,947 | INFO | [PyInstaller] 59831 INFO: hook-cryptography: cryptography does not seem to be using dynamically linked OpenSSL.
+2026-05-11 12:33:39,012 | INFO | [PyInstaller] 60896 INFO: Processing standard module hook 'hook-certifi.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:33:39,601 | INFO | [PyInstaller] 61485 INFO: Processing standard module hook 'hook-librosa.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:33:44,108 | INFO | [PyInstaller] 65992 INFO: Processing standard module hook 'hook-pygments.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:33:52,483 | INFO | [PyInstaller] 74368 INFO: Processing standard module hook 'hook-pycparser.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:33:57,632 | INFO | [PyInstaller] 79517 INFO: Processing standard module hook 'hook-yt_dlp.py' from 'C:\\Python314\\Lib\\site-packages\\yt_dlp\\__pyinstaller'
+2026-05-11 12:33:59,016 | INFO | [PyInstaller] 186 WARNING: Failed to collect submodules for 'urllib3.contrib.emscripten' because importing 'urllib3.contrib.emscripten' raised: ModuleNotFoundError: No module named 'js'
+2026-05-11 12:33:59,054 | INFO | [PyInstaller] 80938 WARNING: collect_data_files - skipping data collection for module 'curl_cffi' as it is not a package.
+2026-05-11 12:33:59,054 | INFO | [PyInstaller] 80939 WARNING: collect_data_files - skipping data collection for module 'yt_dlp_ejs' as it is not a package.
+2026-05-11 12:34:14,585 | INFO | [PyInstaller] 96469 INFO: Processing standard module hook 'hook-pystray.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:34:14,937 | INFO | [PyInstaller] 96821 INFO: Processing pre-safe-import-module hook 'hook-six.moves.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
+2026-05-11 12:34:15,033 | INFO | [PyInstaller] 96918 INFO: Processing pre-safe-import-module hook 'hook-gi.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
+2026-05-11 12:34:15,062 | INFO | [PyInstaller] C:\Users\p001642\AppData\Roaming\Python\Python314\site-packages\pystray\_util\gtk.py:53: SyntaxWarning: 'return' in a 'finally' block
+2026-05-11 12:34:15,062 | INFO | [PyInstaller] return False
+2026-05-11 12:34:15,390 | INFO | [PyInstaller] 97274 INFO: Processing module hooks (post-graph stage)...
+2026-05-11 12:34:19,215 | INFO | [PyInstaller] 101099 INFO: Processing standard module hook 'hook-scipy.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:34:20,060 | INFO | [PyInstaller] 101945 INFO: Processing standard module hook 'hook-pytest.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:34:20,789 | INFO | [PyInstaller] 102673 INFO: Processing standard module hook 'hook-py.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:34:25,968 | INFO | [PyInstaller] 107853 INFO: Processing standard module hook 'hook-scipy.linalg.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:34:26,493 | INFO | [PyInstaller] 108378 INFO: Processing standard module hook 'hook-scipy.special._ufuncs.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:34:29,816 | INFO | [PyInstaller] 111700 INFO: Processing standard module hook 'hook-scipy.sparse.csgraph.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:34:29,881 | INFO | [PyInstaller] 111766 INFO: Processing standard module hook 'hook-scipy.spatial._ckdtree.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:34:31,476 | INFO | [PyInstaller] 113360 INFO: Processing standard module hook 'hook-scipy.spatial.transform.rotation.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:34:32,147 | INFO | [PyInstaller] 114031 INFO: Processing standard module hook 'hook-scipy.special._ellip_harm_2.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:34:36,112 | INFO | [PyInstaller] 117996 INFO: Processing standard module hook 'hook-scipy.stats._stats.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:34:38,805 | INFO | [PyInstaller] 120690 INFO: Processing standard module hook 'hook-numba.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:34:38,880 | INFO | [PyInstaller] 120765 INFO: Processing standard module hook 'hook-llvmlite.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:34:55,600 | INFO | [PyInstaller] 137484 INFO: Processing pre-safe-import-module hook 'hook-platformdirs.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
+2026-05-11 12:34:55,638 | INFO | [PyInstaller] 137522 INFO: Processing standard module hook 'hook-platformdirs.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:34:56,227 | INFO | [PyInstaller] 138111 INFO: Processing standard module hook 'hook-soundfile.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:34:56,871 | INFO | [PyInstaller] 138755 INFO: Processing standard module hook 'hook-sklearn.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:34:57,658 | INFO | [PyInstaller] 139543 INFO: Processing standard module hook 'hook-sklearn.utils.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:34:58,111 | INFO | [PyInstaller] 139995 INFO: Processing standard module hook 'hook-sklearn.externals.array_api_compat.numpy.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:34:58,327 | INFO | [PyInstaller] 140212 INFO: Processing standard module hook 'hook-sklearn.externals.array_api_compat.cupy.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:34:58,388 | INFO | [PyInstaller] 140272 INFO: Processing standard module hook 'hook-sklearn.externals.array_api_compat.torch.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:34:58,499 | INFO | [PyInstaller] 140383 INFO: Processing standard module hook 'hook-sklearn.externals.array_api_compat.dask.array.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:34:58,750 | INFO | Iniciando processo de build do Omni Core V2...
+2026-05-11 12:34:58,756 | INFO | Executando comando: C:\Python314\pythonw.exe -m PyInstaller --noconfirm --onefile --console --name omni_core --clean --add-data config;config --add-data core;core --add-data frontend/dist;frontend/dist main.py
+2026-05-11 12:34:59,458 | INFO | [PyInstaller] 141342 INFO: Processing standard module hook 'hook-sklearn.metrics.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:35:00,412 | INFO | [PyInstaller] 1194 INFO: PyInstaller: 6.19.0, contrib hooks: 2026.3
+2026-05-11 12:35:00,416 | INFO | [PyInstaller] 1194 INFO: Python: 3.14.3
+2026-05-11 12:35:00,445 | INFO | [PyInstaller] 1227 INFO: Platform: Windows-10-10.0.18363-SP0
+2026-05-11 12:35:00,448 | INFO | [PyInstaller] 1227 INFO: Python environment: C:\Python314
+2026-05-11 12:35:00,451 | INFO | [PyInstaller] 1227 INFO: wrote C:\Users\STREAMING\.gemini\antigravity\scratch\radio_manager_agent\omni_core.spec
+2026-05-11 12:35:00,456 | INFO | [PyInstaller] 1237 INFO: Removing temporary files and cleaning cache in C:\Users\STREAMING\AppData\Local\pyinstaller
+2026-05-11 12:35:00,459 | INFO | [PyInstaller] 1239 INFO: Module search paths (PYTHONPATH):
+2026-05-11 12:35:00,462 | INFO | [PyInstaller] ['C:\\Users\\STREAMING\\.gemini\\antigravity\\scratch\\radio_manager_agent',
+2026-05-11 12:35:00,465 | INFO | [PyInstaller] 'C:\\Python314\\python314.zip',
+2026-05-11 12:35:00,468 | INFO | [PyInstaller] 'C:\\Python314\\DLLs',
+2026-05-11 12:35:00,470 | INFO | [PyInstaller] 'C:\\Python314\\Lib',
+2026-05-11 12:35:00,473 | INFO | [PyInstaller] 'C:\\Python314',
+2026-05-11 12:35:00,476 | INFO | [PyInstaller] 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages',
+2026-05-11 12:35:00,479 | INFO | [PyInstaller] 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\win32',
+2026-05-11 12:35:00,482 | INFO | [PyInstaller] 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\win32\\lib',
+2026-05-11 12:35:00,485 | INFO | [PyInstaller] 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\Pythonwin',
+2026-05-11 12:35:00,487 | INFO | [PyInstaller] 'C:\\Python314\\Lib\\site-packages',
+2026-05-11 12:35:00,494 | INFO | [PyInstaller] 'C:\\Python314\\Lib\\site-packages\\win32',
+2026-05-11 12:35:00,499 | INFO | [PyInstaller] 'C:\\Python314\\Lib\\site-packages\\win32\\lib',
+2026-05-11 12:35:00,505 | INFO | [PyInstaller] 'C:\\Python314\\Lib\\site-packages\\Pythonwin',
+2026-05-11 12:35:00,511 | INFO | [PyInstaller] 'C:\\Users\\STREAMING\\.gemini\\antigravity\\scratch\\radio_manager_agent']
+2026-05-11 12:35:10,608 | INFO | [PyInstaller] 152492 INFO: Processing standard module hook 'hook-sklearn.metrics.cluster.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:35:10,849 | INFO | [PyInstaller] 152733 INFO: Processing standard module hook 'hook-sklearn.metrics.pairwise.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:35:11,336 | INFO | [PyInstaller] 153221 INFO: Processing standard module hook 'hook-sklearn.cluster.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:35:11,877 | INFO | [PyInstaller] 153761 INFO: Processing standard module hook 'hook-sklearn.neighbors.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:35:12,304 | INFO | [PyInstaller] 154189 INFO: Processing standard module hook 'hook-sklearn.linear_model.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:35:16,743 | INFO | [PyInstaller] 158627 WARNING: Hidden import "pycparser.lextab" not found!
+2026-05-11 12:35:16,743 | INFO | [PyInstaller] 158627 WARNING: Hidden import "pycparser.yacctab" not found!
+2026-05-11 12:35:17,683 | INFO | [PyInstaller] 159567 INFO: Processing standard module hook 'hook-sklearn.tree.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:35:18,942 | INFO | [PyInstaller] 160826 INFO: Processing standard module hook 'hook-PIL.SpiderImagePlugin.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:35:26,404 | INFO | [PyInstaller] 168289 WARNING: Hidden import "scipy.special._cdflib" not found!
+2026-05-11 12:35:26,498 | INFO | [PyInstaller] 168382 INFO: Processing standard module hook 'hook-sqlalchemy.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:35:27,060 | INFO | [PyInstaller] 168944 WARNING: Hidden import "pysqlite2" not found!
+2026-05-11 12:35:27,060 | INFO | [PyInstaller] 168945 WARNING: Hidden import "MySQLdb" not found!
+2026-05-11 12:35:27,061 | INFO | [PyInstaller] 168945 WARNING: Hidden import "psycopg2" not found!
+2026-05-11 12:35:29,710 | INFO | [PyInstaller] 171595 INFO: Processing standard module hook 'hook-_tkinter.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:35:29,712 | INFO | [PyInstaller] 171597 INFO: Processing standard module hook 'hook-tzdata.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:35:30,437 | INFO | [PyInstaller] 172322 INFO: Performing binary vs. data reclassification (1944 entries)
+2026-05-11 12:35:35,578 | INFO | [PyInstaller] 177462 INFO: Looking for ctypes DLLs
+2026-05-11 12:35:36,726 | INFO | [PyInstaller] 178611 INFO: Analyzing run-time hooks ...
+2026-05-11 12:35:36,748 | INFO | [PyInstaller] 178633 INFO: Including run-time hook 'pyi_rth_inspect.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks\\rthooks'
+2026-05-11 12:35:36,753 | INFO | [PyInstaller] 178638 INFO: Including run-time hook 'pyi_rth_pkgutil.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks\\rthooks'
+2026-05-11 12:35:36,767 | INFO | [PyInstaller] 178651 INFO: Including run-time hook 'pyi_rth_multiprocessing.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks\\rthooks'
+2026-05-11 12:35:36,772 | INFO | [PyInstaller] 178656 INFO: Including run-time hook 'pyi_rth_setuptools.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks\\rthooks'
+2026-05-11 12:35:36,785 | INFO | [PyInstaller] 178669 INFO: Including run-time hook 'pyi_rth_cryptography_openssl.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\rthooks'
+2026-05-11 12:35:36,799 | INFO | [PyInstaller] 178684 INFO: Including run-time hook 'pyi_rth_pywintypes.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\rthooks'
+2026-05-11 12:35:36,812 | INFO | [PyInstaller] 178696 INFO: Including run-time hook 'pyi_rth_pythoncom.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\rthooks'
+2026-05-11 12:35:36,815 | INFO | [PyInstaller] 178699 INFO: Including run-time hook 'pyi_rth__tkinter.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks\\rthooks'
+2026-05-11 12:35:36,952 | INFO | [PyInstaller] 178837 INFO: Creating base_library.zip...
+2026-05-11 12:35:36,985 | INFO | [PyInstaller] 178870 INFO: Looking for dynamic libraries
+2026-05-11 12:35:38,081 | INFO | [PyInstaller] C:\Python314\Lib\site-packages\pywinauto\__init__.py:80: UserWarning: Revert to STA COM threading mode
+2026-05-11 12:35:38,081 | INFO | [PyInstaller] warnings.warn("Revert to STA COM threading mode", UserWarning)
+2026-05-11 12:35:38,571 | INFO | [PyInstaller] 2026-05-11 12:35:38,571 | INFO | Radio Manager Agent started.
+2026-05-11 12:35:41,500 | INFO | [PyInstaller] C:\Users\p001642\AppData\Roaming\Python\Python314\site-packages\PyInstaller\building\build_main.py:227: NumbaPendingDeprecationWarning: [1mThe 'pycc' module is pending deprecation. Replacement technology is being developed.
+2026-05-11 12:35:41,505 | INFO | [PyInstaller] Pending Deprecation in Numba 0.57.0. For more information please see: https://numba.readthedocs.io/en/stable/reference/deprecation.html#deprecation-of-the-numba-pycc-module[0m
+2026-05-11 12:35:41,508 | INFO | [PyInstaller] __import__(package)
+2026-05-11 12:35:45,157 | INFO | [PyInstaller] C:\Users\p001642\AppData\Roaming\Python\Python314\site-packages\PyInstaller\building\build_main.py:227: PendingDeprecationWarning: Please use `import python_multipart` instead.
+2026-05-11 12:35:45,158 | INFO | [PyInstaller] __import__(package)
+2026-05-11 12:35:46,344 | INFO | [PyInstaller] 188229 INFO: Extra DLL search directories (AddDllDirectory): ['C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\numpy.libs', 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\scipy.libs', 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\llvmlite.libs']
+2026-05-11 12:35:46,346 | INFO | [PyInstaller] 188229 INFO: Extra DLL search directories (PATH): []
+2026-05-11 12:35:50,738 | INFO | [PyInstaller] 192622 WARNING: Library not found: could not resolve 'tbb12.dll', dependency of 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\numba\\np\\ufunc\\tbbpool.cp314-win_amd64.pyd'.
+2026-05-11 12:35:50,868 | INFO | [PyInstaller] 192752 INFO: Warnings written to C:\Users\STREAMING\.gemini\antigravity\scratch\radio_manager_agent\build\omni_core\warn-omni_core.txt
+2026-05-11 12:35:51,515 | INFO | [PyInstaller] 193399 INFO: Graph cross-reference written to C:\Users\STREAMING\.gemini\antigravity\scratch\radio_manager_agent\build\omni_core\xref-omni_core.html
+2026-05-11 12:35:51,860 | INFO | [PyInstaller] 193745 INFO: checking PYZ
+2026-05-11 12:35:51,861 | INFO | [PyInstaller] 193745 INFO: Building PYZ because PYZ-00.toc is non existent
+2026-05-11 12:35:51,862 | INFO | [PyInstaller] 193745 INFO: Building PYZ (ZlibArchive) C:\Users\STREAMING\.gemini\antigravity\scratch\radio_manager_agent\build\omni_core\PYZ-00.pyz
+2026-05-11 12:35:55,334 | INFO | [PyInstaller] 197218 INFO: Building PYZ (ZlibArchive) C:\Users\STREAMING\.gemini\antigravity\scratch\radio_manager_agent\build\omni_core\PYZ-00.pyz completed successfully.
+2026-05-11 12:35:55,501 | INFO | [PyInstaller] 197386 INFO: checking PKG
+2026-05-11 12:35:55,502 | INFO | [PyInstaller] 197386 INFO: Building PKG because PKG-00.toc is non existent
+2026-05-11 12:35:55,503 | INFO | [PyInstaller] 197386 INFO: Building PKG (CArchive) omni_core.pkg
+2026-05-11 12:36:14,529 | INFO | [PyInstaller] 216413 INFO: Building PKG (CArchive) omni_core.pkg completed successfully.
+2026-05-11 12:36:14,590 | INFO | [PyInstaller] 216475 INFO: Bootloader C:\Users\p001642\AppData\Roaming\Python\Python314\site-packages\PyInstaller\bootloader\Windows-64bit-intel\run.exe
+2026-05-11 12:36:14,592 | INFO | [PyInstaller] 216475 INFO: checking EXE
+2026-05-11 12:36:14,594 | INFO | [PyInstaller] 216475 INFO: Building EXE because EXE-00.toc is non existent
+2026-05-11 12:36:14,595 | INFO | [PyInstaller] 216475 INFO: Building EXE from EXE-00.toc
+2026-05-11 12:36:14,595 | INFO | [PyInstaller] 216477 INFO: Copying bootloader EXE to C:\Users\STREAMING\.gemini\antigravity\scratch\radio_manager_agent\dist\omni_core.exe
+2026-05-11 12:36:14,736 | INFO | [PyInstaller] 216620 INFO: Copying icon to EXE
+2026-05-11 12:36:14,800 | INFO | [PyInstaller] 216684 INFO: Copying 0 resources to EXE
+2026-05-11 12:36:14,805 | INFO | [PyInstaller] 216685 INFO: Embedding manifest in EXE
+2026-05-11 12:36:14,858 | INFO | [PyInstaller] 216742 INFO: Appending PKG archive to EXE
+2026-05-11 12:36:15,046 | INFO | [PyInstaller] 216930 INFO: Fixing EXE headers
+2026-05-11 12:36:16,759 | INFO | [PyInstaller] 218643 INFO: Building EXE from EXE-00.toc completed successfully.
+2026-05-11 12:36:16,812 | INFO | [PyInstaller] 218696 INFO: Build complete! The results are available in: C:\Users\STREAMING\.gemini\antigravity\scratch\radio_manager_agent\dist
+2026-05-11 12:36:16,815 | INFO | [PyInstaller] Adding imports: ['yt_dlp.compat._legacy', 'yt_dlp.compat._deprecated', 'yt_dlp.utils._legacy', 'yt_dlp.utils._deprecated', 'Cryptodome', 'websockets', 'websockets.__main__', 'websockets.asyncio', 'websockets.asyncio.async_timeout', 'websockets.asyncio.client', 'websockets.asyncio.compatibility', 'websockets.asyncio.connection', 'websockets.asyncio.messages', 'websockets.asyncio.router', 'websockets.asyncio.server', 'websockets.auth', 'websockets.cli', 'websockets.client', 'websockets.connection', 'websockets.datastructures', 'websockets.exceptions', 'websockets.extensions', 'websockets.extensions.base', 'websockets.extensions.permessage_deflate', 'websockets.frames', 'websockets.headers', 'websockets.http', 'websockets.http11', 'websockets.imports', 'websockets.legacy', 'websockets.legacy.auth', 'websockets.legacy.client', 'websockets.legacy.exceptions', 'websockets.legacy.framing', 'websockets.legacy.handshake', 'websockets.legacy.http', 'websockets.legacy.protocol', 'websockets.legacy.server', 'websockets.protocol', 'websockets.proxy', 'websockets.server', 'websockets.speedups', 'websockets.streams', 'websockets.sync', 'websockets.sync.client', 'websockets.sync.connection', 'websockets.sync.messages', 'websockets.sync.router', 'websockets.sync.server', 'websockets.sync.utils', 'websockets.typing', 'websockets.uri', 'websockets.utils', 'websockets.version', 'requests', 'requests.__version__', 'requests._internal_utils', 'requests.adapters', 'requests.api', 'requests.auth', 'requests.certs', 'requests.compat', 'requests.cookies', 'requests.exceptions', 'requests.help', 'requests.hooks', 'requests.models', 'requests.packages', 'requests.sessions', 'requests.status_codes', 'requests.structures', 'requests.utils', 'urllib3', 'urllib3._base_connection', 'urllib3._collections', 'urllib3._request_methods', 'urllib3._version', 'urllib3.connection', 'urllib3.connectionpool', 'urllib3.contrib', 'urllib3.contrib.pyopenssl', 'urllib3.contrib.socks', 'urllib3.exceptions', 'urllib3.fields', 'urllib3.filepost', 'urllib3.http2', 'urllib3.http2.connection', 'urllib3.http2.probe', 'urllib3.poolmanager', 'urllib3.response', 'urllib3.util', 'urllib3.util.connection', 'urllib3.util.proxy', 'urllib3.util.request', 'urllib3.util.response', 'urllib3.util.retry', 'urllib3.util.ssl_', 'urllib3.util.ssl_match_hostname', 'urllib3.util.ssltransport', 'urllib3.util.timeout', 'urllib3.util.url', 'urllib3.util.util', 'urllib3.util.wait', 'mutagen', 'brotli', 'certifi', 'secretstorage', 'curl_cffi']
+2026-05-11 12:36:17,406 | INFO | ✅ Build concluído com sucesso!
+2026-05-11 12:41:22,134 | INFO | Iniciando processo de build do Omni Core V2...
+2026-05-11 12:41:22,134 | INFO | Executando comando: C:\python314\python.exe -m PyInstaller --noconfirm --onefile --console --name omni_core --clean --add-data config;config --add-data core;core --add-data frontend/dist;frontend/dist main.py
+2026-05-11 12:41:22,492 | INFO | [PyInstaller] 181 INFO: PyInstaller: 6.19.0, contrib hooks: 2026.3
+2026-05-11 12:41:22,493 | INFO | [PyInstaller] 181 INFO: Python: 3.14.3
+2026-05-11 12:41:22,523 | INFO | [PyInstaller] 211 INFO: Platform: Windows-10-10.0.18363-SP0
+2026-05-11 12:41:22,523 | INFO | [PyInstaller] 211 INFO: Python environment: C:\python314
+2026-05-11 12:41:22,524 | INFO | [PyInstaller] 212 INFO: wrote C:\Users\STREAMING\.gemini\antigravity\scratch\radio_manager_agent\omni_core.spec
+2026-05-11 12:41:22,526 | INFO | [PyInstaller] 214 INFO: Removing temporary files and cleaning cache in C:\Users\STREAMING\AppData\Local\pyinstaller
+2026-05-11 12:41:22,551 | INFO | [PyInstaller] 239 INFO: Module search paths (PYTHONPATH):
+2026-05-11 12:41:22,551 | INFO | [PyInstaller] ['C:\\Users\\STREAMING\\.gemini\\antigravity\\scratch\\radio_manager_agent',
+2026-05-11 12:41:22,551 | INFO | [PyInstaller] 'C:\\python314\\python314.zip',
+2026-05-11 12:41:22,551 | INFO | [PyInstaller] 'C:\\python314\\DLLs',
+2026-05-11 12:41:22,551 | INFO | [PyInstaller] 'C:\\python314\\Lib',
+2026-05-11 12:41:22,551 | INFO | [PyInstaller] 'C:\\python314',
+2026-05-11 12:41:22,551 | INFO | [PyInstaller] 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages',
+2026-05-11 12:41:22,552 | INFO | [PyInstaller] 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\win32',
+2026-05-11 12:41:22,552 | INFO | [PyInstaller] 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\win32\\lib',
+2026-05-11 12:41:22,552 | INFO | [PyInstaller] 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\Pythonwin',
+2026-05-11 12:41:22,552 | INFO | [PyInstaller] 'C:\\python314\\Lib\\site-packages',
+2026-05-11 12:41:22,552 | INFO | [PyInstaller] 'C:\\python314\\Lib\\site-packages\\win32',
+2026-05-11 12:41:22,552 | INFO | [PyInstaller] 'C:\\python314\\Lib\\site-packages\\win32\\lib',
+2026-05-11 12:41:22,552 | INFO | [PyInstaller] 'C:\\python314\\Lib\\site-packages\\Pythonwin',
+2026-05-11 12:41:22,552 | INFO | [PyInstaller] 'C:\\Users\\STREAMING\\.gemini\\antigravity\\scratch\\radio_manager_agent']
+2026-05-11 12:41:23,906 | INFO | [PyInstaller] 1594 INFO: Appending 'datas' from .spec
+2026-05-11 12:41:23,908 | INFO | [PyInstaller] 1596 INFO: checking Analysis
+2026-05-11 12:41:23,918 | INFO | [PyInstaller] 1597 INFO: Building Analysis because Analysis-00.toc is non existent
+2026-05-11 12:41:23,920 | INFO | [PyInstaller] 1597 INFO: Looking for Python shared library...
+2026-05-11 12:41:23,922 | INFO | [PyInstaller] 1597 INFO: Using Python shared library: C:\python314\python314.dll
+2026-05-11 12:41:23,929 | INFO | [PyInstaller] 1597 INFO: Running Analysis Analysis-00.toc
+2026-05-11 12:41:23,934 | INFO | [PyInstaller] 1597 INFO: Target bytecode optimization level: 0
+2026-05-11 12:41:23,935 | INFO | [PyInstaller] 1597 INFO: Initializing module dependency graph...
+2026-05-11 12:41:23,935 | INFO | [PyInstaller] 1599 INFO: Initializing module graph hook caches...
+2026-05-11 12:41:23,944 | INFO | [PyInstaller] 1632 INFO: Analyzing modules for base_library.zip ...
+2026-05-11 12:41:25,097 | INFO | [PyInstaller] 2785 INFO: Processing standard module hook 'hook-heapq.py' from 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:41:25,106 | INFO | [PyInstaller] 2794 INFO: Processing standard module hook 'hook-encodings.py' from 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:41:28,823 | INFO | [PyInstaller] 6511 INFO: Processing standard module hook 'hook-difflib.py' from 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:41:29,047 | INFO | [PyInstaller] 6735 INFO: Processing standard module hook 'hook-pickle.py' from 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:41:31,762 | INFO | [PyInstaller] 9450 INFO: Caching module dependency graph...
+2026-05-11 12:41:31,844 | INFO | [PyInstaller] 9532 INFO: Analyzing C:\Users\STREAMING\.gemini\antigravity\scratch\radio_manager_agent\main.py
+2026-05-11 12:41:31,853 | INFO | [PyInstaller] 9541 INFO: Processing pre-find-module-path hook 'hook-tkinter.py' from 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks\\pre_find_module_path'
+2026-05-11 12:41:31,854 | INFO | [PyInstaller] 9543 INFO: TclTkInfo: initializing cached Tcl/Tk info...
+2026-05-11 12:41:32,327 | INFO | [PyInstaller] 10015 INFO: Processing standard module hook 'hook-_tkinter.py' from 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:41:32,398 | INFO | [PyInstaller] 10086 INFO: Processing standard module hook 'hook-sysconfig.py' from 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:41:32,405 | INFO | [PyInstaller] 10094 INFO: Processing standard module hook 'hook-_ctypes.py' from 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:41:32,984 | INFO | [PyInstaller] 10673 INFO: Processing standard module hook 'hook-anyio.py' from 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:41:33,580 | INFO | [PyInstaller] 11268 INFO: Processing pre-safe-import-module hook 'hook-typing_extensions.py' from 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
+2026-05-11 12:41:33,581 | INFO | [PyInstaller] 11269 INFO: SetuptoolsInfo: initializing cached setuptools info...
+2026-05-11 12:41:34,626 | INFO | [PyInstaller] 12314 INFO: Processing standard module hook 'hook-multiprocessing.util.py' from 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:41:34,792 | INFO | [PyInstaller] 12481 INFO: Processing standard module hook 'hook-xml.py' from 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:41:36,669 | INFO | [PyInstaller] 14357 INFO: Processing standard module hook 'hook-pydantic.py' from 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:41:37,396 | INFO | [PyInstaller] 15084 INFO: Processing standard module hook 'hook-platform.py' from 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:41:37,969 | INFO | [PyInstaller] 15658 INFO: Processing standard module hook 'hook-zoneinfo.py' from 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:41:39,765 | INFO | Iniciando processo de build do Omni Core V2...
+2026-05-11 12:41:39,765 | INFO | Executando comando: C:\Python314\python.exe -m PyInstaller --noconfirm --onefile --console --name omni_core --clean --add-data config;config --add-data core;core --add-data frontend/dist;frontend/dist main.py
+2026-05-11 12:41:39,956 | INFO | [PyInstaller] 42 DEPRECATION: Running PyInstaller as admin is not necessary nor sensible. Run PyInstaller from a non-administrator terminal. PyInstaller 7.0 will block this.
+2026-05-11 12:41:40,090 | INFO | [PyInstaller] 176 INFO: PyInstaller: 6.19.0, contrib hooks: 2026.4
+2026-05-11 12:41:40,090 | INFO | [PyInstaller] 176 INFO: Python: 3.14.3
+2026-05-11 12:41:40,109 | INFO | [PyInstaller] 195 INFO: Platform: Windows-10-10.0.18363-SP0
+2026-05-11 12:41:40,110 | INFO | [PyInstaller] 196 INFO: Python environment: C:\Python314
+2026-05-11 12:41:40,110 | INFO | [PyInstaller] 196 INFO: wrote C:\Users\STREAMING\.gemini\antigravity\scratch\radio_manager_agent\omni_core.spec
+2026-05-11 12:41:40,113 | INFO | [PyInstaller] 199 INFO: Removing temporary files and cleaning cache in C:\Users\p001642\AppData\Local\pyinstaller
+2026-05-11 12:41:40,115 | INFO | [PyInstaller] 201 INFO: Module search paths (PYTHONPATH):
+2026-05-11 12:41:40,115 | INFO | [PyInstaller] ['C:\\Users\\STREAMING\\.gemini\\antigravity\\scratch\\radio_manager_agent',
+2026-05-11 12:41:40,115 | INFO | [PyInstaller] 'C:\\Python314\\python314.zip',
+2026-05-11 12:41:40,115 | INFO | [PyInstaller] 'C:\\Python314\\DLLs',
+2026-05-11 12:41:40,116 | INFO | [PyInstaller] 'C:\\Python314\\Lib',
+2026-05-11 12:41:40,116 | INFO | [PyInstaller] 'C:\\Python314',
+2026-05-11 12:41:40,117 | INFO | [PyInstaller] 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages',
+2026-05-11 12:41:40,117 | INFO | [PyInstaller] 'C:\\Python314\\Lib\\site-packages',
+2026-05-11 12:41:40,118 | INFO | [PyInstaller] 'C:\\Python314\\Lib\\site-packages\\win32',
+2026-05-11 12:41:40,118 | INFO | [PyInstaller] 'C:\\Python314\\Lib\\site-packages\\win32\\lib',
+2026-05-11 12:41:40,118 | INFO | [PyInstaller] 'C:\\Python314\\Lib\\site-packages\\Pythonwin',
+2026-05-11 12:41:40,120 | INFO | [PyInstaller] 'C:\\Users\\STREAMING\\.gemini\\antigravity\\scratch\\radio_manager_agent']
+2026-05-11 12:41:40,653 | INFO | [PyInstaller] 18341 INFO: Processing standard module hook 'hook-uvicorn.py' from 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:41:40,971 | INFO | [PyInstaller] 1057 INFO: Appending 'datas' from .spec
+2026-05-11 12:41:40,973 | INFO | [PyInstaller] 1059 INFO: checking Analysis
+2026-05-11 12:41:40,973 | INFO | [PyInstaller] 1059 INFO: Building Analysis because Analysis-00.toc is non existent
+2026-05-11 12:41:40,973 | INFO | [PyInstaller] 1059 INFO: Looking for Python shared library...
+2026-05-11 12:41:40,974 | INFO | [PyInstaller] 1059 INFO: Using Python shared library: C:\Python314\python314.dll
+2026-05-11 12:41:40,974 | INFO | [PyInstaller] 1059 INFO: Running Analysis Analysis-00.toc
+2026-05-11 12:41:40,974 | INFO | [PyInstaller] 1059 INFO: Target bytecode optimization level: 0
+2026-05-11 12:41:40,974 | INFO | [PyInstaller] 1059 INFO: Initializing module dependency graph...
+2026-05-11 12:41:40,974 | INFO | [PyInstaller] 1060 INFO: Initializing module graph hook caches...
+2026-05-11 12:41:41,000 | INFO | [PyInstaller] 1087 INFO: Analyzing modules for base_library.zip ...
+2026-05-11 12:41:43,051 | INFO | [PyInstaller] 3138 INFO: Processing standard module hook 'hook-encodings.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:41:43,272 | INFO | [PyInstaller] 20960 INFO: Processing standard module hook 'hook-websockets.py' from 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:41:43,720 | INFO | [PyInstaller] 3806 INFO: Processing standard module hook 'hook-pickle.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:41:44,324 | INFO | [PyInstaller] 4410 INFO: Processing standard module hook 'hook-difflib.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:41:44,345 | INFO | [PyInstaller] 4431 INFO: Processing standard module hook 'hook-heapq.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:41:44,877 | INFO | [PyInstaller] 22565 INFO: Processing standard module hook 'hook-sqlalchemy.py' from 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:41:45,890 | INFO | [PyInstaller] 23578 INFO: Processing pre-safe-import-module hook 'hook-importlib_metadata.py' from 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
+2026-05-11 12:41:45,890 | INFO | [PyInstaller] 23579 INFO: Setuptools: 'importlib_metadata' appears to be a setuptools-vendored copy - creating alias to 'setuptools._vendor.importlib_metadata'!
+2026-05-11 12:41:45,902 | INFO | [PyInstaller] 23590 INFO: Processing standard module hook 'hook-setuptools.py' from 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:41:45,925 | INFO | [PyInstaller] 23613 INFO: Processing pre-safe-import-module hook 'hook-distutils.py' from 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
+2026-05-11 12:41:45,978 | INFO | [PyInstaller] 23666 INFO: Processing pre-safe-import-module hook 'hook-jaraco.py' from 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
+2026-05-11 12:41:45,978 | INFO | [PyInstaller] 23666 INFO: Setuptools: 'jaraco' appears to be a full setuptools-vendored copy - creating alias to 'setuptools._vendor.jaraco'!
+2026-05-11 12:41:45,997 | INFO | [PyInstaller] 23685 INFO: Processing pre-safe-import-module hook 'hook-more_itertools.py' from 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
+2026-05-11 12:41:45,998 | INFO | [PyInstaller] 23686 INFO: Setuptools: 'more_itertools' appears to be a setuptools-vendored copy - creating alias to 'setuptools._vendor.more_itertools'!
+2026-05-11 12:41:46,388 | INFO | [PyInstaller] 24077 INFO: Processing pre-safe-import-module hook 'hook-packaging.py' from 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
+2026-05-11 12:41:46,695 | INFO | [PyInstaller] 24383 INFO: Processing standard module hook 'hook-setuptools._vendor.jaraco.text.py' from 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:41:46,696 | INFO | [PyInstaller] 24385 INFO: Processing pre-safe-import-module hook 'hook-importlib_resources.py' from 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
+2026-05-11 12:41:46,725 | INFO | [PyInstaller] 24414 INFO: Processing pre-safe-import-module hook 'hook-backports.py' from 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
+2026-05-11 12:41:46,727 | INFO | [PyInstaller] 24414 INFO: Setuptools: 'backports' appears to be a full setuptools-vendored copy - creating alias to 'setuptools._vendor.backports'!
+2026-05-11 12:41:47,499 | INFO | [PyInstaller] 25187 INFO: Processing pre-safe-import-module hook 'hook-tomli.py' from 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
+2026-05-11 12:41:47,499 | INFO | [PyInstaller] 25187 INFO: Setuptools: 'tomli' appears to be a setuptools-vendored copy - creating alias to 'setuptools._vendor.tomli'!
+2026-05-11 12:41:48,419 | INFO | [PyInstaller] 8505 INFO: Caching module dependency graph...
+2026-05-11 12:41:48,464 | INFO | [PyInstaller] 8551 INFO: Analyzing C:\Users\STREAMING\.gemini\antigravity\scratch\radio_manager_agent\main.py
+2026-05-11 12:41:48,473 | INFO | [PyInstaller] 8559 INFO: Processing pre-find-module-path hook 'hook-tkinter.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks\\pre_find_module_path'
+2026-05-11 12:41:48,475 | INFO | [PyInstaller] 8561 INFO: TclTkInfo: initializing cached Tcl/Tk info...
+2026-05-11 12:41:48,534 | INFO | [PyInstaller] 26223 INFO: Processing pre-safe-import-module hook 'hook-wheel.py' from 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
+2026-05-11 12:41:48,535 | INFO | [PyInstaller] 26223 INFO: Setuptools: 'wheel' appears to be a setuptools-vendored copy - creating alias to 'setuptools._vendor.wheel'!
+2026-05-11 12:41:48,732 | INFO | [PyInstaller] 26421 INFO: Processing standard module hook 'hook-setuptools._vendor.importlib_metadata.py' from 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:41:48,777 | INFO | [PyInstaller] 26465 INFO: Processing pre-safe-import-module hook 'hook-zipp.py' from 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
+2026-05-11 12:41:48,778 | INFO | [PyInstaller] 26466 INFO: Setuptools: 'zipp' appears to be a setuptools-vendored copy - creating alias to 'setuptools._vendor.zipp'!
+2026-05-11 12:41:49,024 | INFO | [PyInstaller] 9110 INFO: Processing standard module hook 'hook-_tkinter.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:41:49,096 | INFO | [PyInstaller] 9182 INFO: Processing standard module hook 'hook-sysconfig.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:41:49,103 | INFO | [PyInstaller] 9189 INFO: Processing standard module hook 'hook-_ctypes.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:41:49,718 | INFO | [PyInstaller] 9804 INFO: Processing standard module hook 'hook-anyio.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:41:50,299 | INFO | [PyInstaller] 10385 INFO: Processing pre-safe-import-module hook 'hook-typing_extensions.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
+2026-05-11 12:41:50,301 | INFO | [PyInstaller] 10387 INFO: SetuptoolsInfo: initializing cached setuptools info...
+2026-05-11 12:41:51,371 | INFO | [PyInstaller] 11457 INFO: Processing standard module hook 'hook-multiprocessing.util.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:41:51,529 | INFO | [PyInstaller] 11615 INFO: Processing standard module hook 'hook-xml.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:41:53,436 | INFO | [PyInstaller] 13522 INFO: Processing standard module hook 'hook-pydantic.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:41:54,237 | INFO | [PyInstaller] 14324 INFO: Processing standard module hook 'hook-platform.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:41:54,915 | INFO | [PyInstaller] 15001 INFO: Processing standard module hook 'hook-zoneinfo.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:41:55,015 | INFO | [PyInstaller] 32703 INFO: Processing standard module hook 'hook-sqlite3.py' from 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:41:55,472 | INFO | [PyInstaller] 33160 INFO: Processing standard module hook 'hook-apscheduler.py' from 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:41:56,211 | INFO | [PyInstaller] 33900 INFO: Processing standard module hook 'hook-psutil.py' from 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:41:56,466 | INFO | [PyInstaller] 34154 INFO: Processing standard module hook 'hook-numpy.py' from 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:41:57,758 | INFO | [PyInstaller] 17844 INFO: Processing standard module hook 'hook-uvicorn.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:41:59,824 | INFO | [PyInstaller] 19911 INFO: Processing standard module hook 'hook-websockets.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:42:01,011 | INFO | [PyInstaller] 38700 INFO: Processing standard module hook 'hook-charset_normalizer.py' from 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:42:01,145 | INFO | [PyInstaller] 21231 INFO: Processing standard module hook 'hook-sqlalchemy.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:42:01,770 | INFO | [PyInstaller] 39459 INFO: Processing standard module hook 'hook-comtypes.client.py' from 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:42:02,241 | INFO | [PyInstaller] 22327 INFO: Processing pre-safe-import-module hook 'hook-importlib_metadata.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
+2026-05-11 12:42:02,242 | INFO | [PyInstaller] 22328 INFO: Setuptools: 'importlib_metadata' appears to be a setuptools-vendored copy - creating alias to 'setuptools._vendor.importlib_metadata'!
+2026-05-11 12:42:02,254 | INFO | [PyInstaller] 22340 INFO: Processing standard module hook 'hook-setuptools.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:42:02,276 | INFO | [PyInstaller] 22362 INFO: Processing pre-safe-import-module hook 'hook-distutils.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
+2026-05-11 12:42:02,330 | INFO | [PyInstaller] 22416 INFO: Processing pre-safe-import-module hook 'hook-jaraco.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
+2026-05-11 12:42:02,331 | INFO | [PyInstaller] 22417 INFO: Setuptools: 'jaraco' appears to be a full setuptools-vendored copy - creating alias to 'setuptools._vendor.jaraco'!
+2026-05-11 12:42:02,347 | INFO | [PyInstaller] 22433 INFO: Processing pre-safe-import-module hook 'hook-more_itertools.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
+2026-05-11 12:42:02,348 | INFO | [PyInstaller] 22434 INFO: Setuptools: 'more_itertools' appears to be a setuptools-vendored copy - creating alias to 'setuptools._vendor.more_itertools'!
+2026-05-11 12:42:02,638 | INFO | [PyInstaller] 40327 INFO: Processing standard module hook 'hook-pythoncom.py' from 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:42:02,720 | INFO | [PyInstaller] 22806 INFO: Processing pre-safe-import-module hook 'hook-packaging.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
+2026-05-11 12:42:02,753 | INFO | [PyInstaller] 40441 INFO: Processing standard module hook 'hook-pywintypes.py' from 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:42:03,045 | INFO | [PyInstaller] 23131 INFO: Processing standard module hook 'hook-setuptools._vendor.jaraco.text.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:42:03,047 | INFO | [PyInstaller] 23133 INFO: Processing pre-safe-import-module hook 'hook-importlib_resources.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
+2026-05-11 12:42:03,068 | INFO | [PyInstaller] 23155 INFO: Processing pre-safe-import-module hook 'hook-backports.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
+2026-05-11 12:42:03,070 | INFO | [PyInstaller] 23155 INFO: Setuptools: 'backports' appears to be a full setuptools-vendored copy - creating alias to 'setuptools._vendor.backports'!
+2026-05-11 12:42:03,782 | INFO | [PyInstaller] 23868 INFO: Processing pre-safe-import-module hook 'hook-tomli.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
+2026-05-11 12:42:03,783 | INFO | [PyInstaller] 23869 INFO: Setuptools: 'tomli' appears to be a setuptools-vendored copy - creating alias to 'setuptools._vendor.tomli'!
+2026-05-11 12:42:03,842 | INFO | [PyInstaller] 41530 INFO: Processing standard module hook 'hook-PIL.py' from 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:42:04,072 | INFO | [PyInstaller] 41760 INFO: Processing standard module hook 'hook-PIL.Image.py' from 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:42:04,589 | INFO | [PyInstaller] 42277 INFO: Processing standard module hook 'hook-xml.etree.cElementTree.py' from 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:42:04,789 | INFO | [PyInstaller] 24875 INFO: Processing pre-safe-import-module hook 'hook-wheel.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
+2026-05-11 12:42:04,789 | INFO | [PyInstaller] 24876 INFO: Setuptools: 'wheel' appears to be a setuptools-vendored copy - creating alias to 'setuptools._vendor.wheel'!
+2026-05-11 12:42:04,904 | INFO | [PyInstaller] 24990 INFO: Processing standard module hook 'hook-setuptools._vendor.importlib_metadata.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:42:04,922 | INFO | [PyInstaller] 42611 INFO: Processing standard module hook 'hook-PIL.ImageFilter.py' from 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:42:04,943 | INFO | [PyInstaller] 25029 INFO: Processing pre-safe-import-module hook 'hook-zipp.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
+2026-05-11 12:42:04,944 | INFO | [PyInstaller] 25030 INFO: Setuptools: 'zipp' appears to be a setuptools-vendored copy - creating alias to 'setuptools._vendor.zipp'!
+2026-05-11 12:42:05,369 | INFO | [PyInstaller] C:\Users\STREAMING\AppData\Roaming\Python\Python314\site-packages\pywinauto\keyboard.py:105: SyntaxWarning: "\;" is an invalid escape sequence. Such sequences will not work in the future. Did you mean "\\;"? A raw string is also an option.
+2026-05-11 12:42:05,369 | INFO | [PyInstaller] option only affects the behavior of keys matching [-=[]\;',./a-zA-Z0-9 ].  Note
+2026-05-11 12:42:05,392 | INFO | [PyInstaller] C:\Users\STREAMING\AppData\Roaming\Python\Python314\site-packages\pywinauto\linux\keyboard.py:55: SyntaxWarning: "\e" is an invalid escape sequence. Such sequences will not work in the future. Did you mean "\\e"? A raw string is also an option.
+2026-05-11 12:42:05,393 | INFO | [PyInstaller] '\e': "Escape",
+2026-05-11 12:42:05,988 | INFO | [PyInstaller] 43676 INFO: Processing pre-safe-import-module hook 'hook-win32com.py' from 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\pre_safe_import_module'
+2026-05-11 12:42:06,122 | INFO | [PyInstaller] 43811 INFO: Processing standard module hook 'hook-win32com.py' from 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:42:06,431 | INFO | [PyInstaller] 44119 INFO: Processing standard module hook 'hook-urllib3.py' from 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:42:07,015 | INFO | [PyInstaller] 44704 INFO: Processing standard module hook 'hook-cryptography.py' from 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:42:08,830 | INFO | [PyInstaller] 46518 INFO: hook-cryptography: cryptography does not seem to be using dynamically linked OpenSSL.
+2026-05-11 12:42:09,487 | INFO | [PyInstaller] 47176 INFO: Processing standard module hook 'hook-certifi.py' from 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:42:09,969 | INFO | [PyInstaller] 47658 INFO: Processing standard module hook 'hook-librosa.py' from 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:42:10,881 | INFO | [PyInstaller] 30967 INFO: Processing standard module hook 'hook-sqlite3.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:42:11,201 | INFO | [PyInstaller] 31288 INFO: Processing standard module hook 'hook-apscheduler.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:42:11,944 | INFO | [PyInstaller] 32030 INFO: Processing standard module hook 'hook-psutil.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:42:12,188 | INFO | [PyInstaller] 32274 INFO: Processing standard module hook 'hook-numpy.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:42:13,573 | INFO | [PyInstaller] 51262 INFO: Processing standard module hook 'hook-pygments.py' from 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:42:16,531 | INFO | [PyInstaller] 36617 INFO: Processing standard module hook 'hook-charset_normalizer.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:42:17,290 | INFO | [PyInstaller] 37376 INFO: Processing standard module hook 'hook-comtypes.client.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:42:18,144 | INFO | [PyInstaller] 38230 INFO: Processing standard module hook 'hook-pythoncom.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:42:18,254 | INFO | [PyInstaller] 38341 INFO: Processing standard module hook 'hook-pywintypes.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:42:19,171 | INFO | [PyInstaller] 56859 INFO: Processing standard module hook 'hook-pycparser.py' from 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:42:19,284 | INFO | [PyInstaller] 39370 INFO: Processing standard module hook 'hook-PIL.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:42:19,502 | INFO | [PyInstaller] 39588 INFO: Processing standard module hook 'hook-PIL.Image.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:42:20,006 | INFO | [PyInstaller] 40092 INFO: Processing standard module hook 'hook-xml.etree.cElementTree.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:42:20,353 | INFO | [PyInstaller] 40439 INFO: Processing standard module hook 'hook-PIL.ImageFilter.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:42:20,853 | INFO | [PyInstaller] C:\Python314\Lib\site-packages\pywinauto\keyboard.py:105: SyntaxWarning: "\;" is an invalid escape sequence. Such sequences will not work in the future. Did you mean "\\;"? A raw string is also an option.
+2026-05-11 12:42:20,885 | INFO | [PyInstaller] option only affects the behavior of keys matching [-=[]\;',./a-zA-Z0-9 ].  Note
+2026-05-11 12:42:20,918 | INFO | [PyInstaller] C:\Python314\Lib\site-packages\pywinauto\linux\keyboard.py:55: SyntaxWarning: "\e" is an invalid escape sequence. Such sequences will not work in the future. Did you mean "\\e"? A raw string is also an option.
+2026-05-11 12:42:20,918 | INFO | [PyInstaller] '\e': "Escape",
+2026-05-11 12:42:21,505 | INFO | [PyInstaller] 41591 INFO: Processing pre-safe-import-module hook 'hook-win32com.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\pre_safe_import_module'
+2026-05-11 12:42:21,610 | INFO | [PyInstaller] 41696 INFO: Processing standard module hook 'hook-win32com.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:42:21,897 | INFO | [PyInstaller] 41983 INFO: Processing standard module hook 'hook-urllib3.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:42:22,454 | INFO | [PyInstaller] 42540 INFO: Processing standard module hook 'hook-cryptography.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:42:22,742 | INFO | [PyInstaller] 60431 INFO: Processing standard module hook 'hook-sounddevice.py' from 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:42:22,856 | INFO | [PyInstaller] 60545 INFO: Processing standard module hook 'hook-yt_dlp.py' from 'C:\\python314\\Lib\\site-packages\\yt_dlp\\__pyinstaller'
+2026-05-11 12:42:24,068 | INFO | [PyInstaller] 168 WARNING: Failed to collect submodules for 'urllib3.contrib.emscripten' because importing 'urllib3.contrib.emscripten' raised: ModuleNotFoundError: No module named 'js'
+2026-05-11 12:42:24,114 | INFO | [PyInstaller] 61802 WARNING: collect_data_files - skipping data collection for module 'curl_cffi' as it is not a package.
+2026-05-11 12:42:24,115 | INFO | [PyInstaller] 61803 WARNING: collect_data_files - skipping data collection for module 'yt_dlp_ejs' as it is not a package.
+2026-05-11 12:42:24,310 | INFO | [PyInstaller] 44396 INFO: hook-cryptography: cryptography does not seem to be using dynamically linked OpenSSL.
+2026-05-11 12:42:24,946 | INFO | [PyInstaller] 45032 INFO: Processing standard module hook 'hook-certifi.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:42:25,347 | INFO | [PyInstaller] 45433 INFO: Processing standard module hook 'hook-librosa.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:42:28,278 | INFO | [PyInstaller] 48365 INFO: Processing standard module hook 'hook-pygments.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:42:33,060 | INFO | [PyInstaller] 53146 INFO: Processing standard module hook 'hook-pycparser.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:42:36,519 | INFO | [PyInstaller] 56606 INFO: Processing standard module hook 'hook-yt_dlp.py' from 'C:\\Python314\\Lib\\site-packages\\yt_dlp\\__pyinstaller'
+2026-05-11 12:42:37,596 | INFO | [PyInstaller] 158 WARNING: Failed to collect submodules for 'urllib3.contrib.emscripten' because importing 'urllib3.contrib.emscripten' raised: ModuleNotFoundError: No module named 'js'
+2026-05-11 12:42:37,626 | INFO | [PyInstaller] 57712 WARNING: collect_data_files - skipping data collection for module 'curl_cffi' as it is not a package.
+2026-05-11 12:42:37,627 | INFO | [PyInstaller] 57713 WARNING: collect_data_files - skipping data collection for module 'yt_dlp_ejs' as it is not a package.
+2026-05-11 12:42:37,756 | INFO | [PyInstaller] 75444 INFO: Processing standard module hook 'hook-pystray.py' from 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:42:38,106 | INFO | [PyInstaller] 75794 INFO: Processing pre-safe-import-module hook 'hook-six.moves.py' from 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
+2026-05-11 12:42:38,213 | INFO | [PyInstaller] 75902 INFO: Processing pre-safe-import-module hook 'hook-gi.py' from 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
+2026-05-11 12:42:38,218 | INFO | [PyInstaller] C:\Users\STREAMING\AppData\Roaming\Python\Python314\site-packages\pystray\_util\gtk.py:53: SyntaxWarning: 'return' in a 'finally' block
+2026-05-11 12:42:38,218 | INFO | [PyInstaller] return False
+2026-05-11 12:42:38,435 | INFO | [PyInstaller] 76123 INFO: Processing module hooks (post-graph stage)...
+2026-05-11 12:42:42,079 | INFO | [PyInstaller] 79767 INFO: Processing standard module hook 'hook-scipy.py' from 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:42:42,888 | INFO | [PyInstaller] 80576 INFO: Processing standard module hook 'hook-pytest.py' from 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:42:43,305 | INFO | [PyInstaller] 80993 INFO: Processing standard module hook 'hook-py.py' from 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:42:47,127 | INFO | [PyInstaller] 84815 INFO: Processing standard module hook 'hook-scipy.linalg.py' from 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:42:47,365 | INFO | [PyInstaller] 85053 INFO: Processing standard module hook 'hook-scipy.special._ufuncs.py' from 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:42:49,113 | INFO | [PyInstaller] 86801 INFO: Processing standard module hook 'hook-scipy.sparse.csgraph.py' from 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:42:49,214 | INFO | [PyInstaller] 86903 INFO: Processing standard module hook 'hook-scipy.spatial._ckdtree.py' from 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:42:50,313 | INFO | [PyInstaller] 88002 INFO: Processing standard module hook 'hook-scipy.spatial.transform.rotation.py' from 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:42:50,746 | INFO | [PyInstaller] 88434 INFO: Processing standard module hook 'hook-scipy.special._ellip_harm_2.py' from 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:42:51,333 | INFO | [PyInstaller] 71419 INFO: Processing standard module hook 'hook-pystray.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:42:51,647 | INFO | [PyInstaller] 71734 INFO: Processing pre-safe-import-module hook 'hook-six.moves.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
+2026-05-11 12:42:51,734 | INFO | [PyInstaller] 71820 INFO: Processing pre-safe-import-module hook 'hook-gi.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
+2026-05-11 12:42:51,740 | INFO | [PyInstaller] C:\Users\p001642\AppData\Roaming\Python\Python314\site-packages\pystray\_util\gtk.py:53: SyntaxWarning: 'return' in a 'finally' block
+2026-05-11 12:42:51,740 | INFO | [PyInstaller] return False
+2026-05-11 12:42:51,971 | INFO | [PyInstaller] 72057 INFO: Processing module hooks (post-graph stage)...
+2026-05-11 12:42:53,476 | INFO | [PyInstaller] 91164 INFO: Processing standard module hook 'hook-scipy.stats._stats.py' from 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:42:55,333 | INFO | [PyInstaller] 93021 INFO: Processing standard module hook 'hook-numba.py' from 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:42:55,342 | INFO | [PyInstaller] 75428 INFO: Processing standard module hook 'hook-scipy.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:42:55,365 | INFO | [PyInstaller] 93054 INFO: Processing standard module hook 'hook-llvmlite.py' from 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:42:56,122 | INFO | [PyInstaller] 76208 INFO: Processing standard module hook 'hook-pytest.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:42:56,604 | INFO | [PyInstaller] 76691 INFO: Processing standard module hook 'hook-py.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:43:00,432 | INFO | [PyInstaller] 80518 INFO: Processing standard module hook 'hook-scipy.linalg.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:43:00,740 | INFO | [PyInstaller] 80826 INFO: Processing standard module hook 'hook-scipy.special._ufuncs.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:43:02,736 | INFO | [PyInstaller] 82822 INFO: Processing standard module hook 'hook-scipy.sparse.csgraph.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:43:02,771 | INFO | [PyInstaller] 82857 INFO: Processing standard module hook 'hook-scipy.spatial._ckdtree.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:43:03,864 | INFO | [PyInstaller] 83950 INFO: Processing standard module hook 'hook-scipy.spatial.transform.rotation.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:43:04,265 | INFO | [PyInstaller] 84351 INFO: Processing standard module hook 'hook-scipy.special._ellip_harm_2.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:43:06,906 | INFO | [PyInstaller] 86992 INFO: Processing standard module hook 'hook-scipy.stats._stats.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:43:07,978 | INFO | [PyInstaller] 105667 INFO: Processing pre-safe-import-module hook 'hook-platformdirs.py' from 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
+2026-05-11 12:43:08,001 | INFO | [PyInstaller] 105690 INFO: Processing standard module hook 'hook-platformdirs.py' from 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:43:08,254 | INFO | [PyInstaller] 105942 INFO: Processing standard module hook 'hook-pandas.py' from 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:43:08,762 | INFO | [PyInstaller] 88848 INFO: Processing standard module hook 'hook-numba.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:43:08,796 | INFO | [PyInstaller] 88882 INFO: Processing standard module hook 'hook-llvmlite.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:43:12,447 | INFO | [PyInstaller] 110135 INFO: Processing standard module hook 'hook-pandas.io.formats.style.py' from 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:43:16,326 | INFO | [PyInstaller] 114014 INFO: Processing standard module hook 'hook-pandas.plotting.py' from 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:43:17,367 | INFO | [PyInstaller] 115056 INFO: Processing standard module hook 'hook-dateutil.py' from 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:43:20,172 | INFO | [PyInstaller] 100258 INFO: Processing pre-safe-import-module hook 'hook-platformdirs.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
+2026-05-11 12:43:20,193 | INFO | [PyInstaller] 100279 INFO: Processing standard module hook 'hook-platformdirs.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:43:20,278 | INFO | [PyInstaller] 117966 INFO: Processing standard module hook 'hook-pandas.io.clipboard.py' from 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:43:20,486 | INFO | [PyInstaller] 118174 INFO: Processing standard module hook 'hook-xml.dom.domreg.py' from 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:43:20,598 | INFO | [PyInstaller] 100684 INFO: Processing standard module hook 'hook-soundfile.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:43:21,028 | INFO | [PyInstaller] 101114 INFO: Processing standard module hook 'hook-sklearn.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:43:21,744 | INFO | [PyInstaller] 101830 INFO: Processing standard module hook 'hook-sklearn.utils.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:43:22,008 | INFO | [PyInstaller] 102094 INFO: Processing standard module hook 'hook-sklearn.externals.array_api_compat.numpy.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:43:22,088 | INFO | [PyInstaller] 102174 INFO: Processing standard module hook 'hook-sklearn.externals.array_api_compat.cupy.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:43:22,107 | INFO | [PyInstaller] 102193 INFO: Processing standard module hook 'hook-sklearn.externals.array_api_compat.torch.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:43:22,120 | INFO | [PyInstaller] 119809 INFO: Processing standard module hook 'hook-soundfile.py' from 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:43:22,169 | INFO | [PyInstaller] 102255 INFO: Processing standard module hook 'hook-sklearn.externals.array_api_compat.dask.array.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:43:22,535 | INFO | [PyInstaller] 102621 INFO: Processing standard module hook 'hook-sklearn.metrics.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:43:22,548 | INFO | [PyInstaller] 120236 INFO: Processing standard module hook 'hook-sklearn.py' from 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:43:23,313 | INFO | [PyInstaller] 121001 INFO: Processing standard module hook 'hook-sklearn.utils.py' from 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:43:23,607 | INFO | [PyInstaller] 121295 INFO: Processing standard module hook 'hook-sklearn.externals.array_api_compat.numpy.py' from 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:43:23,687 | INFO | [PyInstaller] 121375 INFO: Processing standard module hook 'hook-sklearn.externals.array_api_compat.cupy.py' from 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:43:23,708 | INFO | [PyInstaller] 121397 INFO: Processing standard module hook 'hook-sklearn.externals.array_api_compat.torch.py' from 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:43:23,812 | INFO | [PyInstaller] 121501 INFO: Processing standard module hook 'hook-sklearn.externals.array_api_compat.dask.array.py' from 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:43:24,192 | INFO | [PyInstaller] 121881 INFO: Processing standard module hook 'hook-sklearn.metrics.py' from 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:43:26,567 | INFO | [PyInstaller] 106653 INFO: Processing standard module hook 'hook-sklearn.metrics.cluster.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:43:26,709 | INFO | [PyInstaller] 106795 INFO: Processing standard module hook 'hook-sklearn.metrics.pairwise.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:43:27,008 | INFO | [PyInstaller] 107094 INFO: Processing standard module hook 'hook-sklearn.cluster.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:43:27,378 | INFO | [PyInstaller] 107464 INFO: Processing standard module hook 'hook-sklearn.neighbors.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:43:27,645 | INFO | [PyInstaller] 107731 INFO: Processing standard module hook 'hook-sklearn.linear_model.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:43:28,466 | INFO | [PyInstaller] 126154 INFO: Processing standard module hook 'hook-sklearn.metrics.cluster.py' from 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:43:28,588 | INFO | [PyInstaller] 126276 INFO: Processing standard module hook 'hook-sklearn.metrics.pairwise.py' from 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:43:28,840 | INFO | [PyInstaller] 126528 INFO: Processing standard module hook 'hook-sklearn.cluster.py' from 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:43:29,283 | INFO | [PyInstaller] 126972 INFO: Processing standard module hook 'hook-sklearn.neighbors.py' from 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:43:29,570 | INFO | [PyInstaller] 127258 INFO: Processing standard module hook 'hook-sklearn.linear_model.py' from 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:43:30,180 | INFO | [PyInstaller] 110266 WARNING: Hidden import "pycparser.lextab" not found!
+2026-05-11 12:43:30,181 | INFO | [PyInstaller] 110267 WARNING: Hidden import "pycparser.yacctab" not found!
+2026-05-11 12:43:30,625 | INFO | [PyInstaller] 110712 INFO: Processing standard module hook 'hook-sklearn.tree.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:43:31,312 | INFO | [PyInstaller] 111398 INFO: Processing standard module hook 'hook-PIL.SpiderImagePlugin.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:43:32,099 | INFO | [PyInstaller] 129787 WARNING: Hidden import "pycparser.lextab" not found!
+2026-05-11 12:43:32,099 | INFO | [PyInstaller] 129787 WARNING: Hidden import "pycparser.yacctab" not found!
+2026-05-11 12:43:32,549 | INFO | [PyInstaller] 130237 INFO: Processing standard module hook 'hook-sklearn.tree.py' from 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:43:33,233 | INFO | [PyInstaller] 130921 INFO: Processing standard module hook 'hook-PIL.SpiderImagePlugin.py' from 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:43:34,879 | INFO | [PyInstaller] 114965 WARNING: Hidden import "scipy.special._cdflib" not found!
+2026-05-11 12:43:34,939 | INFO | [PyInstaller] 115025 INFO: Processing standard module hook 'hook-sqlalchemy.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:43:35,414 | INFO | [PyInstaller] 115501 WARNING: Hidden import "pysqlite2" not found!
+2026-05-11 12:43:35,415 | INFO | [PyInstaller] 115501 WARNING: Hidden import "MySQLdb" not found!
+2026-05-11 12:43:35,416 | INFO | [PyInstaller] 115502 WARNING: Hidden import "psycopg2" not found!
+2026-05-11 12:43:36,812 | INFO | [PyInstaller] 134500 WARNING: Hidden import "scipy.special._cdflib" not found!
+2026-05-11 12:43:36,874 | INFO | [PyInstaller] 134563 INFO: Processing standard module hook 'hook-sqlalchemy.py' from 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:43:37,143 | INFO | [PyInstaller] 117229 INFO: Processing standard module hook 'hook-_tkinter.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:43:37,145 | INFO | [PyInstaller] 117231 INFO: Processing standard module hook 'hook-tzdata.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:43:37,392 | INFO | [PyInstaller] 135081 WARNING: Hidden import "pysqlite2" not found!
+2026-05-11 12:43:37,394 | INFO | [PyInstaller] 135082 WARNING: Hidden import "MySQLdb" not found!
+2026-05-11 12:43:37,395 | INFO | [PyInstaller] 135083 WARNING: Hidden import "psycopg2" not found!
+2026-05-11 12:43:37,756 | INFO | [PyInstaller] 117842 INFO: Performing binary vs. data reclassification (1944 entries)
+2026-05-11 12:43:38,172 | INFO | [PyInstaller] 118258 INFO: Looking for ctypes DLLs
+2026-05-11 12:43:39,037 | INFO | [PyInstaller] 136726 INFO: Processing standard module hook 'hook-_tkinter.py' from 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:43:39,039 | INFO | [PyInstaller] 136727 INFO: Processing standard module hook 'hook-tzdata.py' from 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:43:39,196 | INFO | [PyInstaller] 119282 INFO: Analyzing run-time hooks ...
+2026-05-11 12:43:39,216 | INFO | [PyInstaller] 119302 INFO: Including run-time hook 'pyi_rth_inspect.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks\\rthooks'
+2026-05-11 12:43:39,220 | INFO | [PyInstaller] 119306 INFO: Including run-time hook 'pyi_rth_pkgutil.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks\\rthooks'
+2026-05-11 12:43:39,224 | INFO | [PyInstaller] 119310 INFO: Including run-time hook 'pyi_rth_multiprocessing.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks\\rthooks'
+2026-05-11 12:43:39,227 | INFO | [PyInstaller] 119313 INFO: Including run-time hook 'pyi_rth_setuptools.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks\\rthooks'
+2026-05-11 12:43:39,230 | INFO | [PyInstaller] 119316 INFO: Including run-time hook 'pyi_rth_cryptography_openssl.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\rthooks'
+2026-05-11 12:43:39,232 | INFO | [PyInstaller] 119318 INFO: Including run-time hook 'pyi_rth_pywintypes.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\rthooks'
+2026-05-11 12:43:39,234 | INFO | [PyInstaller] 119320 INFO: Including run-time hook 'pyi_rth_pythoncom.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\rthooks'
+2026-05-11 12:43:39,236 | INFO | [PyInstaller] 119322 INFO: Including run-time hook 'pyi_rth__tkinter.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks\\rthooks'
+2026-05-11 12:43:39,361 | INFO | [PyInstaller] 119447 INFO: Creating base_library.zip...
+2026-05-11 12:43:39,394 | INFO | [PyInstaller] 119480 INFO: Looking for dynamic libraries
+2026-05-11 12:43:39,713 | INFO | [PyInstaller] 137401 INFO: Performing binary vs. data reclassification (1957 entries)
+2026-05-11 12:43:39,978 | INFO | [PyInstaller] 137667 INFO: Looking for ctypes DLLs
+2026-05-11 12:43:40,198 | INFO | [PyInstaller] C:\Python314\Lib\site-packages\pywinauto\__init__.py:80: UserWarning: Revert to STA COM threading mode
+2026-05-11 12:43:40,199 | INFO | [PyInstaller] warnings.warn("Revert to STA COM threading mode", UserWarning)
+2026-05-11 12:43:40,596 | INFO | [PyInstaller] 2026-05-11 12:43:40,595 | INFO | Radio Manager Agent started.
+2026-05-11 12:43:41,087 | INFO | [PyInstaller] 138775 INFO: Analyzing run-time hooks ...
+2026-05-11 12:43:41,112 | INFO | [PyInstaller] 138801 INFO: Including run-time hook 'pyi_rth_inspect.py' from 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks\\rthooks'
+2026-05-11 12:43:41,117 | INFO | [PyInstaller] 138805 INFO: Including run-time hook 'pyi_rth_pkgutil.py' from 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks\\rthooks'
+2026-05-11 12:43:41,121 | INFO | [PyInstaller] 138809 INFO: Including run-time hook 'pyi_rth_multiprocessing.py' from 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks\\rthooks'
+2026-05-11 12:43:41,124 | INFO | [PyInstaller] 138813 INFO: Including run-time hook 'pyi_rth_setuptools.py' from 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks\\rthooks'
+2026-05-11 12:43:41,127 | INFO | [PyInstaller] 138815 INFO: Including run-time hook 'pyi_rth_cryptography_openssl.py' from 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\rthooks'
+2026-05-11 12:43:41,129 | INFO | [PyInstaller] 138818 INFO: Including run-time hook 'pyi_rth_pywintypes.py' from 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\rthooks'
+2026-05-11 12:43:41,131 | INFO | [PyInstaller] 138820 INFO: Including run-time hook 'pyi_rth_pythoncom.py' from 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\rthooks'
+2026-05-11 12:43:41,133 | INFO | [PyInstaller] 138821 INFO: Including run-time hook 'pyi_rth__tkinter.py' from 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks\\rthooks'
+2026-05-11 12:43:41,276 | INFO | [PyInstaller] 138964 INFO: Creating base_library.zip...
+2026-05-11 12:43:41,306 | INFO | [PyInstaller] 138994 INFO: Looking for dynamic libraries
+2026-05-11 12:43:41,327 | INFO | [PyInstaller] 139016 WARNING: get_package_paths - package pywin32_system32 has multiple paths (['C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\pywin32_system32', 'C:\\python314\\Lib\\site-packages\\pywin32_system32']); returning only first one!
+2026-05-11 12:43:42,124 | INFO | [PyInstaller] C:\Users\STREAMING\AppData\Roaming\Python\Python314\site-packages\pywinauto\__init__.py:80: UserWarning: Revert to STA COM threading mode
+2026-05-11 12:43:42,125 | INFO | [PyInstaller] warnings.warn("Revert to STA COM threading mode", UserWarning)
+2026-05-11 12:43:42,522 | INFO | [PyInstaller] 2026-05-11 12:43:42,522 | INFO | Radio Manager Agent started.
+2026-05-11 12:43:43,184 | INFO | [PyInstaller] C:\Users\p001642\AppData\Roaming\Python\Python314\site-packages\PyInstaller\building\build_main.py:227: NumbaPendingDeprecationWarning: [1mThe 'pycc' module is pending deprecation. Replacement technology is being developed.
+2026-05-11 12:43:43,184 | INFO | [PyInstaller] Pending Deprecation in Numba 0.57.0. For more information please see: https://numba.readthedocs.io/en/stable/reference/deprecation.html#deprecation-of-the-numba-pycc-module[0m
+2026-05-11 12:43:43,185 | INFO | [PyInstaller] __import__(package)
+2026-05-11 12:43:45,094 | INFO | [PyInstaller] C:\Users\STREAMING\AppData\Roaming\Python\Python314\site-packages\PyInstaller\building\build_main.py:227: NumbaPendingDeprecationWarning: [1mThe 'pycc' module is pending deprecation. Replacement technology is being developed.
+2026-05-11 12:43:45,094 | INFO | [PyInstaller] Pending Deprecation in Numba 0.57.0. For more information please see: https://numba.readthedocs.io/en/stable/reference/deprecation.html#deprecation-of-the-numba-pycc-module[0m
+2026-05-11 12:43:45,095 | INFO | [PyInstaller] __import__(package)
+2026-05-11 12:43:45,120 | INFO | [PyInstaller] C:\Users\p001642\AppData\Roaming\Python\Python314\site-packages\PyInstaller\building\build_main.py:227: PendingDeprecationWarning: Please use `import python_multipart` instead.
+2026-05-11 12:43:45,120 | INFO | [PyInstaller] __import__(package)
+2026-05-11 12:43:46,290 | INFO | [PyInstaller] 126376 INFO: Extra DLL search directories (AddDllDirectory): ['C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\numpy.libs', 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\scipy.libs', 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\llvmlite.libs']
+2026-05-11 12:43:46,291 | INFO | [PyInstaller] 126376 INFO: Extra DLL search directories (PATH): []
+2026-05-11 12:43:48,216 | INFO | [PyInstaller] C:\Users\STREAMING\AppData\Roaming\Python\Python314\site-packages\PyInstaller\building\build_main.py:227: PendingDeprecationWarning: Please use `import python_multipart` instead.
+2026-05-11 12:43:48,216 | INFO | [PyInstaller] __import__(package)
+2026-05-11 12:43:49,494 | INFO | [PyInstaller] 147182 INFO: Extra DLL search directories (AddDllDirectory): ['C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\numpy.libs', 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\scipy.libs', 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\llvmlite.libs', 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\pandas.libs']
+2026-05-11 12:43:49,495 | INFO | [PyInstaller] 147182 INFO: Extra DLL search directories (PATH): []
+2026-05-11 12:43:49,704 | INFO | [PyInstaller] 129790 WARNING: Library not found: could not resolve 'tbb12.dll', dependency of 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\numba\\np\\ufunc\\tbbpool.cp314-win_amd64.pyd'.
+2026-05-11 12:43:49,823 | INFO | [PyInstaller] 129909 INFO: Warnings written to C:\Users\STREAMING\.gemini\antigravity\scratch\radio_manager_agent\build\omni_core\warn-omni_core.txt
+2026-05-11 12:43:50,332 | INFO | [PyInstaller] 130418 INFO: Graph cross-reference written to C:\Users\STREAMING\.gemini\antigravity\scratch\radio_manager_agent\build\omni_core\xref-omni_core.html
+2026-05-11 12:43:50,513 | INFO | [PyInstaller] 130599 INFO: checking PYZ
+2026-05-11 12:43:50,513 | INFO | [PyInstaller] 130599 INFO: Building PYZ because PYZ-00.toc is non existent
+2026-05-11 12:43:50,514 | INFO | [PyInstaller] 130599 INFO: Building PYZ (ZlibArchive) C:\Users\STREAMING\.gemini\antigravity\scratch\radio_manager_agent\build\omni_core\PYZ-00.pyz
+2026-05-11 12:43:53,545 | INFO | [PyInstaller] 133631 INFO: Building PYZ (ZlibArchive) C:\Users\STREAMING\.gemini\antigravity\scratch\radio_manager_agent\build\omni_core\PYZ-00.pyz completed successfully.
+2026-05-11 12:43:53,700 | INFO | [PyInstaller] 133786 INFO: checking PKG
+2026-05-11 12:43:53,700 | INFO | [PyInstaller] 133786 INFO: Building PKG because PKG-00.toc is non existent
+2026-05-11 12:43:53,701 | INFO | [PyInstaller] 133786 INFO: Building PKG (CArchive) omni_core.pkg
+2026-05-11 12:43:53,833 | INFO | [PyInstaller] 151521 WARNING: Library not found: could not resolve 'tbb12.dll', dependency of 'C:\\Users\\STREAMING\\AppData\\Roaming\\Python\\Python314\\site-packages\\numba\\np\\ufunc\\tbbpool.cp314-win_amd64.pyd'.
+2026-05-11 12:43:53,978 | INFO | [PyInstaller] 151667 INFO: Warnings written to C:\Users\STREAMING\.gemini\antigravity\scratch\radio_manager_agent\build\omni_core\warn-omni_core.txt
+2026-05-11 12:43:54,634 | INFO | [PyInstaller] 152322 INFO: Graph cross-reference written to C:\Users\STREAMING\.gemini\antigravity\scratch\radio_manager_agent\build\omni_core\xref-omni_core.html
+2026-05-11 12:43:54,849 | INFO | [PyInstaller] 152537 INFO: checking PYZ
+2026-05-11 12:43:55,186 | INFO | [PyInstaller] 152874 INFO: Building because toc changed
+2026-05-11 12:43:55,186 | INFO | [PyInstaller] 152874 INFO: Building PYZ (ZlibArchive) C:\Users\STREAMING\.gemini\antigravity\scratch\radio_manager_agent\build\omni_core\PYZ-00.pyz
+2026-05-11 12:43:58,428 | INFO | [PyInstaller] 156117 INFO: Building PYZ (ZlibArchive) C:\Users\STREAMING\.gemini\antigravity\scratch\radio_manager_agent\build\omni_core\PYZ-00.pyz completed successfully.
+2026-05-11 12:43:58,591 | INFO | [PyInstaller] 156280 INFO: checking PKG
+2026-05-11 12:43:58,591 | INFO | [PyInstaller] 156280 INFO: Building PKG because PKG-00.toc is non existent
+2026-05-11 12:43:58,592 | INFO | [PyInstaller] 156280 INFO: Building PKG (CArchive) omni_core.pkg
+2026-05-11 12:44:19,099 | INFO | [PyInstaller] 159185 INFO: Building PKG (CArchive) omni_core.pkg completed successfully.
+2026-05-11 12:44:19,155 | INFO | [PyInstaller] 159241 INFO: Bootloader C:\Users\p001642\AppData\Roaming\Python\Python314\site-packages\PyInstaller\bootloader\Windows-64bit-intel\run.exe
+2026-05-11 12:44:19,156 | INFO | [PyInstaller] 159241 INFO: checking EXE
+2026-05-11 12:44:19,157 | INFO | [PyInstaller] 159241 INFO: Building EXE because EXE-00.toc is non existent
+2026-05-11 12:44:19,157 | INFO | [PyInstaller] 159241 INFO: Building EXE from EXE-00.toc
+2026-05-11 12:44:19,229 | INFO | [PyInstaller] Traceback (most recent call last):
+2026-05-11 12:44:19,230 | INFO | [PyInstaller] File "<frozen runpy>", line 198, in _run_module_as_main
+2026-05-11 12:44:19,231 | INFO | [PyInstaller] File "<frozen runpy>", line 88, in _run_code
+2026-05-11 12:44:19,231 | INFO | [PyInstaller] File "C:\Users\p001642\AppData\Roaming\Python\Python314\site-packages\PyInstaller\__main__.py", line 321, in <module>
+2026-05-11 12:44:19,231 | INFO | [PyInstaller] run()
+2026-05-11 12:44:19,231 | INFO | [PyInstaller] ~~~^^
+2026-05-11 12:44:19,232 | INFO | [PyInstaller] File "C:\Users\p001642\AppData\Roaming\Python\Python314\site-packages\PyInstaller\__main__.py", line 215, in run
+2026-05-11 12:44:19,232 | INFO | [PyInstaller] run_build(pyi_config, spec_file, **vars(args))
+2026-05-11 12:44:19,232 | INFO | [PyInstaller] ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-05-11 12:44:19,232 | INFO | [PyInstaller] File "C:\Users\p001642\AppData\Roaming\Python\Python314\site-packages\PyInstaller\__main__.py", line 70, in run_build
+2026-05-11 12:44:19,232 | INFO | [PyInstaller] PyInstaller.building.build_main.main(pyi_config, spec_file, **kwargs)
+2026-05-11 12:44:19,233 | INFO | [PyInstaller] ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-05-11 12:44:19,233 | INFO | [PyInstaller] File "C:\Users\p001642\AppData\Roaming\Python\Python314\site-packages\PyInstaller\building\build_main.py", line 1275, in main
+2026-05-11 12:44:19,233 | INFO | [PyInstaller] build(specfile, distpath, workpath, clean_build)
+2026-05-11 12:44:19,234 | INFO | [PyInstaller] ~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-05-11 12:44:19,234 | INFO | [PyInstaller] File "C:\Users\p001642\AppData\Roaming\Python\Python314\site-packages\PyInstaller\building\build_main.py", line 1213, in build
+2026-05-11 12:44:19,234 | INFO | [PyInstaller] exec(code, spec_namespace)
+2026-05-11 12:44:19,234 | INFO | [PyInstaller] ~~~~^^^^^^^^^^^^^^^^^^^^^^
+2026-05-11 12:44:19,234 | INFO | [PyInstaller] File "C:\Users\STREAMING\.gemini\antigravity\scratch\radio_manager_agent\omni_core.spec", line 19, in <module>
+2026-05-11 12:44:19,235 | INFO | [PyInstaller] exe = EXE(
+2026-05-11 12:44:19,235 | INFO | [PyInstaller] pyz,
+2026-05-11 12:44:19,235 | INFO | [PyInstaller] ...<16 lines>...
+2026-05-11 12:44:19,235 | INFO | [PyInstaller] entitlements_file=None,
+2026-05-11 12:44:19,236 | INFO | [PyInstaller] )
+2026-05-11 12:44:19,236 | INFO | [PyInstaller] File "C:\Users\p001642\AppData\Roaming\Python\Python314\site-packages\PyInstaller\building\api.py", line 675, in __init__
+2026-05-11 12:44:19,236 | INFO | [PyInstaller] self.__postinit__()
+2026-05-11 12:44:19,236 | INFO | [PyInstaller] ~~~~~~~~~~~~~~~~~^^
+2026-05-11 12:44:19,236 | INFO | [PyInstaller] File "C:\Users\p001642\AppData\Roaming\Python\Python314\site-packages\PyInstaller\building\datastruct.py", line 184, in __postinit__
+2026-05-11 12:44:19,237 | INFO | [PyInstaller] self.assemble()
+2026-05-11 12:44:19,237 | INFO | [PyInstaller] ~~~~~~~~~~~~~^^
+2026-05-11 12:44:19,237 | INFO | [PyInstaller] File "C:\Users\p001642\AppData\Roaming\Python\Python314\site-packages\PyInstaller\building\api.py", line 769, in assemble
+2026-05-11 12:44:19,237 | INFO | [PyInstaller] os.remove(self.name)
+2026-05-11 12:44:19,238 | INFO | [PyInstaller] ~~~~~~~~~^^^^^^^^^^^
+2026-05-11 12:44:19,238 | INFO | [PyInstaller] PermissionError: [WinError 5] Acesso negado: 'C:\\Users\\STREAMING\\.gemini\\antigravity\\scratch\\radio_manager_agent\\dist\\omni_core.exe'
+2026-05-11 12:44:19,238 | INFO | [PyInstaller] Adding imports: ['yt_dlp.compat._legacy', 'yt_dlp.compat._deprecated', 'yt_dlp.utils._legacy', 'yt_dlp.utils._deprecated', 'Cryptodome', 'websockets', 'websockets.__main__', 'websockets.asyncio', 'websockets.asyncio.async_timeout', 'websockets.asyncio.client', 'websockets.asyncio.compatibility', 'websockets.asyncio.connection', 'websockets.asyncio.messages', 'websockets.asyncio.router', 'websockets.asyncio.server', 'websockets.auth', 'websockets.cli', 'websockets.client', 'websockets.connection', 'websockets.datastructures', 'websockets.exceptions', 'websockets.extensions', 'websockets.extensions.base', 'websockets.extensions.permessage_deflate', 'websockets.frames', 'websockets.headers', 'websockets.http', 'websockets.http11', 'websockets.imports', 'websockets.legacy', 'websockets.legacy.auth', 'websockets.legacy.client', 'websockets.legacy.exceptions', 'websockets.legacy.framing', 'websockets.legacy.handshake', 'websockets.legacy.http', 'websockets.legacy.protocol', 'websockets.legacy.server', 'websockets.protocol', 'websockets.proxy', 'websockets.server', 'websockets.speedups', 'websockets.streams', 'websockets.sync', 'websockets.sync.client', 'websockets.sync.connection', 'websockets.sync.messages', 'websockets.sync.router', 'websockets.sync.server', 'websockets.sync.utils', 'websockets.typing', 'websockets.uri', 'websockets.utils', 'websockets.version', 'requests', 'requests.__version__', 'requests._internal_utils', 'requests.adapters', 'requests.api', 'requests.auth', 'requests.certs', 'requests.compat', 'requests.cookies', 'requests.exceptions', 'requests.help', 'requests.hooks', 'requests.models', 'requests.packages', 'requests.sessions', 'requests.status_codes', 'requests.structures', 'requests.utils', 'urllib3', 'urllib3._base_connection', 'urllib3._collections', 'urllib3._request_methods', 'urllib3._version', 'urllib3.connection', 'urllib3.connectionpool', 'urllib3.contrib', 'urllib3.contrib.pyopenssl', 'urllib3.contrib.socks', 'urllib3.exceptions', 'urllib3.fields', 'urllib3.filepost', 'urllib3.http2', 'urllib3.http2.connection', 'urllib3.http2.probe', 'urllib3.poolmanager', 'urllib3.response', 'urllib3.util', 'urllib3.util.connection', 'urllib3.util.proxy', 'urllib3.util.request', 'urllib3.util.response', 'urllib3.util.retry', 'urllib3.util.ssl_', 'urllib3.util.ssl_match_hostname', 'urllib3.util.ssltransport', 'urllib3.util.timeout', 'urllib3.util.url', 'urllib3.util.util', 'urllib3.util.wait', 'mutagen', 'brotli', 'certifi', 'secretstorage', 'curl_cffi']
+2026-05-11 12:44:19,759 | ERROR | ❌ PyInstaller encerrou com código de erro: 1
+2026-05-11 12:44:24,509 | INFO | [PyInstaller] 182197 INFO: Building PKG (CArchive) omni_core.pkg completed successfully.
+2026-05-11 12:44:24,563 | INFO | [PyInstaller] 182252 INFO: Bootloader C:\Users\STREAMING\AppData\Roaming\Python\Python314\site-packages\PyInstaller\bootloader\Windows-64bit-intel\run.exe
+2026-05-11 12:44:24,564 | INFO | [PyInstaller] 182252 INFO: checking EXE
+2026-05-11 12:44:24,564 | INFO | [PyInstaller] 182252 INFO: Building EXE because EXE-00.toc is non existent
+2026-05-11 12:44:24,564 | INFO | [PyInstaller] 182252 INFO: Building EXE from EXE-00.toc
+2026-05-11 12:44:24,608 | INFO | [PyInstaller] Traceback (most recent call last):
+2026-05-11 12:44:24,610 | INFO | [PyInstaller] File "<frozen runpy>", line 198, in _run_module_as_main
+2026-05-11 12:44:24,610 | INFO | [PyInstaller] File "<frozen runpy>", line 88, in _run_code
+2026-05-11 12:44:24,610 | INFO | [PyInstaller] File "C:\Users\STREAMING\AppData\Roaming\Python\Python314\site-packages\PyInstaller\__main__.py", line 321, in <module>
+2026-05-11 12:44:24,610 | INFO | [PyInstaller] run()
+2026-05-11 12:44:24,611 | INFO | [PyInstaller] ~~~^^
+2026-05-11 12:44:24,611 | INFO | [PyInstaller] File "C:\Users\STREAMING\AppData\Roaming\Python\Python314\site-packages\PyInstaller\__main__.py", line 215, in run
+2026-05-11 12:44:24,611 | INFO | [PyInstaller] run_build(pyi_config, spec_file, **vars(args))
+2026-05-11 12:44:24,611 | INFO | [PyInstaller] ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-05-11 12:44:24,612 | INFO | [PyInstaller] File "C:\Users\STREAMING\AppData\Roaming\Python\Python314\site-packages\PyInstaller\__main__.py", line 70, in run_build
+2026-05-11 12:44:24,612 | INFO | [PyInstaller] PyInstaller.building.build_main.main(pyi_config, spec_file, **kwargs)
+2026-05-11 12:44:24,612 | INFO | [PyInstaller] ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-05-11 12:44:24,612 | INFO | [PyInstaller] File "C:\Users\STREAMING\AppData\Roaming\Python\Python314\site-packages\PyInstaller\building\build_main.py", line 1275, in main
+2026-05-11 12:44:24,612 | INFO | [PyInstaller] build(specfile, distpath, workpath, clean_build)
+2026-05-11 12:44:24,612 | INFO | [PyInstaller] ~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-05-11 12:44:24,613 | INFO | [PyInstaller] File "C:\Users\STREAMING\AppData\Roaming\Python\Python314\site-packages\PyInstaller\building\build_main.py", line 1213, in build
+2026-05-11 12:44:24,613 | INFO | [PyInstaller] exec(code, spec_namespace)
+2026-05-11 12:44:24,613 | INFO | [PyInstaller] ~~~~^^^^^^^^^^^^^^^^^^^^^^
+2026-05-11 12:44:24,613 | INFO | [PyInstaller] File "C:\Users\STREAMING\.gemini\antigravity\scratch\radio_manager_agent\omni_core.spec", line 19, in <module>
+2026-05-11 12:44:24,613 | INFO | [PyInstaller] exe = EXE(
+2026-05-11 12:44:24,614 | INFO | [PyInstaller] pyz,
+2026-05-11 12:44:24,614 | INFO | [PyInstaller] ...<16 lines>...
+2026-05-11 12:44:24,614 | INFO | [PyInstaller] entitlements_file=None,
+2026-05-11 12:44:24,615 | INFO | [PyInstaller] )
+2026-05-11 12:44:24,615 | INFO | [PyInstaller] File "C:\Users\STREAMING\AppData\Roaming\Python\Python314\site-packages\PyInstaller\building\api.py", line 675, in __init__
+2026-05-11 12:44:24,615 | INFO | [PyInstaller] self.__postinit__()
+2026-05-11 12:44:24,615 | INFO | [PyInstaller] ~~~~~~~~~~~~~~~~~^^
+2026-05-11 12:44:24,615 | INFO | [PyInstaller] File "C:\Users\STREAMING\AppData\Roaming\Python\Python314\site-packages\PyInstaller\building\datastruct.py", line 184, in __postinit__
+2026-05-11 12:44:24,615 | INFO | [PyInstaller] self.assemble()
+2026-05-11 12:44:24,615 | INFO | [PyInstaller] ~~~~~~~~~~~~~^^
+2026-05-11 12:44:24,616 | INFO | [PyInstaller] File "C:\Users\STREAMING\AppData\Roaming\Python\Python314\site-packages\PyInstaller\building\api.py", line 769, in assemble
+2026-05-11 12:44:24,616 | INFO | [PyInstaller] os.remove(self.name)
+2026-05-11 12:44:24,616 | INFO | [PyInstaller] ~~~~~~~~~^^^^^^^^^^^
+2026-05-11 12:44:24,616 | INFO | [PyInstaller] PermissionError: [WinError 5] Acesso negado: 'C:\\Users\\STREAMING\\.gemini\\antigravity\\scratch\\radio_manager_agent\\dist\\omni_core.exe'
+2026-05-11 12:44:24,616 | INFO | [PyInstaller] Adding imports: ['yt_dlp.compat._legacy', 'yt_dlp.compat._deprecated', 'yt_dlp.utils._legacy', 'yt_dlp.utils._deprecated', 'Cryptodome', 'websockets', 'websockets.__main__', 'websockets.asyncio', 'websockets.asyncio.async_timeout', 'websockets.asyncio.client', 'websockets.asyncio.compatibility', 'websockets.asyncio.connection', 'websockets.asyncio.messages', 'websockets.asyncio.router', 'websockets.asyncio.server', 'websockets.auth', 'websockets.cli', 'websockets.client', 'websockets.connection', 'websockets.datastructures', 'websockets.exceptions', 'websockets.extensions', 'websockets.extensions.base', 'websockets.extensions.permessage_deflate', 'websockets.frames', 'websockets.headers', 'websockets.http', 'websockets.http11', 'websockets.imports', 'websockets.legacy', 'websockets.legacy.auth', 'websockets.legacy.client', 'websockets.legacy.exceptions', 'websockets.legacy.framing', 'websockets.legacy.handshake', 'websockets.legacy.http', 'websockets.legacy.protocol', 'websockets.legacy.server', 'websockets.protocol', 'websockets.proxy', 'websockets.server', 'websockets.speedups', 'websockets.streams', 'websockets.sync', 'websockets.sync.client', 'websockets.sync.connection', 'websockets.sync.messages', 'websockets.sync.router', 'websockets.sync.server', 'websockets.sync.utils', 'websockets.typing', 'websockets.uri', 'websockets.utils', 'websockets.version', 'requests', 'requests.__version__', 'requests._internal_utils', 'requests.adapters', 'requests.api', 'requests.auth', 'requests.certs', 'requests.compat', 'requests.cookies', 'requests.exceptions', 'requests.help', 'requests.hooks', 'requests.models', 'requests.packages', 'requests.sessions', 'requests.status_codes', 'requests.structures', 'requests.utils', 'urllib3', 'urllib3._base_connection', 'urllib3._collections', 'urllib3._request_methods', 'urllib3._version', 'urllib3.connection', 'urllib3.connectionpool', 'urllib3.contrib', 'urllib3.contrib.pyopenssl', 'urllib3.contrib.socks', 'urllib3.exceptions', 'urllib3.fields', 'urllib3.filepost', 'urllib3.http2', 'urllib3.http2.connection', 'urllib3.http2.probe', 'urllib3.poolmanager', 'urllib3.response', 'urllib3.util', 'urllib3.util.connection', 'urllib3.util.proxy', 'urllib3.util.request', 'urllib3.util.response', 'urllib3.util.retry', 'urllib3.util.ssl_', 'urllib3.util.ssl_match_hostname', 'urllib3.util.ssltransport', 'urllib3.util.timeout', 'urllib3.util.url', 'urllib3.util.util', 'urllib3.util.wait', 'mutagen', 'brotli', 'certifi', 'secretstorage', 'curl_cffi']
+2026-05-11 12:44:25,215 | ERROR | ❌ PyInstaller encerrou com código de erro: 1
+2026-05-11 12:46:39,271 | INFO | Iniciando processo de build do Omni Core V2...
+2026-05-11 12:46:39,272 | INFO | Executando comando: C:\Python314\python.exe -m PyInstaller --noconfirm --onefile --console --name omni_core --clean --add-data config;config --add-data core;core --add-data frontend/dist;frontend/dist main.py
+2026-05-11 12:46:39,462 | INFO | [PyInstaller] 46 DEPRECATION: Running PyInstaller as admin is not necessary nor sensible. Run PyInstaller from a non-administrator terminal. PyInstaller 7.0 will block this.
+2026-05-11 12:46:39,619 | INFO | [PyInstaller] 203 INFO: PyInstaller: 6.19.0, contrib hooks: 2026.4
+2026-05-11 12:46:39,620 | INFO | [PyInstaller] 203 INFO: Python: 3.14.3
+2026-05-11 12:46:39,642 | INFO | [PyInstaller] 225 INFO: Platform: Windows-10-10.0.18363-SP0
+2026-05-11 12:46:39,643 | INFO | [PyInstaller] 226 INFO: Python environment: C:\Python314
+2026-05-11 12:46:39,644 | INFO | [PyInstaller] 226 INFO: wrote C:\Users\STREAMING\.gemini\antigravity\scratch\radio_manager_agent\omni_core.spec
+2026-05-11 12:46:39,650 | INFO | [PyInstaller] 229 INFO: Removing temporary files and cleaning cache in C:\Users\p001642\AppData\Local\pyinstaller
+2026-05-11 12:46:39,748 | INFO | [PyInstaller] 331 INFO: Module search paths (PYTHONPATH):
+2026-05-11 12:46:39,749 | INFO | [PyInstaller] ['C:\\Users\\STREAMING\\.gemini\\antigravity\\scratch\\radio_manager_agent',
+2026-05-11 12:46:39,750 | INFO | [PyInstaller] 'C:\\Python314\\python314.zip',
+2026-05-11 12:46:39,753 | INFO | [PyInstaller] 'C:\\Python314\\DLLs',
+2026-05-11 12:46:39,754 | INFO | [PyInstaller] 'C:\\Python314\\Lib',
+2026-05-11 12:46:39,754 | INFO | [PyInstaller] 'C:\\Python314',
+2026-05-11 12:46:39,755 | INFO | [PyInstaller] 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages',
+2026-05-11 12:46:39,755 | INFO | [PyInstaller] 'C:\\Python314\\Lib\\site-packages',
+2026-05-11 12:46:39,756 | INFO | [PyInstaller] 'C:\\Python314\\Lib\\site-packages\\win32',
+2026-05-11 12:46:39,756 | INFO | [PyInstaller] 'C:\\Python314\\Lib\\site-packages\\win32\\lib',
+2026-05-11 12:46:39,757 | INFO | [PyInstaller] 'C:\\Python314\\Lib\\site-packages\\Pythonwin',
+2026-05-11 12:46:39,757 | INFO | [PyInstaller] 'C:\\Users\\STREAMING\\.gemini\\antigravity\\scratch\\radio_manager_agent']
+2026-05-11 12:46:40,694 | INFO | [PyInstaller] 1277 INFO: Appending 'datas' from .spec
+2026-05-11 12:46:40,696 | INFO | [PyInstaller] 1279 INFO: checking Analysis
+2026-05-11 12:46:40,698 | INFO | [PyInstaller] 1279 INFO: Building Analysis because Analysis-00.toc is non existent
+2026-05-11 12:46:40,698 | INFO | [PyInstaller] 1279 INFO: Looking for Python shared library...
+2026-05-11 12:46:40,699 | INFO | [PyInstaller] 1280 INFO: Using Python shared library: C:\Python314\python314.dll
+2026-05-11 12:46:40,699 | INFO | [PyInstaller] 1280 INFO: Running Analysis Analysis-00.toc
+2026-05-11 12:46:40,699 | INFO | [PyInstaller] 1280 INFO: Target bytecode optimization level: 0
+2026-05-11 12:46:40,700 | INFO | [PyInstaller] 1280 INFO: Initializing module dependency graph...
+2026-05-11 12:46:40,700 | INFO | [PyInstaller] 1280 INFO: Initializing module graph hook caches...
+2026-05-11 12:46:40,758 | INFO | [PyInstaller] 1341 INFO: Analyzing modules for base_library.zip ...
+2026-05-11 12:46:41,655 | INFO | [PyInstaller] 2238 INFO: Processing standard module hook 'hook-encodings.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:46:45,133 | INFO | [PyInstaller] 5716 INFO: Processing standard module hook 'hook-difflib.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:46:45,151 | INFO | [PyInstaller] 5734 INFO: Processing standard module hook 'hook-heapq.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:46:45,320 | INFO | [PyInstaller] 5903 INFO: Processing standard module hook 'hook-pickle.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:46:47,581 | INFO | [PyInstaller] 8164 INFO: Caching module dependency graph...
+2026-05-11 12:46:47,621 | INFO | [PyInstaller] 8204 INFO: Analyzing C:\Users\STREAMING\.gemini\antigravity\scratch\radio_manager_agent\main.py
+2026-05-11 12:46:47,631 | INFO | [PyInstaller] 8214 INFO: Processing pre-find-module-path hook 'hook-tkinter.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks\\pre_find_module_path'
+2026-05-11 12:46:47,633 | INFO | [PyInstaller] 8217 INFO: TclTkInfo: initializing cached Tcl/Tk info...
+2026-05-11 12:46:48,102 | INFO | [PyInstaller] 8685 INFO: Processing standard module hook 'hook-_tkinter.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:46:48,170 | INFO | [PyInstaller] 8753 INFO: Processing standard module hook 'hook-sysconfig.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:46:48,177 | INFO | [PyInstaller] 8760 INFO: Processing standard module hook 'hook-_ctypes.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:46:48,741 | INFO | [PyInstaller] 9325 INFO: Processing standard module hook 'hook-anyio.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:46:49,308 | INFO | [PyInstaller] 9891 INFO: Processing pre-safe-import-module hook 'hook-typing_extensions.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
+2026-05-11 12:46:49,310 | INFO | [PyInstaller] 9893 INFO: SetuptoolsInfo: initializing cached setuptools info...
+2026-05-11 12:46:50,339 | INFO | [PyInstaller] 10922 INFO: Processing standard module hook 'hook-multiprocessing.util.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:46:50,485 | INFO | [PyInstaller] 11068 INFO: Processing standard module hook 'hook-xml.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:46:52,309 | INFO | [PyInstaller] 12892 INFO: Processing standard module hook 'hook-pydantic.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:46:52,955 | INFO | [PyInstaller] 13538 INFO: Processing standard module hook 'hook-platform.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:46:53,523 | INFO | [PyInstaller] 14106 INFO: Processing standard module hook 'hook-zoneinfo.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:46:55,887 | INFO | [PyInstaller] 16470 INFO: Processing standard module hook 'hook-uvicorn.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:46:57,663 | INFO | [PyInstaller] 18247 INFO: Processing standard module hook 'hook-websockets.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:46:58,829 | INFO | [PyInstaller] 19412 INFO: Processing standard module hook 'hook-sqlalchemy.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:46:59,780 | INFO | [PyInstaller] 20363 INFO: Processing pre-safe-import-module hook 'hook-importlib_metadata.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
+2026-05-11 12:46:59,781 | INFO | [PyInstaller] 20364 INFO: Setuptools: 'importlib_metadata' appears to be a setuptools-vendored copy - creating alias to 'setuptools._vendor.importlib_metadata'!
+2026-05-11 12:46:59,791 | INFO | [PyInstaller] 20374 INFO: Processing standard module hook 'hook-setuptools.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:46:59,811 | INFO | [PyInstaller] 20394 INFO: Processing pre-safe-import-module hook 'hook-distutils.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
+2026-05-11 12:46:59,857 | INFO | [PyInstaller] 20440 INFO: Processing pre-safe-import-module hook 'hook-jaraco.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
+2026-05-11 12:46:59,858 | INFO | [PyInstaller] 20441 INFO: Setuptools: 'jaraco' appears to be a full setuptools-vendored copy - creating alias to 'setuptools._vendor.jaraco'!
+2026-05-11 12:46:59,874 | INFO | [PyInstaller] 20457 INFO: Processing pre-safe-import-module hook 'hook-more_itertools.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
+2026-05-11 12:46:59,875 | INFO | [PyInstaller] 20458 INFO: Setuptools: 'more_itertools' appears to be a setuptools-vendored copy - creating alias to 'setuptools._vendor.more_itertools'!
+2026-05-11 12:47:00,224 | INFO | [PyInstaller] 20808 INFO: Processing pre-safe-import-module hook 'hook-packaging.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
+2026-05-11 12:47:00,515 | INFO | [PyInstaller] 21098 INFO: Processing standard module hook 'hook-setuptools._vendor.jaraco.text.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:47:00,517 | INFO | [PyInstaller] 21100 INFO: Processing pre-safe-import-module hook 'hook-importlib_resources.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
+2026-05-11 12:47:00,538 | INFO | [PyInstaller] 21121 INFO: Processing pre-safe-import-module hook 'hook-backports.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
+2026-05-11 12:47:00,539 | INFO | [PyInstaller] 21122 INFO: Setuptools: 'backports' appears to be a full setuptools-vendored copy - creating alias to 'setuptools._vendor.backports'!
+2026-05-11 12:47:01,185 | INFO | [PyInstaller] 21768 INFO: Processing pre-safe-import-module hook 'hook-tomli.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
+2026-05-11 12:47:01,185 | INFO | [PyInstaller] 21769 INFO: Setuptools: 'tomli' appears to be a setuptools-vendored copy - creating alias to 'setuptools._vendor.tomli'!
+2026-05-11 12:47:02,055 | INFO | [PyInstaller] 22638 INFO: Processing pre-safe-import-module hook 'hook-wheel.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
+2026-05-11 12:47:02,056 | INFO | [PyInstaller] 22639 INFO: Setuptools: 'wheel' appears to be a setuptools-vendored copy - creating alias to 'setuptools._vendor.wheel'!
+2026-05-11 12:47:02,157 | INFO | [PyInstaller] 22740 INFO: Processing standard module hook 'hook-setuptools._vendor.importlib_metadata.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:47:02,191 | INFO | [PyInstaller] 22775 INFO: Processing pre-safe-import-module hook 'hook-zipp.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
+2026-05-11 12:47:02,192 | INFO | [PyInstaller] 22775 INFO: Setuptools: 'zipp' appears to be a setuptools-vendored copy - creating alias to 'setuptools._vendor.zipp'!
+2026-05-11 12:47:07,794 | INFO | [PyInstaller] 28377 INFO: Processing standard module hook 'hook-sqlite3.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:47:08,112 | INFO | [PyInstaller] 28695 INFO: Processing standard module hook 'hook-apscheduler.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:47:08,759 | INFO | [PyInstaller] 29342 INFO: Processing standard module hook 'hook-psutil.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:47:08,982 | INFO | [PyInstaller] 29565 INFO: Processing standard module hook 'hook-numpy.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:47:12,873 | INFO | [PyInstaller] 33456 INFO: Processing standard module hook 'hook-charset_normalizer.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:47:13,602 | INFO | [PyInstaller] 34185 INFO: Processing standard module hook 'hook-comtypes.client.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:47:14,287 | INFO | [PyInstaller] 34870 INFO: Processing standard module hook 'hook-pythoncom.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:47:14,397 | INFO | [PyInstaller] 34980 INFO: Processing standard module hook 'hook-pywintypes.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:47:15,310 | INFO | [PyInstaller] 35893 INFO: Processing standard module hook 'hook-PIL.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:47:15,520 | INFO | [PyInstaller] 36103 INFO: Processing standard module hook 'hook-PIL.Image.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:47:15,989 | INFO | [PyInstaller] 36572 INFO: Processing standard module hook 'hook-xml.etree.cElementTree.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:47:16,302 | INFO | [PyInstaller] 36885 INFO: Processing standard module hook 'hook-PIL.ImageFilter.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:47:16,726 | INFO | [PyInstaller] C:\Python314\Lib\site-packages\pywinauto\keyboard.py:105: SyntaxWarning: "\;" is an invalid escape sequence. Such sequences will not work in the future. Did you mean "\\;"? A raw string is also an option.
+2026-05-11 12:47:16,726 | INFO | [PyInstaller] option only affects the behavior of keys matching [-=[]\;',./a-zA-Z0-9 ].  Note
+2026-05-11 12:47:16,750 | INFO | [PyInstaller] C:\Python314\Lib\site-packages\pywinauto\linux\keyboard.py:55: SyntaxWarning: "\e" is an invalid escape sequence. Such sequences will not work in the future. Did you mean "\\e"? A raw string is also an option.
+2026-05-11 12:47:16,751 | INFO | [PyInstaller] '\e': "Escape",
+2026-05-11 12:47:17,320 | INFO | [PyInstaller] 37903 INFO: Processing pre-safe-import-module hook 'hook-win32com.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\pre_safe_import_module'
+2026-05-11 12:47:17,439 | INFO | [PyInstaller] 38022 INFO: Processing standard module hook 'hook-win32com.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:47:17,733 | INFO | [PyInstaller] 38316 INFO: Processing standard module hook 'hook-urllib3.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:47:18,288 | INFO | [PyInstaller] 38871 INFO: Processing standard module hook 'hook-cryptography.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:47:20,031 | INFO | [PyInstaller] 40614 INFO: hook-cryptography: cryptography does not seem to be using dynamically linked OpenSSL.
+2026-05-11 12:47:20,677 | INFO | [PyInstaller] 41260 INFO: Processing standard module hook 'hook-certifi.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:47:21,062 | INFO | [PyInstaller] 41645 INFO: Processing standard module hook 'hook-librosa.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:47:23,913 | INFO | [PyInstaller] 44496 INFO: Processing standard module hook 'hook-pygments.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:47:30,412 | INFO | [PyInstaller] 50995 INFO: Processing standard module hook 'hook-pycparser.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:47:36,059 | INFO | [PyInstaller] 56642 INFO: Processing standard module hook 'hook-yt_dlp.py' from 'C:\\Python314\\Lib\\site-packages\\yt_dlp\\__pyinstaller'
+2026-05-11 12:47:37,110 | INFO | [PyInstaller] 175 WARNING: Failed to collect submodules for 'urllib3.contrib.emscripten' because importing 'urllib3.contrib.emscripten' raised: ModuleNotFoundError: No module named 'js'
+2026-05-11 12:47:37,143 | INFO | [PyInstaller] 57726 WARNING: collect_data_files - skipping data collection for module 'curl_cffi' as it is not a package.
+2026-05-11 12:47:37,144 | INFO | [PyInstaller] 57727 WARNING: collect_data_files - skipping data collection for module 'yt_dlp_ejs' as it is not a package.
+2026-05-11 12:48:07,072 | INFO | [PyInstaller] 87655 INFO: Processing standard module hook 'hook-pystray.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:48:07,391 | INFO | [PyInstaller] 87974 INFO: Processing pre-safe-import-module hook 'hook-six.moves.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
+2026-05-11 12:48:07,480 | INFO | [PyInstaller] 88063 INFO: Processing pre-safe-import-module hook 'hook-gi.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks\\pre_safe_import_module'
+2026-05-11 12:48:07,486 | INFO | [PyInstaller] C:\Users\p001642\AppData\Roaming\Python\Python314\site-packages\pystray\_util\gtk.py:53: SyntaxWarning: 'return' in a 'finally' block
+2026-05-11 12:48:07,486 | INFO | [PyInstaller] return False
+2026-05-11 12:48:07,723 | INFO | [PyInstaller] 88306 INFO: Processing module hooks (post-graph stage)...
+2026-05-11 12:48:11,957 | INFO | [PyInstaller] 92540 INFO: Processing standard module hook 'hook-scipy.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:48:12,748 | INFO | [PyInstaller] 93331 INFO: Processing standard module hook 'hook-pytest.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:48:13,199 | INFO | [PyInstaller] 93783 INFO: Processing standard module hook 'hook-py.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:48:16,730 | INFO | [PyInstaller] 97314 INFO: Processing standard module hook 'hook-scipy.linalg.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:48:16,976 | INFO | [PyInstaller] 97559 INFO: Processing standard module hook 'hook-scipy.special._ufuncs.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:48:18,720 | INFO | [PyInstaller] 99303 INFO: Processing standard module hook 'hook-scipy.sparse.csgraph.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:48:18,752 | INFO | [PyInstaller] 99335 INFO: Processing standard module hook 'hook-scipy.spatial._ckdtree.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:48:19,797 | INFO | [PyInstaller] 100380 INFO: Processing standard module hook 'hook-scipy.spatial.transform.rotation.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:48:20,232 | INFO | [PyInstaller] 100815 INFO: Processing standard module hook 'hook-scipy.special._ellip_harm_2.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:48:22,856 | INFO | [PyInstaller] 103440 INFO: Processing standard module hook 'hook-scipy.stats._stats.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\PyInstaller\\hooks'
+2026-05-11 12:48:24,666 | INFO | [PyInstaller] 105249 INFO: Processing standard module hook 'hook-numba.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
+2026-05-11 12:48:24,719 | INFO | [PyInstaller] 105302 INFO: Processing standard module hook 'hook-llvmlite.py' from 'C:\\Users\\p001642\\AppData\\Roaming\\Python\\Python314\\site-packages\\_pyinstaller_hooks_contrib\\stdhooks'
