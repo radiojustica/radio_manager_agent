@@ -6,6 +6,7 @@ from core.worker_base import WorkerBase, WorkerResult
 from core.reward import RewardStore
 from services.guardian_service import guardian_instance
 from services.notification_service import send_whatsapp_alert
+from scripts.audio_manager import AudioManager
 
 logger = logging.getLogger("OmniCore.Workers.Guardian")
 
@@ -18,42 +19,31 @@ class GuardianWorker(WorkerBase):
         super().__init__(name="GuardianWorker", reward_store=reward_store, config=config)
         self.silence_threshold = self.config.get("silence_threshold", 0.005)
         self.silence_limit_seconds = self.config.get("silence_limit", 10)
+        self.audio_manager = AudioManager()
         # Importando aqui para evitar dependência circular se houver
         import time
         self.last_audio_peak = time.time()
         self._start_audio_monitor()
 
     def _start_audio_monitor(self):
-        """Inicia uma thread separada para monitorar o RMS do áudio de saída."""
-        try:
-            import sounddevice as sd
-            import numpy as np
-            import threading
-            import time
+        """Inicia uma thread separada para monitorar o pico do áudio via WASAPI (AudioManager)."""
+        import threading
+        import time
 
-            def callback(indata, frames, time_info, status):
+        def monitor_thread():
+            logger.info("Monitor de áudio via AudioManager iniciado (GuardianWorker).")
+            while True:
                 try:
-                    volume_norm = np.linalg.norm(indata) * 10
-                    if volume_norm > self.silence_threshold:
+                    # Tenta capturar o pico do dispositivo "RADIO" ou do padrão
+                    peak = self.audio_manager.get_master_peak("RADIO")
+                    if peak > self.silence_threshold:
                         self.last_audio_peak = time.time()
-                except:
-                    pass
-
-            def monitor_thread():
-                try:
-                    logger.info("Monitor de áudio iniciado (GuardianWorker).")
-                    with sd.InputStream(callback=callback):
-                        while True:
-                            time.sleep(10)
                 except Exception as e:
-                    logger.warning(f"Monitor de áudio suspenso: {e}. Detecção de silêncio via hardware desativada.")
+                    logger.debug(f"Erro no monitor de áudio: {e}")
+                time.sleep(1) # Checagem a cada 1 segundo é suficiente para silêncio
 
-            t = threading.Thread(target=monitor_thread, daemon=True)
-            t.start()
-        except ImportError:
-            logger.error("Módulo 'sounddevice' ou 'numpy' não encontrado. Detecção de silêncio via hardware desativada.")
-        except Exception as e:
-            logger.error(f"Falha ao inicializar monitor de áudio: {e}")
+        t = threading.Thread(target=monitor_thread, daemon=True)
+        t.start()
 
     def run_cycle(self, **kwargs) -> WorkerResult:
         violations = []

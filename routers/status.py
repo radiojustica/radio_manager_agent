@@ -14,8 +14,13 @@ router = APIRouter(prefix="/api/status", tags=["Telemetria"])
 
 bulletin_syncer = BulletinSync()
 
-NOWPLAYING_PATH = r"D:\RADIO\LOG ZARARADIO\CurrentSong.txt"
 CACHE_STATUS = {"timestamp": 0, "payload": None}
+
+def get_nowplaying_path():
+    """Recupera o caminho do CurrentSong.txt dinamicamente das configurações."""
+    from services.guardian_service import guardian_instance
+    log_dir = guardian_instance.settings.get("apps", {}).get("zararadio", {}).get("log_path", r"D:\RADIO\LOG ZARARADIO")
+    return os.path.join(log_dir, "CurrentSong.txt")
 
 # Debounce para evitar chamadas repetidas ao show-window
 LAST_SHOW_WINDOW_CALL = {"timestamp": 0}
@@ -112,10 +117,11 @@ def get_now_playing(db: Session = Depends(get_db)):
     butt_ativos = sum(1 for b in butt_instances if b['status'] in ('transmitindo', 'conectado (ocioso?)'))
     
     if status == "playing":
-        if os.path.exists(NOWPLAYING_PATH):
+        nowplaying_path = get_nowplaying_path()
+        if os.path.exists(nowplaying_path):
             try:
                 # ZaraRadio geralmente usa codificação cp1252 (Windows)
-                with open(NOWPLAYING_PATH, 'r', encoding='cp1252', errors='replace') as f:
+                with open(nowplaying_path, 'r', encoding='cp1252', errors='replace') as f:
                     content = f.read().strip()
                     if content: title = content
             except: pass
