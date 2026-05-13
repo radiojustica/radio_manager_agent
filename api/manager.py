@@ -76,17 +76,27 @@ async def websocket_endpoint(websocket: WebSocket):
         # Loop para manter a conexão aberta e enviar atualizações periódicas
         while True:
             # Coleta dados atuais
-            from routers.status import analisar_instancias_butt, get_zara_status
+            from routers.status import analisar_instancias_butt, get_now_playing
             from services.guardian_service import guardian_instance
             
+            # Criamos uma sessão manual para o banco de dados
+            db = SessionLocal()
+            try:
+                player_data = get_now_playing(db)
+            finally:
+                db.close()
+                
             data = {
-                "player": get_zara_status(),
+                "player": player_data,
                 "events": guardian_instance.events_list[:10],
                 "timestamp": datetime.now().strftime('%H:%M:%S')
             }
             await websocket.send_text(json.dumps(data))
             await asyncio.sleep(2) # Atualiza a cada 2 segundos
     except WebSocketDisconnect:
+        manager.disconnect(websocket)
+    except Exception as e:
+        logger.error(f"Erro no WebSocket: {e}")
         manager.disconnect(websocket)
 
 BASE_PATH = Path(__file__).resolve().parent.parent

@@ -25,26 +25,35 @@ class GuardianWorker(WorkerBase):
 
     def _start_audio_monitor(self):
         """Inicia uma thread separada para monitorar o RMS do áudio de saída."""
-        import sounddevice as sd
-        import numpy as np
-        import threading
-        import time
+        try:
+            import sounddevice as sd
+            import numpy as np
+            import threading
+            import time
 
-        def callback(indata, frames, time_info, status):
-            volume_norm = np.linalg.norm(indata) * 10
-            if volume_norm > self.silence_threshold:
-                self.last_audio_peak = time.time()
+            def callback(indata, frames, time_info, status):
+                try:
+                    volume_norm = np.linalg.norm(indata) * 10
+                    if volume_norm > self.silence_threshold:
+                        self.last_audio_peak = time.time()
+                except:
+                    pass
 
-        def monitor_thread():
-            try:
-                with sd.InputStream(callback=callback):
-                    while True:
-                        time.sleep(1)
-            except Exception as e:
-                logger.error(f"Erro no monitor de áudio: {e}")
+            def monitor_thread():
+                try:
+                    logger.info("Monitor de áudio iniciado (GuardianWorker).")
+                    with sd.InputStream(callback=callback):
+                        while True:
+                            time.sleep(10)
+                except Exception as e:
+                    logger.warning(f"Monitor de áudio suspenso: {e}. Detecção de silêncio via hardware desativada.")
 
-        t = threading.Thread(target=monitor_thread, daemon=True)
-        t.start()
+            t = threading.Thread(target=monitor_thread, daemon=True)
+            t.start()
+        except ImportError:
+            logger.error("Módulo 'sounddevice' ou 'numpy' não encontrado. Detecção de silêncio via hardware desativada.")
+        except Exception as e:
+            logger.error(f"Falha ao inicializar monitor de áudio: {e}")
 
     def run_cycle(self, **kwargs) -> WorkerResult:
         violations = []
