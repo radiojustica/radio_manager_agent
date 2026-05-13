@@ -1,11 +1,14 @@
 """
 Omni Core V2 - Inicializador Simplificado
-Modo operacional: GUI + API + Workers, com fallback para modo sem admin
+Modo operacional: API + Workers + Frontend auto-open
 """
 
 import sys
 import os
 import logging
+import threading
+import time
+import webbrowser
 from pathlib import Path
 
 # Diretório base
@@ -29,20 +32,42 @@ logging.basicConfig(
 
 logger = logging.getLogger("OmniCore.Startup")
 
+def open_browser_when_ready():
+    """Aguarda a API estar pronta e abre o navegador automaticamente."""
+    from api.manager import wait_for_server
+    
+    logger.info("⏳ Aguardando que a API esteja pronta...")
+    if wait_for_server(timeout=30):
+        time.sleep(1)  # Aguarda 1 segundo extra para garantir que a API está totalmente operacional
+        try:
+            logger.info("🌐 Abrindo dashboard no navegador...")
+            webbrowser.open("http://localhost:8001")
+            logger.info("✓ Dashboard aberto em http://localhost:8001")
+        except Exception as e:
+            logger.warning(f"Não foi possível abrir o navegador automaticamente: {e}")
+    else:
+        logger.warning("⚠️ Timeout ao aguardar API. Dashboard disponível em http://localhost:8001")
+
 try:
     logger.info("=" * 70)
     logger.info("OMNI CORE V2 - INICIALIZANDO")
     logger.info("=" * 70)
     
     # Imports principais
-    from core.launcher import run_app
+    from api.manager import run_api_server
     
     if __name__ == "__main__":
-        logger.info("Iniciando aplicação...")
-        run_app()
+        logger.info("🚀 Iniciando API...")
+        
+        # Inicia thread para abrir o navegador quando a API estiver pronta
+        browser_thread = threading.Thread(target=open_browser_when_ready, daemon=True)
+        browser_thread.start()
+        
+        # Inicia a API (bloqueia aqui)
+        run_api_server()
 
 except KeyboardInterrupt:
-    logger.info("Interrupção do usuário detectada.")
+    logger.info("⏹️  Interrupção do usuário detectada.")
     sys.exit(0)
 
 except Exception as e:
@@ -52,12 +77,4 @@ except Exception as e:
     logger.error("=" * 70)
     logger.error(traceback.format_exc())
     logger.error("=" * 70)
-    
-    # Fallback: tentar iniciar apenas a API sem UI
-    try:
-        logger.warning("Tentando iniciar em modo API-only (sem UI)...")
-        from api.manager import run_api_server
-        run_api_server()
-    except Exception as e2:
-        logger.error(f"Falha também no modo API-only: {e2}")
-        sys.exit(1)
+    sys.exit(1)

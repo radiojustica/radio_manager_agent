@@ -79,9 +79,18 @@ def obter_regras_energia_por_hora(hora: int) -> list[int]:
 # ===========================================================================
 
 MOODS: dict[str, list[str]] = {
-    "Ensolarado": ["pop / rock internacional", "rock nacional", "regional nordestina", "mpb / contemporâneo", "pop"],
-    "Chuvoso": ["bossa nova / jazz", "jazz", "mpb / clássico", "blues", "instrumental"],
-    "Nublado": ["mpb / contemporâneo", "reggae / pop", "soul / funk", "rock nacional", "mpb"],
+    "Ensolarado": [
+        "pop / rock internacional", "rock nacional", "regional nordestina", 
+        "mpb / contemporâneo", "pop", "surf rock", "reggae / pop"
+    ],
+    "Chuvoso": [
+        "bossa nova / jazz", "jazz", "mpb / clássico", "blues", 
+        "instrumental", "soul / jazz", "chillout"
+    ],
+    "Nublado": [
+        "mpb / contemporâneo", "reggae / pop", "soul / funk", 
+        "rock nacional", "mpb", "pop rock", "indie"
+    ],
 }
 
 def estilos_para_mood(mood: str | None = None) -> list[str]:
@@ -135,8 +144,8 @@ class GestorFila:
         self.pool_geral = self._shuffle_by_priority(self.pool_geral)
         self.pool_regional = self._shuffle_by_priority(self.pool_regional)
         
-        self.max_art = CFG.get("max_historico_artistas", 80)
-        self.max_mus = CFG.get("max_historico_musicas", 200)
+        self.max_art = CFG.get("max_historico_artistas", 30)
+        self.max_mus = CFG.get("max_historico_musicas", 80)
         self.historico_artistas, self.historico_musicas = self._carregar_historico()
         
         # Estado do fluxo para o "Conceito de Programação"
@@ -158,16 +167,19 @@ class GestorFila:
             resultado.extend(sub_lista)
         return resultado
 
-    def proxima(self, tipo="geral", energias_alvo=None, evitar_estilo=None):
+    def proxima(self, tipo="geral", energias_alvo=None, evitar_estilo=None, mood_alvo=None):
         pool = self.pool_regional if tipo == "regional" and self.pool_regional else self.pool_geral
         if not pool:
             pool = self.pool_geral if tipo == "regional" else self.pool_regional
             if not pool: return None
 
+        # Estilos preferidos para o mood atual
+        estilos_preferidos = estilos_para_mood(mood_alvo) if mood_alvo else []
+
         # CONCEITO: Buscamos a melhor música que se encaixe no fluxo (Vibe Match)
-        # Varremos as primeiras 50 músicas da fila de prioridade
+        # Varremos as primeiras 100 músicas da fila de prioridade
         candidatas = []
-        for i, m in enumerate(pool[:50]):
+        for i, m in enumerate(pool[:100]):
             art = clean_artist_name(m.artista, m.caminho)
             
             # Pula se for repetição de artista ou música
@@ -178,6 +190,10 @@ class GestorFila:
             # Regra de Energia (Peso 3)
             if energias_alvo and m.energia in energias_alvo: score += 3
             
+            # Regra de Mood/Estilo (Peso 4) - Prioridade máxima para aderência ao clima
+            if mood_alvo and m.estilo.lower() in [e.lower() for e in estilos_preferidos]:
+                score += 4
+            
             # Regra de Alternância de Estilo (Peso 2)
             if evitar_estilo and m.estilo.upper() != evitar_estilo.upper(): score += 2
             
@@ -186,8 +202,8 @@ class GestorFila:
         if candidatas:
             # Ordena pelo score (conceito) e pega uma das melhores
             candidatas.sort(key=lambda x: x[0], reverse=True)
-            # Pega aleatoriamente entre as top 3 melhores do conceito
-            top_selection = candidatas[:3]
+            # Pega aleatoriamente entre as top 5 melhores do conceito
+            top_selection = candidatas[:5]
             score, idx_original, m = random.choice(top_selection)
             
             self._atualizar_historico(m.artista, m.caminho)
@@ -228,6 +244,7 @@ def montar_bloco(
     duracao_alvo_s: int,
     assets: dict | None = None,
     hora_inicio: int | None = None,
+    mood: str | None = None,
 ) -> list[str]:
     """
     Monta a grade musical aplicando o conceito de PROGRAMAÇÃO PROFISSIONAL:
@@ -250,7 +267,7 @@ def montar_bloco(
     alvo = CFG.get("duracao_bloco_segundos", 8000)
     if duracao_alvo_s < 7200: alvo = duracao_alvo_s
 
-    logger.info(f"[GradeRules] Gerando CONCEITO para {hora}H — Meta: {alvo}s")
+    logger.info(f"[GradeRules] Gerando CONCEITO para {hora}H — Mood: {mood} — Meta: {alvo}s")
 
     while segundos_acumulados < alvo:
         # LÓGICA DE CONCEITO: Ajusta a energia alvo dinamicamente dentro do bloco de 2h
@@ -270,11 +287,12 @@ def montar_bloco(
 
         tipo = "regional" if contador_musicas > 0 and contador_musicas % n_regional == 0 else "geral"
         
-        # Pede a próxima música passando o conceito de energia e evitando o estilo anterior
+        # Pede a próxima música passando o conceito de energia e o mood atual
         musica = gestor.proxima(
             tipo=tipo, 
             energias_alvo=e_alvo, 
-            evitar_estilo=gestor.ultimo_estilo
+            evitar_estilo=gestor.ultimo_estilo,
+            mood_alvo=mood
         )
         
         if not musica: break

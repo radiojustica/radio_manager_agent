@@ -1,15 +1,62 @@
 import logging
+import requests
 from datetime import datetime
 
 logger = logging.getLogger("OmniCore.WeatherService")
 
-def get_natal_weather_mood():
+# Coordenadas de Natal/RN (Base de operação)
+LATITUDE = -5.79448
+LONGITUDE = -35.211
+
+def get_natal_weather_mood() -> str:
     """
-    Motor Local de Sugestão de Mood (Substitui a API Externa de Clima).
-    Calcula a 'vibe' da rádio baseado na hora do dia e dia da semana.
+    Consulta a API Open-Meteo para obter o clima real de Natal/RN.
+    Mapeia o weathercode para os moods da rádio: Ensolarado, Nublado, Chuvoso.
+    """
+    url = "https://api.open-meteo.com/v1/forecast"
+    params = {
+        "latitude": LATITUDE,
+        "longitude": LONGITUDE,
+        "current_weather": "true",
+        "timezone": "America/Fortaleza"
+    }
+
+    try:
+        logger.info(f"[WeatherService] Consultando clima real para Natal/RN ({LATITUDE}, {LONGITUDE})...")
+        response = requests.get(url, params=params, timeout=10)
+        response.raise_for_status()
+        data = response.json()
+
+        if "current_weather" in data:
+            weather_code = data["current_weather"].get("weathercode", 0)
+            logger.info(f"[WeatherService] WeatherCode recebido: {weather_code}")
+            
+            # Mapeamento Open-Meteo Weather Codes
+            # 0: Céu limpo
+            # 1, 2, 3: Parcialmente nublado, nublado
+            # 45, 48: Nevoeiro
+            # 51, 53, 55: Garoa
+            # 61, 63, 65: Chuva
+            # 71, 73, 75: Neve
+            # 80, 81, 82: Pancadas de chuva
+            # 95, 96, 99: Tempestade
+            
+            if weather_code == 0:
+                return "Ensolarado"
+            elif weather_code in [1, 2, 3, 45, 48]:
+                return "Nublado"
+            else:
+                return "Chuvoso"
+
+    except Exception as e:
+        logger.warning(f"[WeatherService] Falha ao consultar API de clima ({e}). Usando heurística local.")
     
-    Retorna: 'Ensolarado', 'Nublado' ou 'Chuvoso'
-    (Sendo 'Ensolarado' mais energético, 'Nublado' médio e 'Chuvoso' mais calmo)
+    return get_fallback_mood()
+
+def get_fallback_mood() -> str:
+    """
+    Heurística local baseada na hora do dia e dia da semana.
+    Usada apenas se a API externa falhar.
     """
     now = datetime.now()
     hour = now.hour
@@ -33,5 +80,3 @@ def get_natal_weather_mood():
         return "Ensolarado" # Volta para casa / Happy hour
     else:
         return "Chuvoso" # Madrugada tranquila
-
-

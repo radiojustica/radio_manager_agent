@@ -12,9 +12,9 @@
 
 ## 1a2b3c4d
 ### Intelligent Playlisting with Weather-Mood Mapping
-- Status: Todo
+- Status: Done
 - Prioridade: High
-- Descrição: Playlists adaptativas baseadas em regras de energia e clima.
+- Descrição: Playlists adaptativas baseadas em regras de energia e clima real via Open-Meteo API.
 
 ---
 
@@ -82,4 +82,12 @@
 
 ---
 
-(Os demais tickets seguem o mesmo padrão, basta expandir com título/status/descrição de cada linear_ticket_xxxxxxxx.md)
+## 9i0j1k2l
+### Google Drive Bulletin Synchronization
+- Status: Todo
+- Prioridade: Medium
+- Descrição: Implementar BulletinWorker para download automático de boletins informativos do Google Drive.
+
+---
+
+**Última Atualização:** 13 de Maio de 2026 - *Pickle Rick Status Sync*

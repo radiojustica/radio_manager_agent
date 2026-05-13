@@ -1,14 +1,22 @@
 ---
 id: 1a2b3c4d
 title: "Intelligent Playlisting with Weather-Mood Mapping"
-status: Todo
+status: Done
 priority: High
 order: 30
 created: 2026-05-06
-updated: 2026-05-06
+updated: 2026-05-13
 links:
   - url: ../linear_ticket_parent.md
     title: Parent Ticket
+  - url: research_20260513.md
+    title: Technical Research Findings
+  - url: research_review.md
+    title: Technical Research Review
+  - url: plan_20260513.md
+    title: Implementation Plan
+  - url: plan_review.md
+    title: Implementation Plan Review
 ---
 
 # Description

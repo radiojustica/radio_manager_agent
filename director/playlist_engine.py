@@ -133,7 +133,7 @@ class PlaylistEngine:
                 return False
 
             assets = GR.carregar_assets_apoio()
-            linhas = GR.montar_bloco(acervo, duracao, assets, hora_inicio)
+            linhas = GR.montar_bloco(acervo, duracao, assets, hora_inicio, mood)
 
             nome_arquivo = f"PROG_{hora_inicio:02d}H.m3u"
             caminho_m3u  = os.path.join(cfg["pasta_programacao"], nome_arquivo)

@@ -11,7 +11,7 @@ class PlaylistWorker(WorkerBase):
 
     def run_cycle(self, hora_inicio: int = 0, mood: str | None = None) -> WorkerResult:
         result = playlist_engine_instance.gerar_playlist_bloco(hora_inicio, mood)
-        score = 1 if result else -3
+        score = 10 if result else -5
         violations = [] if result else [f"Falha na geração do bloco {hora_inicio:02d}H"]
         metadata = {
             "hora_inicio": hora_inicio,
