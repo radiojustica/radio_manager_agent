@@ -19,9 +19,13 @@ def run_app() -> None:
     """Modo simplificado: sempre GUI, verifica admin, inicia tudo."""
     logger.info("Iniciando run_app...")
     if not is_admin():
-        logger.info("Não é admin, solicitando elevação...")
-        run_as_admin()
-        sys.exit(0)
+        logger.info("Não é admin, tentando solicitar elevação...")
+        if run_as_admin():
+            # Se conseguiu elevar, o novo processo vai substituir este
+            sys.exit(0)
+        else:
+            # Se não conseguir elevar, continua sem admin (modo dev/teste)
+            logger.warning("Não foi possível elevar para admin. Continuando em modo reduzido...")
 
     logger.info("Verificando instância única...")
     if not verificar_instancia_unica():

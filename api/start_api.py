@@ -1,5 +1,5 @@
 import uvicorn
-from main import app
+from api.manager import app
 import logging
 
 if __name__ == "__main__":

@@ -31,12 +31,15 @@ def verificar_instancia_unica():
         print(f"Erro Mutex: {e}")
         return True
 
-def run_as_admin() -> None:
-    """Reinicia o script atual com privilégios elevados."""
+def run_as_admin() -> bool:
+    """
+    Reinicia o script atual com privilégios elevados.
+    Retorna True se conseguiu elevar, False caso contrário.
+    """
     script = sys.argv[0]
     params = " ".join(sys.argv[1:])
     try:
-        ctypes.windll.shell32.ShellExecuteW(
+        result = ctypes.windll.shell32.ShellExecuteW(
             None,
             "runas",
             sys.executable,
@@ -44,7 +47,12 @@ def run_as_admin() -> None:
             os.getcwd(),
             1
         )
+        # ShellExecuteW retorna > 32 se bem-sucedido
+        if result > 32:
+            return True
+        else:
+            print(f"Falha ao solicitar elevação: código {result}")
+            return False
     except Exception as e:
         print(f"Falha ao solicitar elevação: {e}")
-        sys.exit(1)
-    sys.exit(0)
+        return False
