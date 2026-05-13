@@ -1,7 +1,12 @@
 @echo off
 title Omni Core V2 Launcher
-echo Iniciando Omni Core V2...
+echo ====================================================
+echo   OMNI CORE V2 - INICIALIZADOR
+echo ====================================================
 cd /d "%~dp0"
 set PYTHONPATH=%PYTHONPATH%;%cd%
-python main.py
-pause
+python start.py
+if %errorlevel% neq 0 (
+    echo [ERRO] Falha ao iniciar o sistema.
+    pause
+)

@@ -28,7 +28,7 @@
 
 ## 3m4n5o6p
 ### Advanced Quarantine and Quality Isolation
-- Status: Todo
+- Status: Done
 - Prioridade: Low
 - Descrição: Quarentena de faixas de baixa qualidade baseada em métricas avançadas.
 
@@ -36,7 +36,7 @@
 
 ## 5e6f7g8h
 ### Weekly CSV Report Generation and Reward Audit
-- Status: Todo
+- Status: Done
 - Prioridade: Medium
 - Descrição: Criar ReportWorker para gerar semanalmente CSV com resumo das atividades e recompensas dos workers.
 
@@ -52,7 +52,7 @@
 
 ## 7q8r9s0t
 ### Utility Scripts and Final Documentation
-- Status: Todo
+- Status: Done
 - Prioridade: Low
 - Descrição: Adaptação de scripts utilitários e finalização da documentação técnica do sistema modular.
 

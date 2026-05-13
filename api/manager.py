@@ -18,7 +18,7 @@ import json
 from core.database import engine, Base, SessionLocal
 from core.models import RegraProgramacao
 from worker_manager import worker_manager_instance
-from routers import acervo, status, config, ai, workers, engine as engine_router
+from routers import acervo, status, config, ai, workers, engine as engine_router, reports
 from routers.downloader import router as downloader_router
 
 logger = logging.getLogger("OmniCore.APIManager")
@@ -156,4 +156,6 @@ def wait_for_server(host="127.0.0.1", port=8001, timeout=30):
                 return True
         except Exception:
             time.sleep(0.5)
+    return False
+ep(0.5)
     return False

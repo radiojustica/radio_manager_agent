@@ -1,11 +1,11 @@
 ---
 id: 7q8r9s0t
 title: "Utility Scripts and Final Documentation"
-status: Todo
+status: Done
 priority: Low
 order: 70
 created: 2026-05-06
-updated: 2026-05-06
+updated: 2026-05-13
 links:
   - url: ../linear_ticket_parent.md
     title: Parent Ticket

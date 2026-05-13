@@ -1,11 +1,11 @@
 ---
 id: 5e6f7g8h
 title: "Weekly CSV Report Generation and Reward Audit"
-status: Todo
+status: Done
 priority: Medium
 order: 40
 created: 2026-05-06
-updated: 2026-05-06
+updated: 2026-05-13
 links:
   - url: ../linear_ticket_parent.md
     title: Parent Ticket

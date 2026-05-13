@@ -1,11 +1,11 @@
 ---
 id: 3m4n5o6p
 title: "Advanced Quarantine and Quality Isolation"
-status: Todo
+status: Done
 priority: Low
 order: 60
 created: 2026-05-06
-updated: 2026-05-06
+updated: 2026-05-13
 links:
   - url: ../linear_ticket_parent.md
     title: Parent Ticket

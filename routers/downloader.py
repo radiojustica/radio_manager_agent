@@ -39,3 +39,11 @@ async def trigger_downloads(req: DownloadRequest, background_tasks: BackgroundTa
     """Dispara o download das músicas selecionadas."""
     background_tasks.add_task(_process_downloads, req.queries, req.estilo)
     return {"success": True, "message": f"Download de {len(req.queries)} músicas iniciado em background."}
+
+@router.get("/progress")
+async def get_download_progress():
+    """Retorna o progresso atual de todos os downloads ativos."""
+    from services.downloader_service import downloader_instance
+    return {
+        "active": downloader_instance.active_progress
+    }

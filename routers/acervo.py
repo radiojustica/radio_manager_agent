@@ -313,4 +313,12 @@ async def exportar_acervo(
         headers={"Content-Disposition": f"attachment; filename={filename}"}
     )
 
+@router.get("/quarantine")
+def listar_quarentena(db: Session = Depends(get_db)):
+    """
+    Lista todas as músicas que foram enviadas para quarentena (redflag=True).
+    """
+    quarentenadas = db.query(Musica).filter(Musica.redflag == True).all()
+    return [m.to_dict() for m in quarentenadas]
+
 

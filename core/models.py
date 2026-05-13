@@ -27,6 +27,7 @@ class Musica(Base):
     
     # Insights da IA
     ai_insight = Column(String, nullable=True)
+    quarantine_reason = Column(String, nullable=True)
 
     def to_dict(self):
         d = {}

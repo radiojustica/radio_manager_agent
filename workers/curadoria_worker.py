@@ -48,11 +48,15 @@ class CuradoriaWorker(WorkerBase):
                     
                     if resultado["status"] == "QUARANTINED":
                         musica.redflag = True
+                        musica.quarantine_reason = resultado.get("motivo")
                         metadata["quarantined_count"] += 1
                         violations.append(f"Música {musica.id} enviada para quarentena: {resultado.get('motivo')}")
                         score += 5
                     else:
                         musica.energia = resultado.get("energia", 3)
+                        musica.bpm = resultado.get("bpm", 0)
+                        musica.valence = resultado.get("valence", 0.5)
+                        musica.danceability = resultado.get("danceability", 0.5)
                         score += 2
                     
                     db.commit()

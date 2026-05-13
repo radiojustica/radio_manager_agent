@@ -82,11 +82,15 @@ def analisar_acustica_completa(caminho):
         dance_score = float(np.mean(onset_env))
         danceability = min(dance_score / 1.5, 1.0)
 
+        # 5. Spectral Flatness (Detecta Ruído/Hiss)
+        flatness = float(np.mean(librosa.feature.spectral_flatness(y=y)))
+
         return {
             "energia": energia_score,
             "bpm": bpm,
             "valence": round(float(valence), 2),
-            "danceability": round(float(danceability), 2)
+            "danceability": round(float(danceability), 2),
+            "flatness": round(flatness, 4)
         }
     except Exception as e:
         print(f"[WORKER] Falha acústica completa em {caminho}: {e}")
@@ -141,6 +145,34 @@ def processar_arquivo(id_musica, caminho):
             
     # 3. ANÁLISE ACÚSTICA COMPLETA
     analise = analisar_acustica_completa(caminho)
+    
+    # 4. QUARENTENA POR QUALIDADE TÉCNICA
+    motivo_q = None
+    if analise["energia"] < 2:
+        motivo_q = "Baixa Energia (E1)"
+    elif analise.get("flatness", 0) > 0.5:
+        motivo_q = f"Ruído Excessivo (Flatness: {analise.get('flatness')})"
+    elif duracao < 30:
+        motivo_q = f"Duração Insuficiente ({duracao}s)"
+        
+    if motivo_q:
+        registrar_log_quarentena(nome_arq, f"QUALIDADE: {motivo_q}")
+        os.makedirs(PASTA_QUARENTENA, exist_ok=True)
+        try:
+            shutil.move(caminho, os.path.join(PASTA_QUARENTENA, nome_arq))
+            return {
+                "id": id_musica, 
+                "status": "QUARANTINED", 
+                "motivo": motivo_q, 
+                "energia": analise["energia"], 
+                "duracao": duracao, 
+                "bpm": analise["bpm"], 
+                "valence": analise["valence"], 
+                "danceability": analise["danceability"]
+            }
+        except:
+            pass
+
     return {
         "id": id_musica, 
         "status": "OK", 

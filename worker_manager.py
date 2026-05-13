@@ -296,6 +296,14 @@ def create_default_manager() -> WorkerManager:
     manager.register_worker(DailyReportWorker(reward_store=manager.reward_store))
     logger.info("Registrando BulletinWorker...")
     manager.register_worker(BulletinWorker(reward_store=manager.reward_store))
+    logger.info("Registrando ReportWorker...")
+    manager.register_worker(ReportWorker(reward_store=manager.reward_store))
+    logger.info("Todos os workers registrados.")
+    return manager
+
+logger.info("Inicializando worker_manager_instance...")
+worker_manager_instance = create_default_manager()
+orker(reward_store=manager.reward_store))
     logger.info("Todos os workers registrados.")
     return manager
 

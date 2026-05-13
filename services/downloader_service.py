@@ -79,6 +79,13 @@ class DownloaderService:
                 
                 actual_filename = dest_path / f"{filename_base}.mp3"
                 
+                # Limpeza preventiva de possíveis sobras de .webm ou .part
+                for ext in [".webm", ".part", ".ytdl"]:
+                    temp_f = dest_path / f"{filename_base}{ext}"
+                    if temp_f.exists():
+                        try: os.remove(temp_f)
+                        except: pass
+
                 self.active_progress[query] = {"percentage": 100, "status": "completed", "speed": "0KB/s", "eta": "00:00"}
                 logger.info(f"[Downloader] Sucesso: {query} -> {actual_filename}")
                 return {

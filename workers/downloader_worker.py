@@ -7,6 +7,7 @@ from core.reward import RewardStore
 from services.downloader_service import downloader_instance
 from core.database import SessionLocal
 from core.models import Musica
+from sqlalchemy import or_, and_
 
 logger = logging.getLogger("OmniCore.Workers.Downloader")
 
@@ -48,10 +49,17 @@ class DownloaderWorker(WorkerBase):
                 metadata["processed"] += 1
                 try:
                     # Verifica se já temos algo similar no banco para evitar duplicidade
-                    # Se for proativo, somos mais rigorosos
-                    existing = db.query(Musica).filter(Musica.caminho.like(f"%{query}%")).first()
+                    # Normaliza a busca
+                    clean_query = query.replace(" - Greatest Hits", "").strip()
+                    existing = db.query(Musica).filter(
+                        or_(
+                            Musica.caminho.like(f"%{clean_query}%"),
+                            and_(Musica.artista.ilike(f"%{clean_query.split(' - ')[0]}%"), Musica.titulo.ilike(f"%{clean_query.split(' - ')[-1]}%")) if " - " in clean_query else False
+                        )
+                    ).first()
+                    
                     if existing:
-                        logger.info(f"[DownloaderWorker] Query '{query}' já parece existir no acervo. Pulando.")
+                        logger.info(f"[DownloaderWorker] Query '{query}' já parece existir no acervo (ID: {existing.id}). Pulando.")
                         results.append({"query": query, "status": "skipped", "reason": "already_exists"})
                         continue
 

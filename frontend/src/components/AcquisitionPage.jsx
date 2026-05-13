@@ -1,10 +1,34 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+
+const ProgressBar = ({ percentage, status, speed, eta }) => (
+  <div style={{ marginBottom: '1rem', background: 'rgba(255,255,255,0.02)', padding: '12px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
+    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', marginBottom: '8px', fontWeight: 700 }}>
+      <span style={{ color: 'var(--text-secondary)' }}>{status?.toUpperCase()}</span>
+      <span style={{ color: 'var(--accent-primary)' }}>{percentage?.toFixed(1)}%</span>
+    </div>
+    <div style={{ width: '100%', height: '6px', background: 'rgba(255,255,255,0.1)', borderRadius: '3px', overflow: 'hidden' }}>
+      <div 
+        style={{ 
+          width: `${percentage}%`, 
+          height: '100%', 
+          background: 'var(--accent-primary)', 
+          transition: 'width 0.3s ease-out',
+          boxShadow: '0 0 10px var(--accent-primary)'
+        }} 
+      />
+    </div>
+    <div style={{ display: 'flex', gap: '15px', marginTop: '8px', fontSize: '0.65rem', color: 'var(--text-muted)', fontWeight: 600 }}>
+      {speed && <span>⚡ {speed}</span>}
+      {eta && <span>⏳ {eta}</span>}
+    </div>
+  </div>
+);
 
 export default function AcquisitionPage() {
   const [recommendations, setRecs] = useState([]);
   const [selected, setSelected] = useState({});
   const [loading, setLoading] = useState(false);
-  const [downloading, setDownloading] = useState(false);
+  const [activeDownloads, setActiveDownloads] = useState({});
   const [manualLinks, setManualLinks] = useState('');
   const [statusMsg, setStatus] = useState('');
 
@@ -25,6 +49,29 @@ export default function AcquisitionPage() {
     }
   };
 
+  const fetchProgress = async () => {
+    try {
+      const res = await fetch('/api/downloader/progress');
+      const data = await res.json();
+      setActiveDownloads(data.active || {});
+    } catch (e) {
+      console.error("Erro ao buscar progresso:", e);
+    }
+  };
+
+  useEffect(() => {
+    const hasActive = Object.values(activeDownloads).some(d => d.status !== 'completed' && d.status !== 'failed');
+    if (hasActive || Object.keys(activeDownloads).length > 0) {
+      const interval = setInterval(fetchProgress, 2000);
+      return () => clearInterval(interval);
+    }
+  }, [activeDownloads]);
+
+  // Initial fetch for progress in case something is already running
+  useEffect(() => {
+    fetchProgress();
+  }, []);
+
   const handleToggle = (idx) => {
     setSelected(prev => ({ ...prev, [idx]: !prev[idx] }));
   };
@@ -44,20 +91,14 @@ export default function AcquisitionPage() {
   };
 
   const triggerDownloads = async (type) => {
-    setDownloading(true);
     let queries = [];
-    
     if (type === 'recs') {
       queries = recommendations.filter((_, idx) => selected[idx]).map(r => r.sugestao);
     } else {
       queries = manualLinks.split('\n').filter(l => l.trim() !== '');
     }
 
-    if (queries.length === 0) {
-      alert('Nenhuma música selecionada ou link inserido.');
-      setDownloading(false);
-      return;
-    }
+    if (queries.length === 0) return;
 
     try {
       const res = await fetch('/api/downloader/download', {
@@ -68,148 +109,159 @@ export default function AcquisitionPage() {
       const data = await res.json();
       setStatus(data.message);
       if (type === 'manual') setManualLinks('');
+      fetchProgress(); // Start polling immediately
     } catch (e) {
       setStatus('Erro ao iniciar downloads.');
-    } finally {
-      setDownloading(false);
     }
   };
 
+  const downloadEntries = Object.entries(activeDownloads).filter(([_, d]) => d.status !== 'completed');
+
   return (
-    <div className="acervo-container anim-fade-in">
-      <div className="page-header" style={{ marginBottom: '2rem' }}>
-        <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--accent-primary)' }}>Aquisição Proativa de Acervo</h2>
-        <p style={{ color: 'var(--text-secondary)' }}>Módulo de expansão inteligente baseado em tendências de reprodução.</p>
+    <div className="acervo-container anim-fade-in" style={{ maxWidth: '1400px', margin: '0 auto', padding: '2rem' }}>
+      <div className="page-header" style={{ marginBottom: '3rem', borderLeft: '4px solid var(--accent-primary)', paddingLeft: '1.5rem' }}>
+        <h2 style={{ fontSize: '2rem', fontWeight: 900, letterSpacing: '-0.5px', color: '#fff' }}>Aquisição Inteligente</h2>
+        <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem' }}>Expansão proativa do acervo via análise de tendências e captura multicanal.</p>
       </div>
 
-      <div className="grid-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
-        {/* COMPORTAMENTO 2: INTELIGENTE */}
-        <div className="premium-card" style={{ padding: '1.5rem' }}>
-          <div className="card-header-flex" style={{ marginBottom: '1.5rem' }}>
-            <h3 className="module-tag">SUGESTÕES DO DIRETOR</h3>
+      <div className="main-layout-flex" style={{ display: 'flex', gap: '2.5rem', alignItems: 'flex-start' }}>
+        <div style={{ flex: 2, display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
+          
+          {/* SEÇÃO DE SUGESTÕES */}
+          <div className="premium-card" style={{ padding: '2rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+              <div>
+                <h3 style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--accent-primary)', marginBottom: '4px' }}>RECOMENDAÇÕES DO DIRETOR</h3>
+                <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Top tendências dos últimos 5 dias</p>
+              </div>
+              <button 
+                className="btn-action" 
+                onClick={fetchRecommendations} 
+                disabled={loading}
+                style={{ background: 'rgba(56, 189, 248, 0.1)', color: 'var(--accent-primary)', border: '1px solid var(--accent-primary)' }}
+              >
+                {loading ? 'ANALISANDO...' : '🔄 ATUALIZAR'}
+              </button>
+            </div>
+
+            <div className="table-scroll-area" style={{ maxHeight: '500px', overflowY: 'auto', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.05)', background: 'rgba(0,0,0,0.15)' }}>
+              {recommendations.length > 0 ? (
+                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                  <thead style={{ position: 'sticky', top: 0, background: '#111', zIndex: 10 }}>
+                    <tr style={{ textAlign: 'left', fontSize: '0.65rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                      <th style={{ padding: '15px 20px' }}>
+                        <input type="checkbox" checked={allSelected} onChange={handleSelectAll} />
+                      </th>
+                      <th>Sugestão</th>
+                      <th>Contexto</th>
+                      <th style={{ paddingRight: '20px' }}>Estilo</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {recommendations.map((rec, idx) => (
+                      <tr key={idx} style={{ borderBottom: '1px solid rgba(255,255,255,0.03)', fontSize: '0.85rem' }}>
+                        <td style={{ padding: '15px 20px' }}>
+                          <input type="checkbox" checked={!!selected[idx]} onChange={() => handleToggle(idx)} />
+                        </td>
+                        <td style={{ padding: '15px 0' }}>
+                          <div style={{ fontWeight: 800, color: '#fff' }}>{rec.artista}</div>
+                          <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '2px' }}>{rec.sugestao}</div>
+                        </td>
+                        <td style={{ color: 'var(--text-secondary)', fontSize: '0.75rem' }}>{rec.motivo}</td>
+                        <td style={{ paddingRight: '20px' }}><span className="style-tag" style={{ fontSize: '0.6rem' }}>{rec.estilo}</span></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              ) : (
+                <div style={{ padding: '4rem 0', textAlign: 'center', color: 'var(--text-muted)' }}>
+                  <div style={{ fontSize: '2.5rem', marginBottom: '1rem', opacity: 0.5 }}>📊</div>
+                  <p style={{ fontWeight: 600 }}>Nenhuma sugestão carregada.</p>
+                  <p style={{ fontSize: '0.75rem' }}>Clique em Atualizar para iniciar a análise heurística.</p>
+                </div>
+              )}
+            </div>
+
+            {recommendations.length > 0 && (
+              <div style={{ marginTop: '2rem', display: 'flex', justifyContent: 'flex-end' }}>
+                <button 
+                  className="btn-action primary" 
+                  onClick={() => triggerDownloads('recs')}
+                  style={{ padding: '12px 30px', fontWeight: 800 }}
+                >
+                  📥 BAIXAR SELECIONADAS
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
+          
+          {/* DOWNLOAD MANUAL */}
+          <div className="premium-card" style={{ padding: '2rem' }}>
+            <h3 style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--accent-primary)', marginBottom: '1.5rem' }}>CAPTURA DIRETA</h3>
+            <textarea 
+              value={manualLinks}
+              onChange={(e) => setManualLinks(e.target.value)}
+              placeholder="Cole links do YouTube ou nomes de faixas aqui... (uma por linha)"
+              style={{ 
+                width: '100%', height: '180px', background: 'rgba(0,0,0,0.2)', 
+                border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px',
+                color: '#fff', padding: '1.2rem', fontSize: '0.85rem', fontFamily: "'Fira Code', monospace",
+                resize: 'none', marginBottom: '1.5rem'
+              }}
+            />
             <button 
-              className="action-btn" 
-              onClick={fetchRecommendations} 
-              disabled={loading}
-              style={{ background: 'var(--accent-primary)', color: '#000', padding: '8px 16px', borderRadius: '8px', fontWeight: 700 }}
+              className="btn-action block" 
+              onClick={() => triggerDownloads('manual')}
+              style={{ width: '100%', padding: '12px', background: 'var(--accent-primary)', color: '#000', fontWeight: 900 }}
             >
-              {loading ? 'ANALISANDO...' : '🔄 UPDATE (LER LOGS)'}
+              🚀 INICIAR DOWNLOADS
             </button>
           </div>
 
-          <div className="recs-list" style={{ minHeight: '300px', background: 'rgba(0,0,0,0.2)', borderRadius: '12px', padding: '10px' }}>
-            {recommendations.length > 0 ? (
-              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                <thead>
-                  <tr style={{ textAlign: 'left', fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>
-                    <th style={{ padding: '10px' }}>
-                      <input 
-                        type="checkbox" 
-                        checked={allSelected} 
-                        onChange={handleSelectAll} 
-                        title="Selecionar Todos" 
-                      />
-                    </th>
-                    <th>Artista / Sugestão</th>
-                    <th>Estilo</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {recommendations.map((rec, idx) => (
-                    <tr key={idx} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', fontSize: '0.85rem' }}>
-                      <td style={{ padding: '10px' }}>
-                        <input type="checkbox" checked={!!selected[idx]} onChange={() => handleToggle(idx)} />
-                      </td>
-                      <td style={{ padding: '10px' }}>
-                        <div style={{ fontWeight: 700 }}>{rec.artista}</div>
-                        <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{rec.motivo}</div>
-                      </td>
-                      <td><span className="style-tag">{rec.estilo}</span></td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+          {/* TELEMETRIA DE DOWNLOADS ATIVOS */}
+          <div className="premium-card" style={{ padding: '2rem', minHeight: '300px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '2rem' }}>
+               <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: downloadEntries.length > 0 ? 'var(--accent-success)' : 'var(--text-muted)', boxShadow: downloadEntries.length > 0 ? '0 0 10px var(--accent-success)' : 'none' }}></div>
+               <h3 style={{ fontSize: '0.9rem', fontWeight: 800 }}>FILA DE PROCESSAMENTO</h3>
+            </div>
+
+            {downloadEntries.length > 0 ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                {downloadEntries.map(([query, data]) => (
+                  <div key={query}>
+                    <div style={{ fontSize: '0.7rem', fontWeight: 800, color: '#fff', marginBottom: '8px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {query}
+                    </div>
+                    <ProgressBar 
+                      percentage={data.percentage} 
+                      status={data.status} 
+                      speed={data.speed} 
+                      eta={data.eta} 
+                    />
+                  </div>
+                ))}
+              </div>
             ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '300px', color: 'var(--text-muted)' }}>
-                <span style={{ fontSize: '2rem', marginBottom: '1rem' }}>📊</span>
-                <p>Clique em Update para analisar os últimos 5 dias.</p>
+              <div style={{ padding: '3rem 0', textAlign: 'center', color: 'var(--text-muted)', border: '2px dashed rgba(255,255,255,0.05)', borderRadius: '16px' }}>
+                <p style={{ fontSize: '0.75rem', fontWeight: 700 }}>NENHUM DOWNLOAD ATIVO</p>
               </div>
             )}
           </div>
 
-          {recommendations.length > 0 && (
-            <button 
-              className="action-btn" 
-              onClick={() => triggerDownloads('recs')} 
-              disabled={downloading}
-              style={{ width: '100%', marginTop: '1.5rem', background: 'var(--accent-success)', color: '#000' }}
-            >
-              {downloading ? 'PROCESSANDO...' : '📥 BAIXAR SELECIONADAS (COM AUTO-TRIM)'}
-            </button>
-          )}
-        </div>
-
-        {/* COMPORTAMENTO 1: MANUAL */}
-        <div className="premium-card" style={{ padding: '1.5rem' }}>
-          <h3 className="module-tag" style={{ marginBottom: '1.5rem' }}>DOWNLOAD MANUAL</h3>
-          <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
-            Insira links do YouTube ou nomes de músicas (um por linha).
-          </p>
-          <textarea 
-            value={manualLinks}
-            onChange={(e) => setManualLinks(e.target.value)}
-            placeholder="Ex: https://youtube.com/watch?v=...\nGilberto Gil - Aquele Abraço"
-            style={{ 
-              width: '100%', height: '250px', background: 'rgba(0,0,0,0.3)', 
-              border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px',
-              color: '#fff', padding: '1rem', fontFamily: 'monospace'
-            }}
-          />
-          <button 
-            className="action-btn" 
-            onClick={() => triggerDownloads('manual')} 
-            disabled={downloading}
-            style={{ width: '100%', marginTop: '1.5rem', background: 'var(--accent-primary)', color: '#000' }}
-          >
-            {downloading ? 'BAIXANDO...' : '🚀 INICIAR CAPTURA MANUAL'}
-          </button>
-        </div>
-      </div>
-
-      {(downloading || statusMsg) && (
-        <div style={{ 
-          marginTop: '2rem', padding: '1rem', background: 'rgba(56, 189, 248, 0.1)', 
-          borderRadius: '10px', border: '1px solid var(--accent-primary)', color: 'var(--accent-primary)',
-          fontSize: '0.8rem', fontWeight: 700, display: 'flex', flexDirection: 'column', gap: '10px'
-        }}>
-          {downloading ? (
-            <>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <span className="anim-pulse">⏳</span> Processando e baixando arquivos... aguarde
-              </div>
-              <div style={{ width: '100%', height: '8px', background: '#222', borderRadius: '4px', overflow: 'hidden', position: 'relative' }}>
-                <div style={{ 
-                  width: '30%', height: '100%', background: 'var(--accent-primary)',
-                  position: 'absolute',
-                  animation: 'indeterminate 1.5s infinite ease-in-out'
-                }} />
-              </div>
-              <style>{`
-                @keyframes indeterminate {
-                  0% { left: -30%; }
-                  100% { left: 100%; }
-                }
-                .anim-pulse { animation: pulse 1.5s infinite; }
-                @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
-              `}</style>
-            </>
-          ) : (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <span>{statusMsg.toLowerCase().includes('erro') || statusMsg.toLowerCase().includes('falha') ? '⚠️' : '✅'}</span> {statusMsg}
+          {statusMsg && (
+            <div style={{ 
+              padding: '1.2rem', background: 'rgba(56, 189, 248, 0.05)', 
+              borderRadius: '12px', border: '1px solid rgba(56, 189, 248, 0.2)', color: 'var(--accent-primary)',
+              fontSize: '0.8rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '12px'
+            }}>
+              <span>ℹ️</span> {statusMsg}
             </div>
           )}
         </div>
-      )}
+      </div>
     </div>
   );
 }

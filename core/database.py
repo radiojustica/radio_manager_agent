@@ -31,7 +31,8 @@ def init_db():
         ("mood", "TEXT"),
         ("bpm", "INTEGER"),
         ("valence", "REAL"),
-        ("danceability", "REAL")
+        ("danceability", "REAL"),
+        ("quarantine_reason", "TEXT")
     ]
     
     for nome_col, tipo_col in colunas:
