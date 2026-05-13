@@ -1,1 +1,38 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Logs
+logs/*.log
+*.log
+
+# Databases
+*.db
+!core/radio_omni.db
+
+# Project Specific
 worker_rewards.json
+state.json
+build_process.log
+
+# VS Code
+.vscode/
