@@ -166,7 +166,74 @@ dist/
 - separar frontend estático da API
 - deixar routers como binding temporário até `ApiWorker`
 
-## 8. Critérios de aceitação
+## 8. Resolução de Problemas e Operação
+
+### 8.1 Correções aplicadas (2026-05-13)
+
+#### Arquivos Corrigidos
+- `api/start_api.py` — Corrigida importação de `app` (linha 2)
+  - De: `from main import app` 
+  - Para: `from api.manager import app`
+  
+- `core/system.py` — Melhorada função `run_as_admin()`
+  - Agora retorna `bool` em vez de chamar `sys.exit()`
+  - Permite fallback para modo reduzido sem admin
+  
+- `core/launcher.py` — Melhorado tratamento de privilégios
+  - Sistema continua mesmo se elevação falhar
+  - Modo dev/teste ativado automaticamente
+
+#### Arquivos Criados para Operação
+
+- `start.py` — Script de inicialização principal (recomendado)
+  - Inicia sistema com logging completo
+  - Fallback automático para API-only se UI falhar
+  - Production-ready
+  
+- `test_startup.py` — Script de diagnóstico e validação
+  - Testa todos os imports
+  - Valida API, workers, scheduler
+  - Verifica conectividade vMix
+  - Relatório completo de status
+  
+- `OPERACAO.md` — Guia de operação completo
+  - Como iniciar o sistema
+  - Troubleshooting e diagnóstico
+  - Configuração de paths
+  - Verificação de componentes
+  - Acesso a logs e dashboard
+  
+- `MUDANCAS.md` — Documentação técnica de alterações
+  - Detalhamento de mudanças código
+  - Antes/depois de cada correção
+  - Motivos e impactos das mudanças
+  - Scripts criados e funcionalidades
+
+### 8.2 Validação e Status
+
+**Componentes Operacionais:**
+- ✓ API FastAPI/Uvicorn: `http://0.0.0.0:8001`
+- ✓ Workers: 10 registrados (Playlist, Audit, Curadoria, Guardian, Sync, Weather, Downloader, Butt, Update, DailyReport)
+- ✓ Scheduler: APScheduler ativo
+- ✓ Guardian Service: Monitorando
+- ✓ vMix Integration: Conectado (`172.16.217.226:8088`)
+- ✓ Database: SQLite (`core/radio_omni.db`)
+- ✓ Logging: Ativo em `D:\RADIO\LOG ZARARADIO\`
+
+### 8.3 Como Iniciar
+
+```bash
+# Inicialização normal (recomendada)
+python start.py
+
+# Teste de diagnóstico
+python test_startup.py
+
+# Modo clássico
+python main.py
+```
+
+## 9. Critérios de aceitação
 
 - workers independentes e testáveis
 - store de recompensas persistente
@@ -174,3 +241,5 @@ dist/
 - build de `omni_core.exe` reproduzível com `build.py`
 - atualização automática detecta e reconstrói o EXE
 - documentação completa disponível para continuidade do desenvolvimento
+- sistema opera com ou sem privilégios elevados (modo fallback)
+- diagnóstico e troubleshooting documentados
