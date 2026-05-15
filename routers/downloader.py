@@ -30,13 +30,20 @@ async def get_recommendations(days: int = 5):
 def _process_downloads(queries: list[str], estilo: str):
     """Processo em background para baixar e catalogar músicas via DownloaderWorker."""
     try:
-        logger.info(f"Disparando processamento de {len(queries)} downloads em background.")
+        logger.info(f"[Background] Disparando processamento de {len(queries)} downloads.")
         result = worker_manager_instance.run_cycle("DownloaderWorker", queries=queries, estilo=estilo)
-        logger.info(f"Processamento em background concluído: {result.get('result', {}).get('status')}")
+        status = result.get('result', {}).get('status', 'unknown')
+        logger.info(f"[Background] Processamento concluído com status: {status}")
+        
+        # Log detalhado de resultados
+        metadata = result.get('result', {}).get('metadata', {})
+        if metadata:
+            logger.info(
+                f"[Background] Resumo: {metadata.get('success', 0)} sucesso, "
+                f"{metadata.get('failed', 0)} falhas, {metadata.get('skipped', 0)} puladas"
+            )
     except Exception as e:
-        logger.error(f"Falha ao acionar DownloaderWorker: {e}")
-        import traceback
-        logger.error(traceback.format_exc())
+        logger.error(f"[Background] Falha crítica ao acionar DownloaderWorker: {e}", exc_info=True)
 
 @router.post("/download")
 async def trigger_downloads(req: DownloadRequest, background_tasks: BackgroundTasks):
