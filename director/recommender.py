@@ -11,12 +11,12 @@ logger = logging.getLogger("OmniCore.MusicRecommender")
 
 # Conhecimento base da Rádio Web Justiça Potiguar (Artistas ideais por estilo)
 ESTILOS_SUGESTOES = {
-    "MPB / CONTEMPORÂNEO": ["Liniker", "Luedji Luna", "Baco Exu do Blues", "Tiago Iorc", "Silva", "Anavitória"],
-    "REGIONAL NORDESTINA": ["Alceu Valença", "Geraldo Azevedo", "Elba Ramalho", "Fagner", "Flávio José", "Santanna Cantador"],
-    "JAZZ / INSTRUMENTAL": ["Baden Powell", "Hamilton de Holanda", "Yamandu Costa", "João Donato"],
-    "BOSSA NOVA": ["Tom Jobim", "João Gilberto", "Vinicius de Moraes", "Nara Leão", "Stan Getz"],
-    "POP / ROCK INTERNACIONAL": ["Coldplay", "U2", "Queen", "The Beatles", "Fleetwood Mac"],
-    "ROCK NACIONAL": ["Legião Urbana", "Skank", "Jota Quest", "Paralamas do Sucesso", "Titãs"],
+    "MPB / CONTEMPORÂNEO": ["Liniker", "Luedji Luna", "Baco Exu do Blues", "Tiago Iorc", "Silva", "Anavitória", "Xenia França", "Céu", "Rubel"],
+    "REGIONAL NORDESTINA": ["Alceu Valença", "Geraldo Azevedo", "Elba Ramalho", "Fagner", "Flávio José", "Santanna Cantador", "Xangai", "Vital Farias", "Maciel Melo"],
+    "JAZZ / INSTRUMENTAL": ["Baden Powell", "Hamilton de Holanda", "Yamandu Costa", "João Donato", "Cama de Gato", "Hermeto Pascoal"],
+    "BOSSA NOVA": ["Tom Jobim", "João Gilberto", "Vinicius de Moraes", "Nara Leão", "Stan Getz", "Toquinho", "Elis Regina"],
+    "POP / ROCK INTERNACIONAL": ["Coldplay", "U2", "Queen", "The Beatles", "Fleetwood Mac", "Dire Straits", "Pink Floyd", "The Police"],
+    "ROCK NACIONAL": ["Legião Urbana", "Skank", "Jota Quest", "Paralamas do Sucesso", "Titãs", "Engenheiros do Hawaii", "Barão Vermelho"],
 }
 
 class MusicRecommender:
@@ -37,18 +37,20 @@ class MusicRecommender:
 
         if not arquivos_log:
             logger.warning("[Recommender] Nenhum log encontrado para análise.")
-            return {"styles": {}, "artists": {}}
+            return {"top_styles": [], "top_artists": []}
 
         caminhos_tocados = []
         for log in arquivos_log:
             try:
+                # ZaraRadio geralmente usa codificação cp1252
                 with open(log, "r", encoding="cp1252", errors="ignore") as f:
                     for line in f:
                         parts = line.strip().split("\t")
                         if len(parts) >= 3 and parts[1].lower() == "início":
                             if r"D:\RADIO\MUSICAS" in parts[2].upper():
                                 caminhos_tocados.append(parts[2])
-            except: pass
+            except Exception as e:
+                logger.debug(f"Erro ao ler log {log}: {e}")
 
         # Cruza caminhos com o Banco de Dados para saber o ESTILO
         db = SessionLocal()
@@ -56,8 +58,8 @@ class MusicRecommender:
             estilos_contagem = Counter()
             artistas_contagem = Counter()
             
-            # Pega uma amostra para performance
-            amostra = caminhos_tocados[-1000:] 
+            # Pega uma amostra significativa
+            amostra = caminhos_tocados[-2000:] 
             for path in amostra:
                 musica = db.query(Musica).filter(Musica.caminho == path).first()
                 if musica:
@@ -73,29 +75,48 @@ class MusicRecommender:
 
     def generate_recommendations(self, analysis: dict) -> list[dict]:
         """
-        Gera uma lista de sugestões proativas (Artista - Música) baseadas na análise.
+        Gera uma lista de sugestões dinâmicas (Artista - Música) baseadas na análise.
         """
         recs = []
         db = SessionLocal()
         try:
             top_styles = [s[0] for s in analysis.get("top_styles", [])]
+            if not top_styles:
+                # Se não houver análise, usa estilos padrão do perfil
+                top_styles = list(ESTILOS_SUGESTOES.keys())[:3]
             
             for estilo in top_styles:
-                artistas_sugeridos = ESTILOS_SUGESTOES.get(estilo, [])
-                for art in artistas_sugeridos:
-                    # Verifica se o artista já está muito presente no acervo
+                artistas_base = ESTILOS_SUGESTOES.get(estilo, [])
+                for art in artistas_base:
+                    # Verifica o que já temos desse artista
                     count = db.query(Musica).filter(Musica.artista.ilike(f"%{art}%")).count()
-                    if count < 5: # Se temos poucas músicas dele, sugerimos mais
+                    
+                    if count < 8:
+                        # Variação de termos de busca para evitar duplicidade de 'Greatest Hits'
+                        sugestoes_termos = [
+                            f"{art} melhores músicas",
+                            f"{art} discografia selecionada",
+                            f"{art} sucessos mpb",
+                            f"{art} rádio mix"
+                        ]
+                        # Escolhe um termo baseado no dia para variar a lista
+                        idx = datetime.now().day % len(sugestoes_termos)
+                        termo = sugestoes_termos[idx]
+
                         recs.append({
                             "estilo": estilo,
                             "artista": art,
-                            "sugestao": f"{art} - Greatest Hits", # Termo de busca genérico
-                            "motivo": f"Estilo '{estilo}' está em alta e temos apenas {count} faixas de {art}."
+                            "sugestao": f"{art} - {termo}",
+                            "motivo": f"Estilo '{estilo}' detectado nos logs. Temos apenas {count} faixas de {art}."
                         })
             
-            # Limita a 15 sugestões para não sobrecarregar a UI
+            # Embaralha levemente para não ser sempre a mesma ordem
+            import random
+            random.shuffle(recs)
+            
             return recs[:15]
         finally:
             db.close()
+
 
 recommender_instance = MusicRecommender()

@@ -34,12 +34,16 @@ class DownloaderService:
 
             try:
                 if d["status"] == "downloading":
-                    percent_str = d.get("_percent_str", "0%").replace("%", "").strip()
+                    import re
+                    # Remove códigos ANSI de cores e outros caracteres estranhos
+                    percent_str = d.get("_percent_str", "0%")
+                    clean_percent = re.sub(r'\x1b\[[0-9;]*m', '', percent_str).replace("%", "").strip()
+                    
                     self.active_progress[task_id].update(
                         {
-                            "percentage": float(percent_str) if percent_str else 0,
+                            "percentage": float(clean_percent) if clean_percent else 0,
                             "status": "downloading",
-                            "speed": d.get("_speed_str", "0KB/s"),
+                            "speed": re.sub(r'\x1b\[[0-9;]*m', '', d.get("_speed_str", "0KB/s")),
                             "eta": d.get("_eta_str", "00:00"),
                         }
                     )

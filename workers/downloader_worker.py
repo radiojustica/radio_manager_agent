@@ -56,24 +56,9 @@ class DownloaderWorker(WorkerBase):
             for query in queries:
                 metadata["processed"] += 1
                 try:
-                    # Verifica se já temos algo similar no banco para evitar duplicidade
-                    clean_query = query.replace(" - Greatest Hits", "").strip()
-                    existing = db.query(Musica).filter(
-                        or_(
-                            Musica.caminho.like(f"%{clean_query}%"),
-                            and_(
-                                Musica.artista.ilike(f"%{clean_query.split(' - ')[0]}%"),
-                                Musica.titulo.ilike(f"%{clean_query.split(' - ')[-1]}%")
-                            ) if " - " in clean_query else False
-                        )
-                    ).first()
+                    # Verifica se temos exatamente esse arquivo baixado recentemente
+                    # Para evitar download redundante da mesma query
                     
-                    if existing:
-                        logger.info(f"[DownloaderWorker] Query '{query}' já existe no acervo (ID: {existing.id}). Pulando.")
-                        metadata["skipped"] += 1
-                        results.append({"query": query, "status": "skipped", "reason": "already_exists"})
-                        continue
-
                     # Tenta download com tratamento específico de timeout
                     res = downloader_instance.search_and_download(query)
                     
@@ -85,6 +70,14 @@ class DownloaderWorker(WorkerBase):
                         filename = os.path.basename(file_path).replace(".mp3", "")
                         
                         yt_title = res.get("title", "")
+                        # Se o serviço indicou que já existia antes de baixar (cache ou checagem de disco)
+                        if res.get("skipped"):
+                            metadata["skipped"] += 1
+                            metadata["success"] -= 1
+                            results.append({"query": query, "status": "skipped", "reason": "already_exists", "file": filename})
+                            logger.info(f"[DownloaderWorker] Arquivo já existe fisicamente: {file_path}")
+                            continue
+
                         if " - " in yt_title:
                             art, tit = yt_title.split(" - ", 1)
                         elif " - " in filename:
@@ -95,7 +88,7 @@ class DownloaderWorker(WorkerBase):
                         art = art.strip().upper()
                         tit = tit.strip()
 
-                        # Verifica duplicidade antes de inserir
+                        # Verifica duplicidade no banco
                         musica_existente = db.query(Musica).filter(Musica.caminho == file_path).first()
                         if not musica_existente:
                             nova_musica = Musica(
@@ -112,8 +105,8 @@ class DownloaderWorker(WorkerBase):
                         else:
                             metadata["skipped"] += 1
                             metadata["success"] -= 1
-                            results.append({"query": query, "status": "skipped", "reason": "already_in_db"})
-                            logger.info(f"[DownloaderWorker] Arquivo já no banco: {file_path}")
+                            results.append({"query": query, "status": "skipped", "reason": "already_in_db", "file": filename})
+                            logger.info(f"[DownloaderWorker] Registro já presente no banco: {file_path}")
                     else:
                         metadata["failed"] += 1
                         score -= 2
