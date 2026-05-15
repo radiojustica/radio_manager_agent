@@ -67,27 +67,39 @@ class DownloaderWorker(WorkerBase):
                     if res["success"]:
                         file_path = res["path"]
                         metadata["success"] += 1
-                        score += 10 if is_proactive else 5 # Bônus por proatividade
+                        score += 10 if is_proactive else 5
 
                         filename = os.path.basename(file_path).replace(".mp3", "")
-                        art, tit = "VARIOUS", filename
-                        if " - " in filename:
-                            art, tit = filename.split(" - ", 1)
                         
-                        # Verifica se o caminho exato já existe (caso o like tenha falhado)
-                        if not db.query(Musica).filter(Musica.caminho == file_path).first():
+                        # Tenta extrair Artista e Título de forma mais inteligente
+                        # Se o título do YouTube tiver " - ", usamos como separador
+                        yt_title = res.get("title", "")
+                        if " - " in yt_title:
+                            art, tit = yt_title.split(" - ", 1)
+                        elif " - " in filename:
+                            art, tit = filename.split(" - ", 1)
+                        else:
+                            art, tit = "VÁRIOS", filename
+                        
+                        # Limpeza final dos metadados
+                        art = art.strip().upper()
+                        tit = tit.strip()
+
+                        # Verifica se o arquivo já existe no banco antes de adicionar
+                        musica_existente = db.query(Musica).filter(Musica.caminho == file_path).first()
+                        if not musica_existente:
                             nova_musica = Musica(
                                 caminho=file_path,
-                                artista=art.strip().upper(),
-                                titulo=tit.strip(),
+                                artista=art,
+                                titulo=tit,
                                 estilo=estilo.lower(),
                                 auditado_acustica=False
                             )
                             db.add(nova_musica)
                             db.commit()
-                            results.append({"query": query, "status": "success", "file": filename})
+                            results.append({"query": query, "status": "success", "file": filename, "id": nova_musica.id})
                         else:
-                            results.append({"query": query, "status": "skipped", "reason": "path_exists"})
+                            results.append({"query": query, "status": "skipped", "reason": "already_in_db"})
                     else:
                         metadata["failed"] += 1
                         score -= 2

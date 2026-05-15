@@ -5,7 +5,7 @@ from typing import Optional
 from sqlalchemy.orm import Session
 from core.models import Musica
 
-logger = logging.getLogger("OmniCore.AICurator")
+logger = logging.getLogger("OmniCore.AIService")
 
 class AICurator:
     """Motor de Curadoria por IA para gerar conteúdos e intros de rádio usando Ollama Local."""
@@ -41,7 +41,6 @@ class AICurator:
 
     def enrich_acervo_batch(self, db: Session, limit: int = 5):
         """Enriquece o banco de dados com insights da IA para faixas que ainda não possuem."""
-        # Pega as músicas que ainda não têm insight e não são jingles/vinhetas (heurística simples)
         pendentes = (
             db.query(Musica)
             .filter(Musica.ai_insight == None)
@@ -66,5 +65,3 @@ class AICurator:
 
 # Instância global
 ai_curator_instance = AICurator()
-
-

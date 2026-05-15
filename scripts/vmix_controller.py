@@ -14,7 +14,8 @@ class VMixController:
     def get_status(self) -> Optional[ET.Element]:
         """Fetches the current state of vMix via XML API."""
         try:
-            response = requests.get(self.base_url, timeout=2)
+            # Timeout reduzido para 0.5s para não travar a thread principal/worker
+            response = requests.get(self.base_url, timeout=0.5)
             if response.status_code == 200:
                 self.connected = True
                 return ET.fromstring(response.text)

@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from core.database import get_db
 from core.models import Musica
-from scripts.ai_curator import ai_curator_instance
+from services.ai_service import ai_curator_instance
 
 router = APIRouter(prefix="/api/ai", tags=["IA Curadoria"])
 

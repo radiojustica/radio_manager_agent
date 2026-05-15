@@ -1,125 +1,148 @@
 import os
 import re
 import logging
-import subprocess
+import asyncio
+import threading
 from pathlib import Path
 import yt_dlp
 
 logger = logging.getLogger("OmniCore.DownloaderService")
 
 class DownloaderService:
+    """
+    Serviço robusto de download de áudio via yt-dlp.
+    Suporta busca, extração de metadados, normalização e progresso em tempo real.
+    """
     def __init__(self, target_dir: str = r"D:\RADIO\QUARENTENA_TJ"):
         self.target_dir = Path(target_dir)
         self.target_dir.mkdir(exist_ok=True, parents=True)
-        # Caminho detectado do FFmpeg para garantir funcionamento do yt-dlp
+        # FFmpeg é essencial para extração de MP3 e filtros
         self.ffmpeg_path = r"C:\Users\STREAMING\OneDrive\ARQUIVOS STREAMING\PROGRAMA_MUSICAS"
-        self.active_progress = {} # {query: {percentage: 0, status: 'idle', total_bytes: 0, downloaded_bytes: 0}}
+        self.active_progress = {} # {id: {percentage: 0, status: 'idle', title: ''}}
+        self._lock = threading.Lock()
 
-    def _progress_hook(self, d, query):
-        if d['status'] == 'downloading':
-            p = d.get('_percent_str', '0%').replace('%', '').strip()
-            try:
-                self.active_progress[query] = {
-                    "percentage": float(p),
-                    "status": "downloading",
-                    "speed": d.get('_speed_str', '0KB/s'),
-                    "eta": d.get('_eta_str', '00:00')
-                }
-            except: pass
-        elif d['status'] == 'finished':
-            self.active_progress[query] = {
-                "percentage": 100,
-                "status": "processing", # FFmpeg post-processing
-                "speed": "0KB/s",
-                "eta": "00:00"
-            }
+    def _progress_hook(self, d, task_id):
+        with self._lock:
+            if d['status'] == 'downloading':
+                p = d.get('_percent_str', '0%').replace('%', '').strip()
+                try:
+                    self.active_progress[task_id].update({
+                        "percentage": float(p),
+                        "status": "downloading",
+                        "speed": d.get('_speed_str', '0KB/s'),
+                        "eta": d.get('_eta_str', '00:00')
+                    })
+                except: pass
+            elif d['status'] == 'finished':
+                self.active_progress[task_id].update({
+                    "percentage": 100,
+                    "status": "processing"
+                })
+
+    def clean_filename(self, text: str) -> str:
+        """Remove caracteres proibidos no Windows e excesso de espaços."""
+        # Remove coisas comuns em títulos de YouTube que não queremos no arquivo
+        text = re.sub(r'\(Official (Video|Audio|Lyric|Music Video)\)', '', text, flags=re.IGNORECASE)
+        text = re.sub(r'\[Official (Video|Audio|Lyric|Music Video)\]', '', text, flags=re.IGNORECASE)
+        text = re.sub(r'\(Clip\)', '', text, flags=re.IGNORECASE)
+        text = re.sub(r'[\\/*?:"<>|]', "", text)
+        return " ".join(text.split()).strip()
 
     def search_and_download(self, query: str, destination: str = None) -> dict:
         """
-        Busca no YouTube pelo termo e faz o download.
-        Aplica filtro de silêncio e normalização básica.
+        Executa a busca e o download de forma síncrona (geralmente chamado por um Worker).
         """
+        task_id = re.sub(r'\W+', '', query)[:20] + "_" + str(os.getpid())
         dest_path = Path(destination) if destination else self.target_dir
         dest_path.mkdir(exist_ok=True, parents=True)
 
-        self.active_progress[query] = {"percentage": 0, "status": "searching", "speed": "0KB/s", "eta": "00:00"}
+        with self._lock:
+            self.active_progress[task_id] = {
+                "query": query,
+                "percentage": 0,
+                "status": "searching",
+                "title": "Buscando...",
+                "id": task_id
+            }
 
-        # Adiciona o diretório do FFmpeg ao PATH do processo atual
+        # Garante que FFmpeg esteja acessível
         if self.ffmpeg_path not in os.environ["PATH"]:
             os.environ["PATH"] += os.pathsep + self.ffmpeg_path
 
-        # Limpa o nome do arquivo para o Windows
-        filename_base = re.sub(r'[\\/*?:"<>|]', "", query).strip()
-        
         ydl_opts = {
             'format': 'bestaudio/best',
             'ffmpeg_location': os.path.join(self.ffmpeg_path, "ffmpeg.exe"),
+            'noplaylist': True,
+            'default_search': 'ytsearch1:',
             'postprocessors': [{
                 'key': 'FFmpegExtractAudio',
                 'preferredcodec': 'mp3',
                 'preferredquality': '192',
             }],
-            # Filtro de silêncio: corta início e fim
-            'postprocessor_args': ['-af', 'silenceremove=1:0:-50dB'],
-            'outtmpl': str(dest_path / f'{filename_base}.%(ext)s'),
+            # silenceremove=1:0:-50dB remove silêncio do início
+            # silenceremove=stop_periods=-1:stop_duration=1:stop_threshold=-50dB remove do fim
+            'postprocessor_args': ['-af', 'silenceremove=start_periods=1:start_silence=0:start_threshold=-50dB,loudnorm'],
             'quiet': True,
             'no_warnings': True,
-            'default_search': 'ytsearch1:', # Pega o primeiro resultado
-            'progress_hooks': [lambda d: self._progress_hook(d, query)],
+            'progress_hooks': [lambda d: self._progress_hook(d, task_id)],
         }
 
         try:
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                info = ydl.extract_info(query, download=True)
-                # Se for busca, o info['entries'] terá os dados
+                # Primeiro apenas extrai info para decidir o nome do arquivo final
+                info = ydl.extract_info(query, download=False)
                 if 'entries' in info:
                     video_info = info['entries'][0]
                 else:
                     video_info = info
-                
-                actual_filename = dest_path / f"{filename_base}.mp3"
-                
-                # Limpeza preventiva de possíveis sobras de .webm ou .part
-                for ext in [".webm", ".part", ".ytdl"]:
-                    temp_f = dest_path / f"{filename_base}{ext}"
-                    if temp_f.exists():
-                        try: os.remove(temp_f)
-                        except: pass
 
-                self.active_progress[query] = {"percentage": 100, "status": "completed", "speed": "0KB/s", "eta": "00:00"}
-                logger.info(f"[Downloader] Sucesso: {query} -> {actual_filename}")
+                yt_title = video_info.get('title', 'Unknown Title')
+                filename_base = self.clean_filename(yt_title)
+                
+                # Se a query original for "Artista - Musica", preferimos manter a estrutura se possível
+                if " - " in query and len(query) < 100:
+                    filename_base = self.clean_filename(query)
+
+                final_filename = f"{filename_base}.mp3"
+                actual_path = dest_path / final_filename
+                
+                with self._lock:
+                    self.active_progress[task_id]["title"] = yt_title
+
+                # Agora baixa com o nome correto
+                ydl_opts['outtmpl'] = str(dest_path / f'{filename_base}.%(ext)s')
+                with yt_dlp.YoutubeDL(ydl_opts) as ydl_real:
+                    ydl_real.download([query])
+
+                logger.info(f"[Downloader] Completo: {yt_title} -> {actual_path}")
+                
+                with self._lock:
+                    self.active_progress[task_id]["status"] = "completed"
+                    self.active_progress[task_id]["percentage"] = 100
+
                 return {
-                    "success": True, 
-                    "path": str(actual_filename), 
-                    "title": video_info.get('title'),
-                    "duration": video_info.get('duration')
+                    "success": True,
+                    "path": str(actual_path),
+                    "title": yt_title,
+                    "duration": video_info.get('duration'),
+                    "id": video_info.get('id')
                 }
+
         except Exception as e:
-            self.active_progress[query] = {"percentage": 0, "status": "failed", "error": str(e)}
-            logger.error(f"[Downloader] Erro ao baixar {query}: {e}")
+            logger.error(f"[Downloader] Falha crítica ao baixar '{query}': {e}")
+            with self._lock:
+                self.active_progress[task_id].update({
+                    "status": "failed",
+                    "error": str(e)
+                })
             return {"success": False, "error": str(e)}
         finally:
-            # Mantém por um tempo para o frontend ler e depois remove
-            # Ou o chamador remove. Vamos deixar por enquanto.
-            pass
+            # Mantém no cache por 30 segundos para a UI ler
+            threading.Timer(30, self._cleanup_progress, args=[task_id]).start()
 
-    def trim_silence_manually(self, file_path: str):
-        """
-        Caso o postprocessor do yt-dlp falhe ou queiramos rodar depois.
-        Usa ffmpeg diretamente.
-        """
-        temp_output = file_path.replace(".mp3", "_trimmed.mp3")
-        cmd = [
-            'ffmpeg', '-y', '-i', file_path, 
-            '-af', 'silenceremove=1:0:-50dB', 
-            temp_output
-        ]
-        try:
-            subprocess.run(cmd, check=True, capture_output=True)
-            os.replace(temp_output, file_path)
-            return True
-        except Exception as e:
-            logger.error(f"[Downloader] Erro ao trimar silêncio: {e}")
-            return False
+    def _cleanup_progress(self, task_id):
+        with self._lock:
+            if task_id in self.active_progress:
+                del self.active_progress[task_id]
 
 downloader_instance = DownloaderService()

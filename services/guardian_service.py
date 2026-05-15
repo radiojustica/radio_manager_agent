@@ -13,7 +13,7 @@ from datetime import datetime
 from typing import Optional
 
 # Import the original monitor logic to preserve all features
-from scripts.monitor import RadioMonitor
+from core.monitor import RadioMonitor
 
 class GuardianService(RadioMonitor):
     """

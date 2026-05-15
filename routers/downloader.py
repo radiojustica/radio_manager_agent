@@ -30,13 +30,18 @@ async def get_recommendations(days: int = 5):
 def _process_downloads(queries: list[str], estilo: str):
     """Processo em background para baixar e catalogar músicas via DownloaderWorker."""
     try:
-        worker_manager_instance.run_cycle("DownloaderWorker", queries=queries, estilo=estilo)
+        logger.info(f"Disparando processamento de {len(queries)} downloads em background.")
+        result = worker_manager_instance.run_cycle("DownloaderWorker", queries=queries, estilo=estilo)
+        logger.info(f"Processamento em background concluído: {result.get('result', {}).get('status')}")
     except Exception as e:
         logger.error(f"Falha ao acionar DownloaderWorker: {e}")
+        import traceback
+        logger.error(traceback.format_exc())
 
 @router.post("/download")
 async def trigger_downloads(req: DownloadRequest, background_tasks: BackgroundTasks):
     """Dispara o download das músicas selecionadas."""
+    logger.info(f"Recebida requisição de download para: {req.queries}")
     background_tasks.add_task(_process_downloads, req.queries, req.estilo)
     return {"success": True, "message": f"Download de {len(req.queries)} músicas iniciado em background."}
 

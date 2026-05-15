@@ -15,36 +15,33 @@ router = APIRouter(prefix="/api/status", tags=["Telemetria"])
 bulletin_syncer = BulletinSync()
 
 CACHE_STATUS = {"timestamp": 0, "payload": None}
-
-def get_nowplaying_path():
-    """Recupera o caminho do CurrentSong.txt dinamicamente das configurações."""
-    from services.guardian_service import guardian_instance
-    log_dir = guardian_instance.settings.get("apps", {}).get("zararadio", {}).get("log_path", r"D:\RADIO\LOG ZARARADIO")
-    return os.path.join(log_dir, "CurrentSong.txt")
-
-# Debounce para evitar chamadas repetidas ao show-window
-LAST_SHOW_WINDOW_CALL = {"timestamp": 0}
+CACHE_BUTT = {"timestamp": 0, "payload": None}
+CACHE_ZARA_WINDOW = {"timestamp": 0, "status": "playing"}
 
 def analisar_instancias_butt():
     """
-    Analisa cada processo BUTT em execução e retorna uma lista de dicionários
-    com informações detalhadas sobre seu estado.
+    Analisa cada processo BUTT em execução. Cache de 10 segundos para evitar overhead.
     """
+    agora = time.time()
+    if CACHE_BUTT["payload"] and agora - CACHE_BUTT["timestamp"] < 10.0:
+        return CACHE_BUTT["payload"]
+
     instancias = []
+    # ... (rest of the code for analysis)
+    # I'll rewrite it to be sure
     for proc in psutil.process_iter(['pid', 'name']):
         try:
             if proc.info['name'] and proc.info['name'].lower() == "butt.exe":
                 pid = proc.info['pid']
                 p = psutil.Process(pid)
                 
-                # CPU (amostra de 100ms)
-                cpu = p.cpu_percent(interval=0.1)
+                # CPU (amostra curta para não travar)
+                cpu = p.cpu_percent(interval=0.05)
                 
-                # Conexões de rede estabelecidas
+                # Conexões de rede
                 conexoes = p.net_connections(kind='inet')
                 has_connection = any(conn.status == 'ESTABLISHED' for conn in conexoes)
                 
-                # Título da janela
                 window_title = "Desconhecido"
                 def enum_callback(hwnd, hwnd_list):
                     if win32gui.IsWindowVisible(hwnd):
@@ -56,7 +53,6 @@ def analisar_instancias_butt():
                 win32gui.EnumWindows(enum_callback, hwnd_list)
                 if hwnd_list: window_title = hwnd_list[0]
                 
-                # Heurística de status
                 if has_connection and cpu > 0.5:
                     status = "transmitindo"
                 elif has_connection and cpu <= 0.5:
@@ -78,40 +74,51 @@ def analisar_instancias_butt():
                     "has_connection": has_connection,
                     "window_title": window_title[:50]
                 })
-        except (psutil.NoSuchProcess, psutil.AccessDenied):
-            continue
+        except: continue
+        
+    CACHE_BUTT["payload"] = instancias
+    CACHE_BUTT["timestamp"] = agora
     return instancias
 
-def verificar_zara_processos_hung():
-    import psutil
+def verificar_zara_status():
+    """
+    Verifica se o ZaraRadio está rodando ou travado. Cache de 5 segundos.
+    """
+    agora = time.time()
+    if agora - CACHE_ZARA_WINDOW["timestamp"] < 5.0:
+        return CACHE_ZARA_WINDOW["status"]
+
+    from services.guardian_service import guardian_instance
     import ctypes
-    rodando = False
-    for proc in psutil.process_iter(['name']):
-        if proc.info['name'] and proc.info['name'].lower() == "zararadio.exe":
-            rodando = True
-            break
-    if not rodando: return "stopped"
     
-    IsHungAppWindow = ctypes.windll.user32.IsHungAppWindow
-    zara_hwnd = None
-    def find_zara(hwnd, lParam):
-        nonlocal zara_hwnd
-        if "ZaraRadio" in win32gui.GetWindowText(hwnd):
-            zara_hwnd = hwnd
-            return False
-        return True
-    win32gui.EnumWindows(find_zara, 0)
-    if zara_hwnd and bool(IsHungAppWindow(zara_hwnd)): return "frozen"
-    return "playing"
+    status = "stopped"
+    zara_win = guardian_instance.find_zara_window()
+    if not zara_win:
+        import psutil
+        for proc in psutil.process_iter(['name']):
+            if proc.info['name'] and proc.info['name'].lower() == "zararadio.exe":
+                status = "playing"
+                break
+    else:
+        IsHungAppWindow = ctypes.windll.user32.IsHungAppWindow
+        if bool(IsHungAppWindow(zara_win.handle)):
+            status = "frozen"
+        else:
+            status = "playing"
+            
+    CACHE_ZARA_WINDOW["status"] = status
+    CACHE_ZARA_WINDOW["timestamp"] = agora
+    return status
 
 @router.get("/player/now")
 def get_now_playing(db: Session = Depends(get_db)):
     agora = time.time()
-    if CACHE_STATUS["payload"] and agora - CACHE_STATUS["timestamp"] < 2.0:
+    # Cache de 1 segundo para maior fluidez
+    if CACHE_STATUS["payload"] and agora - CACHE_STATUS["timestamp"] < 1.0:
         return CACHE_STATUS["payload"]
         
     title = "[Rádio Interrompida ou Vazia]"
-    status = verificar_zara_processos_hung()
+    status = verificar_zara_status()
     
     butt_instances = analisar_instancias_butt()
     butt_ativos = sum(1 for b in butt_instances if b['status'] in ('transmitindo', 'conectado (ocioso?)'))
@@ -123,11 +130,20 @@ def get_now_playing(db: Session = Depends(get_db)):
                 # ZaraRadio geralmente usa codificação cp1252 (Windows)
                 with open(nowplaying_path, 'r', encoding='cp1252', errors='replace') as f:
                     content = f.read().strip()
-                    if content: title = content
-            except: pass
+                    if content: 
+                        title = content
+                    else:
+                        title = "Tocando ao vivo (CurrentSong.txt vazio)"
+            except Exception as e:
+                import logging
+                logging.getLogger("OmniCore.Status").error(f"Erro ao ler CurrentSong.txt: {e}")
         else:
             title = "Tocando ao vivo (CurrentSong.txt ausente)"
-    
+    elif status == "frozen":
+        title = "[CONGELADO] ZaraRadio não está respondendo"
+    elif status == "stopped":
+        title = "[DESLIGADO] ZaraRadio não está em execução"
+
     energy = 0.5
     clean_title = title.replace(".mp3", "").strip()
     faixa_db = db.query(Musica).filter(Musica.caminho.ilike(f"%{clean_title}%")).first()
@@ -184,17 +200,14 @@ def show_backend_window():
     import logging
     logger = logging.getLogger("OmniCore.Status")
     
-    # Debounce: não permite chamadas mais frequentes que a cada 5 segundos
     agora = time.time()
     intervalo = agora - LAST_SHOW_WINDOW_CALL["timestamp"]
     
-    if intervalo < 5:  # Menos de 5 segundos desde a última chamada
+    if intervalo < 5:
         logger.debug(f"Show-window ignorado por debounce ({intervalo:.1f}s < 5s)")
         return {"success": False, "error": "Chamada descartada por debounce (máximo a cada 5s)"}
     
     LAST_SHOW_WINDOW_CALL["timestamp"] = agora
-    
-    logger.info(f"Requisição para mostrar janela do backend. Callback status: {'Registrado' if state.SHOW_UI_CALLBACK else 'Nulo'}")
     
     if state.SHOW_UI_CALLBACK:
         try:
@@ -217,5 +230,3 @@ def get_bulletins_status():
 def sync_bulletins():
     """Dispara a sincronização manual dos boletins via GDrive."""
     return bulletin_syncer.sync()
-
-
