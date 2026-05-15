@@ -109,6 +109,7 @@ app.include_router(status.router)
 app.include_router(config.router)
 app.include_router(ai.router)
 app.include_router(workers.router)
+app.include_router(reports.router)
 app.include_router(engine_router.router)
 app.include_router(downloader_router)
 
@@ -156,6 +157,4 @@ def wait_for_server(host="127.0.0.1", port=8001, timeout=30):
                 return True
         except Exception:
             time.sleep(0.5)
-    return False
-ep(0.5)
     return False
