@@ -36,6 +36,8 @@ try:
     from workers.daily_report_worker import DailyReportWorker
     logger.info("Importando BulletinWorker...")
     from workers.bulletin_worker import BulletinWorker
+    logger.info("Importando ReportWorker...")
+    from workers.report_worker import ReportWorker
 except Exception as e:
     logger.error(f"ERRO FATAL DURANTE IMPORTAÇÃO DE WORKERS: {e}")
     import traceback
@@ -298,12 +300,6 @@ def create_default_manager() -> WorkerManager:
     manager.register_worker(BulletinWorker(reward_store=manager.reward_store))
     logger.info("Registrando ReportWorker...")
     manager.register_worker(ReportWorker(reward_store=manager.reward_store))
-    logger.info("Todos os workers registrados.")
-    return manager
-
-logger.info("Inicializando worker_manager_instance...")
-worker_manager_instance = create_default_manager()
-orker(reward_store=manager.reward_store))
     logger.info("Todos os workers registrados.")
     return manager
 
