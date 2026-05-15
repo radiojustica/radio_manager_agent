@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends
 import os
 import time
+import json
 from datetime import datetime
 from core.database import get_db
 from sqlalchemy.orm import Session
@@ -17,6 +18,20 @@ bulletin_syncer = BulletinSync()
 CACHE_STATUS = {"timestamp": 0, "payload": None}
 CACHE_BUTT = {"timestamp": 0, "payload": None}
 CACHE_ZARA_WINDOW = {"timestamp": 0, "status": "playing"}
+LAST_SHOW_WINDOW_CALL = {"timestamp": 0}
+
+def get_nowplaying_path():
+    """Retorna o caminho do arquivo CurrentSong.txt baseado nas configurações."""
+    config_path = os.path.join("config", "settings.json")
+    if os.path.exists(config_path):
+        try:
+            with open(config_path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                log_dir = data.get("apps", {}).get("zararadio", {}).get("log_path", "D:\\RADIO\\LOG ZARARADIO")
+                return os.path.join(log_dir, "CurrentSong.txt")
+        except:
+            pass
+    return "D:\\RADIO\\LOG ZARARADIO\\CurrentSong.txt"
 
 def analisar_instancias_butt():
     """
