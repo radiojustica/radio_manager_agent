@@ -40,6 +40,8 @@ try:
     from workers.report_worker import ReportWorker
     logger.info("Importando ApiWorker...")
     from workers.api_worker import ApiWorker
+    logger.info("Importando NotificationWorker...")
+    from workers.notification_worker import NotificationWorker
 except Exception as e:
     logger.error(f"ERRO FATAL DURANTE IMPORTAÇÃO DE WORKERS: {e}")
     import traceback
@@ -275,6 +277,15 @@ class WorkerManager:
             replace_existing=True
         )
 
+        # 13. NotificationWorker (Heartbeat e Gestão de Alertas)
+        notif_cfg = self.config.get("NotificationWorker", {})
+        self.scheduler.add_job(
+            lambda: self.run_cycle("NotificationWorker"),
+            trigger=IntervalTrigger(minutes=notif_cfg.get("interval_minutes", 60)),
+            id='worker_notification',
+            replace_existing=True
+        )
+
         self.scheduler.start()
         logger.info("Orquestrador iniciado com sucesso dinamicamente.")
 
@@ -314,6 +325,8 @@ def create_default_manager() -> WorkerManager:
     manager.register_worker(ReportWorker(reward_store=manager.reward_store))
     logger.info("Registrando ApiWorker...")
     manager.register_worker(ApiWorker(reward_store=manager.reward_store))
+    logger.info("Registrando NotificationWorker...")
+    manager.register_worker(NotificationWorker(reward_store=manager.reward_store))
     logger.info("Todos os workers registrados.")
     return manager
 

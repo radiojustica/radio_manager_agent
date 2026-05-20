@@ -56,6 +56,21 @@
         "abort_shutdown_periodically": true
     },
     "notifications": {
+        "whatsapp": {
+            "enabled": true,
+            "provider": "evolution",
+            "evolution": {
+                "url": "https://api.exemplo.com",
+                "instance": "OmniCore",
+                "apikey": "SUA_API_KEY_AQUI"
+            },
+            "zapi": {
+                "instance_id": "",
+                "token": ""
+            },
+            "target_number": "5584996066876",
+            "notify_on_critical": true
+        },
         "telegram": {
             "enabled": true,
             "bot_token": "YOUR_BOT_TOKEN_HERE",
@@ -134,6 +149,9 @@
             "proactive_hour": 1,
             "proactive_minute": 0,
             "proactive_limit": 3
+        },
+        "NotificationWorker": {
+            "interval_minutes": 60
         }
     }
 }
