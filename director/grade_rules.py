@@ -151,6 +151,43 @@ class GestorFila:
         # Estado do fluxo para o "Conceito de Programação"
         self.ultimo_estilo = None
 
+    def _carregar_historico(self):
+        """Carrega o histórico persistente do disco."""
+        try:
+            if os.path.exists(HISTORICO_PATH):
+                with open(HISTORICO_PATH, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                    return data.get("artistas", []), data.get("musicas", [])
+        except:
+            pass
+        return [], []
+
+    def _atualizar_historico(self, artista, caminho):
+        """Adiciona ao histórico e salva no disco."""
+        art = clean_artist_name(artista, caminho)
+        
+        if art not in self.historico_artistas:
+            self.historico_artistas.append(art)
+        if caminho not in self.historico_musicas:
+            self.historico_musicas.append(caminho)
+        
+        # Trim
+        if len(self.historico_artistas) > self.max_art:
+            self.historico_artistas.pop(0)
+        if len(self.historico_musicas) > self.max_mus:
+            self.historico_musicas.pop(0)
+            
+        try:
+            os.makedirs(os.path.dirname(HISTORICO_PATH), exist_ok=True)
+            with open(HISTORICO_PATH, "w", encoding="utf-8") as f:
+                json.dump({
+                    "artistas": self.historico_artistas,
+                    "musicas": self.historico_musicas,
+                    "updated_at": datetime.now().isoformat()
+                }, f, indent=4)
+        except:
+            pass
+
     def _shuffle_by_priority(self, lista):
         """Embaralha itens que possuem o mesmo nível de prioridade (vezes_tocada)."""
         if not lista: return []

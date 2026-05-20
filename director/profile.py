@@ -14,9 +14,9 @@ PROFILE = {
     
     # 1. Regras de Rodízio (Fair Rotation)
     "constraints": {
-        "artist_separation_count": 80,    # Músicas de intervalo entre mesmo artista
-        "track_separation_count": 200,   # Músicas de intervalo entre mesma faixa
-        "min_daily_rotation_goal": 0.95, # Meta: 95% do acervo deve girar antes de repetir
+        "artist_separation_count": 15,    # Reduzido de 80 para 15
+        "track_separation_count": 80,    # Reduzido de 200 para 80
+        "min_daily_rotation_goal": 0.90, # Meta: 90% do acervo deve girar antes de repetir
     },
     
     # 2. Quotas de Programação

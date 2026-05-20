@@ -1,6 +1,6 @@
 import os
 import multiprocessing
-import numpy as np
+
 import unicodedata
 import re
 import shutil
@@ -32,6 +32,7 @@ def verificar_inadequacao(nome_arquivo):
     return any(re.search(fr"\b{p}\b" if len(p) < 15 else p, check_str) for p in regras)
 
 def analisar_acustica_completa(caminho):
+    import numpy as np
     """
     Analisa BPM, Energia, Valência e Dançabilidade usando Librosa.
     Heurísticas avançadas para determinar a 'vibe' da música.
@@ -186,6 +187,7 @@ def processar_arquivo(id_musica, caminho):
     }
 
 def _job_processar_lote(lote_musicas):
+    import numpy as np
     from core.database import SessionLocal
     from core.models import Musica
     

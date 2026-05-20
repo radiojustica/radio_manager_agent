@@ -286,6 +286,14 @@ class WorkerManager:
             replace_existing=True
         )
 
+        # 14. Playlist Maintenance (Garantir que blocos existam e estejam atualizados)
+        self.scheduler.add_job(
+            lambda: playlist_engine_instance.auto_gerar_proximos_blocos(),
+            trigger=IntervalTrigger(hours=1),
+            id='worker_playlist_maintenance',
+            replace_existing=True
+        )
+
         self.scheduler.start()
         logger.info("Orquestrador iniciado com sucesso dinamicamente.")
 
