@@ -2,13 +2,10 @@ import logging
 import sys
 import threading
 import time
-import tkinter as tk
 
 from core import state
 from core.system import is_admin, verificar_instancia_unica, run_as_admin
 from api.manager import run_api_server, wait_for_server
-from gui.console import RadioAgentGUI
-from gui.tray import start_tray_icon
 from services.guardian_service import guardian_instance
 from worker_manager import worker_manager_instance
 
@@ -17,6 +14,18 @@ logger = logging.getLogger("OmniCore.Launcher")
 
 def run_app() -> None:
     """Inicia o sistema com a interface gráfica (GUI)."""
+    try:
+        import tkinter as tk
+        from gui.console import RadioAgentGUI
+        from gui.tray import start_tray_icon
+    except ImportError as e:
+        logger.warning(f"Dependências de UI não encontradas ({e}). Iniciando em modo Headless...")
+        from director.orchestrator import system_orchestrator
+        system_orchestrator.bootstrap()
+        system_orchestrator.start_core()
+        system_orchestrator.run_headless()
+        return
+
     from director.orchestrator import system_orchestrator
     
     # 1. Inicializa o Core (Admin, Mutex, API, Workers)
