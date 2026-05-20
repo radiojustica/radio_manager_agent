@@ -38,6 +38,8 @@ try:
     from workers.bulletin_worker import BulletinWorker
     logger.info("Importando ReportWorker...")
     from workers.report_worker import ReportWorker
+    logger.info("Importando ApiWorker...")
+    from workers.api_worker import ApiWorker
 except Exception as e:
     logger.error(f"ERRO FATAL DURANTE IMPORTAÇÃO DE WORKERS: {e}")
     import traceback
@@ -65,7 +67,8 @@ class WorkerManager:
             "ButtWorker": {"interval_minutes": 2},
             "ButtReconnect": {"interval_minutes": 2},
             "UpdateWorker": {"interval_hours": 1},  # Verifica atualizações a cada 1 hora
-            "BulletinWorker": {"interval_minutes": 30}
+            "BulletinWorker": {"interval_minutes": 30},
+            "ApiWorker": {"interval_seconds": 30}
         }
         
         config_path = Path(__file__).resolve().parent / "config" / "settings.json"
@@ -263,6 +266,15 @@ class WorkerManager:
             misfire_grace_time=3600
         )
 
+        # 12. ApiWorker (Servidor API e Health Check)
+        api_cfg = self.config.get("ApiWorker", {})
+        self.scheduler.add_job(
+            lambda: self.run_cycle("ApiWorker"),
+            trigger=IntervalTrigger(seconds=api_cfg.get("interval_seconds", 30)),
+            id='worker_api_server',
+            replace_existing=True
+        )
+
         self.scheduler.start()
         logger.info("Orquestrador iniciado com sucesso dinamicamente.")
 
@@ -300,6 +312,8 @@ def create_default_manager() -> WorkerManager:
     manager.register_worker(BulletinWorker(reward_store=manager.reward_store))
     logger.info("Registrando ReportWorker...")
     manager.register_worker(ReportWorker(reward_store=manager.reward_store))
+    logger.info("Registrando ApiWorker...")
+    manager.register_worker(ApiWorker(reward_store=manager.reward_store))
     logger.info("Todos os workers registrados.")
     return manager
 

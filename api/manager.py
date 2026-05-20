@@ -17,7 +17,6 @@ import json
 
 from core.database import engine, Base, SessionLocal
 from core.models import RegraProgramacao
-from worker_manager import worker_manager_instance
 from routers import acervo, status, config, ai, workers, engine as engine_router, reports
 from routers.downloader import router as downloader_router
 
@@ -112,16 +111,6 @@ app.include_router(workers.router)
 app.include_router(reports.router)
 app.include_router(engine_router.router)
 app.include_router(downloader_router)
-
-@app.on_event("startup")
-def startup_event() -> None:
-    logger.info("API startup: iniciando orquestrador de workers...")
-    worker_manager_instance.start_orchestrator()
-
-@app.on_event("shutdown")
-def shutdown_event() -> None:
-    logger.info("API shutdown: interrompendo orquestrador de workers...")
-    worker_manager_instance.stop_orchestrator()
 
 if FRONTEND_PATH.exists():
     app.mount("/", StaticFiles(directory=str(FRONTEND_PATH), html=True), name="static")

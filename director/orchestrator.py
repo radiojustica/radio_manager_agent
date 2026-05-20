@@ -113,15 +113,9 @@ class SystemOrchestrator:
 
     def start_core(self):
         """Inicia os serviços de backend (API e Workers)."""
-        import threading
-        from api.manager import run_api_server
         from worker_manager import worker_manager_instance
         
-        logger.info("[Orchestrator] Iniciando servidor API...")
-        api_thread = threading.Thread(target=run_api_server, daemon=True)
-        api_thread.start()
-        
-        logger.info("[Orchestrator] Iniciando Worker Manager...")
+        logger.info("[Orchestrator] Iniciando Worker Manager (que gerencia a API)...")
         worker_manager_instance.start_orchestrator()
         
         logger.info("[Orchestrator] Serviços de core iniciados.")
