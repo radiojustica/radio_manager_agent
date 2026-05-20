@@ -1,49 +1,38 @@
 """
 Omni Core V2 - Inicializador Principal
-Modo simplificado: sempre GUI, sempre admin check, sem argumentos complexos.
+Suporta modo Headless via argumento --headless.
 """
 
 import sys
 import logging
 from pathlib import Path
+from director.orchestrator import system_orchestrator
 
-try:
-    # Diretório base (simplificado)
-    BASE_PATH = Path(__file__).resolve().parent
-    if str(BASE_PATH) not in sys.path:
-        sys.path.insert(0, str(BASE_PATH))
+def main():
+    # Detecta modo de operação
+    args = sys.argv[1:]
+    is_headless = "--headless" in args
 
-    # Setup de logging antecipado
-    log_dir = Path(r"D:\RADIO\LOG ZARARADIO")
-    log_dir.mkdir(exist_ok=True, parents=True)
+    try:
+        if is_headless:
+            # Inicializa apenas o backend (Headless)
+            system_orchestrator.bootstrap()
+            system_orchestrator.start_core()
+            system_orchestrator.run_headless()
+        else:
+            # Inicializa com interface gráfica (Padrão)
+            from core.launcher import run_app
+            run_app()
 
-    logging.basicConfig(
-        level=logging.INFO,
-        format='%(asctime)s | %(levelname)s | %(message)s',
-        handlers=[
-            logging.StreamHandler(),
-            logging.FileHandler(log_dir / "omni_system.log", encoding='utf-8')
-        ],
-        force=True
-    )
+    except KeyboardInterrupt:
+        print("\n[Main] Encerrando sistema...")
+        sys.exit(0)
+    except Exception as e:
+        import traceback
+        print(f"\n[Main] ERRO CRÍTICO: {e}")
+        traceback.print_exc()
+        input("\nPressione Enter para sair...")
+        sys.exit(1)
 
-    logger = logging.getLogger("OmniCore.Main")
-    logger.info("Iniciando setup do sistema...")
-
-    from core.launcher import run_app
-
-    if __name__ == "__main__":
-        logger.info("Chamando run_app()...")
-        run_app()
-
-except Exception as e:
-    import traceback
-    print("\n" + "="*50)
-    print("ERRO CRÍTICO NA INICIALIZAÇÃO:")
-    print("="*50)
-    traceback.print_exc()
-    print("="*50)
-    input("\nPressione Enter para sair...")
-    sys.exit(1)
-
-
+if __name__ == "__main__":
+    main()

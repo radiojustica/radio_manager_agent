@@ -16,36 +16,25 @@ logger = logging.getLogger("OmniCore.Launcher")
 
 
 def run_app() -> None:
-    """Modo simplificado: sempre GUI, verifica admin, inicia tudo."""
-    logger.info("Iniciando run_app...")
-    if not is_admin():
-        logger.info("Não é admin, tentando solicitar elevação...")
-        if run_as_admin():
-            # Se conseguiu elevar, o novo processo vai substituir este
-            sys.exit(0)
-        else:
-            # Se não conseguir elevar, continua sem admin (modo dev/teste)
-            logger.warning("Não foi possível elevar para admin. Continuando em modo reduzido...")
-
-    logger.info("Verificando instância única...")
-    if not verificar_instancia_unica():
-        logger.warning("Instância duplicada detectada, saindo.")
-        sys.exit(0)
-
-    # 1. Inicia API em thread
-    logger.info("Iniciando thread da API...")
-    api_thread = threading.Thread(target=run_api_server, daemon=True)
-    api_thread.start()
+    """Inicia o sistema com a interface gráfica (GUI)."""
+    from director.orchestrator import system_orchestrator
+    
+    # 1. Inicializa o Core (Admin, Mutex, API, Workers)
+    system_orchestrator.bootstrap()
+    system_orchestrator.start_core()
 
     # 2. Cria interface Tkinter
-    logger.info("Criando interface Tkinter...")
+    logger.info("Configurando interface gráfica (Tkinter)...")
     try:
         root = tk.Tk()
         state.SHOW_UI_CALLBACK = lambda: root.after(0, root.deiconify)
         root.withdraw()
         root.after(1000, root.withdraw)
     except Exception as e:
-        logger.error(f"Erro ao criar Tkinter: {e}")
+        logger.error(f"Erro ao criar interface Tkinter: {e}")
+        # Se falhar a UI, o core já está rodando. Podemos decidir se morre ou continua.
+        # Por segurança, vamos manter o core rodando headless se a UI falhar.
+        system_orchestrator.run_headless()
         return
 
     # 3. Inicia ícone de bandeja em thread
@@ -53,11 +42,10 @@ def run_app() -> None:
     threading.Thread(target=lambda: start_tray_icon(root), daemon=True).start()
 
     # 4. GUI principal
-    logger.info("Configurando GUI...")
+    logger.info("Configurando console GUI...")
     gui = RadioAgentGUI(root, guardian_instance)
 
-    # 5. Bridge de logging
-    logger.info("Configurando bridge de logging...")
+    # 5. Bridge de logging para a GUI
     class GuiLogBridge(logging.Handler):
         def emit(self, record):
             tag = "info"
@@ -73,7 +61,7 @@ def run_app() -> None:
     if hasattr(guardian_instance, 'logger'):
         guardian_instance.logger.addHandler(GuiLogBridge())
 
-    # 6. Abre o navegador automaticamente quando o servidor estiver pronto
+    # 6. Autostart Dashboard
     def open_browser():
         if wait_for_server():
             import webbrowser
@@ -82,7 +70,7 @@ def run_app() -> None:
 
     threading.Thread(target=open_browser, daemon=True).start()
 
-    logger.info("Sistema pronto. Dashboard em http://localhost:8001")
+    logger.info("Sistema pronto (GUI). Dashboard em http://localhost:8001")
     root.mainloop()
 
 if __name__ == "__main__":

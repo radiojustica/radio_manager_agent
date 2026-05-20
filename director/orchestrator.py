@@ -67,4 +67,79 @@ class MusicDirector:
 # Instância única do Diretor
 music_director_instance = MusicDirector()
 
+class SystemOrchestrator:
+    def __init__(self):
+        self.headless = False
+
+    def setup_logging(self):
+        """Configura o logging inicial do sistema."""
+        from pathlib import Path
+        log_dir = Path(r"D:\RADIO\LOG ZARARADIO")
+        log_dir.mkdir(exist_ok=True, parents=True)
+
+        logging.basicConfig(
+            level=logging.INFO,
+            format='%(asctime)s | %(levelname)s | %(message)s',
+            handlers=[
+                logging.StreamHandler(),
+                logging.FileHandler(log_dir / "omni_system.log", encoding='utf-8')
+            ],
+            force=True
+        )
+        global logger
+        logger = logging.getLogger("OmniCore.Orchestrator")
+        logger.info("Logging orquestrado iniciado.")
+
+    def bootstrap(self, force_admin: bool = True):
+        """Realiza os checks iniciais de sistema (Admin, Instância Única)."""
+        import sys
+        from core.system import is_admin, verificar_instancia_unica, run_as_admin
+        
+        self.setup_logging()
+        logger.info("[Orchestrator] Iniciando bootstrap do sistema...")
+        
+        if force_admin and not is_admin():
+            logger.info("[Orchestrator] Permissões insuficientes. Tentando elevação...")
+            if run_as_admin():
+                sys.exit(0)
+            else:
+                logger.warning("[Orchestrator] Falha ao elevar. Continuando sem privilégios totais...")
+
+        if not verificar_instancia_unica():
+            logger.error("[Orchestrator] Outra instância já está em execução. Encerrando.")
+            sys.exit(0)
+        
+        logger.info("[Orchestrator] Bootstrap concluído com sucesso.")
+
+    def start_core(self):
+        """Inicia os serviços de backend (API e Workers)."""
+        import threading
+        from api.manager import run_api_server
+        from worker_manager import worker_manager_instance
+        
+        logger.info("[Orchestrator] Iniciando servidor API...")
+        api_thread = threading.Thread(target=run_api_server, daemon=True)
+        api_thread.start()
+        
+        logger.info("[Orchestrator] Iniciando Worker Manager...")
+        worker_manager_instance.start_orchestrator()
+        
+        logger.info("[Orchestrator] Serviços de core iniciados.")
+
+    def run_headless(self):
+        """Mantém o processo vivo em modo headless."""
+        import time
+        self.headless = True
+        logger.info("[Orchestrator] Sistema rodando em modo HEADLESS (Sem Interface).")
+        try:
+            while True:
+                time.sleep(1)
+        except KeyboardInterrupt:
+            logger.info("[Orchestrator] Sinal de desligamento recebido.")
+            from worker_manager import worker_manager_instance
+            worker_manager_instance.stop_orchestrator()
+
+# Instância global do Orquestrador
+system_orchestrator = SystemOrchestrator()
+
 

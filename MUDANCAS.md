@@ -1,5 +1,75 @@
 # RESUMO DAS MUDANÇAS - OMNI CORE V2
 
+Data: 20 de Maio de 2026  
+Status: ✓ ORQUESTRAÇÃO CENTRALIZADA E MODO HEADLESS IMPLEMENTADO
+
+---
+
+## ALTERAÇÕES REALIZADAS (REFATORAÇÃO DE ARQUITETURA)
+
+### 1. [director/orchestrator.py](director/orchestrator.py) - CRIAÇÃO DO SYSTEMORCHESTRATOR
+
+**Mundança:** Implementada a classe `SystemOrchestrator` para centralizar a lógica de inicialização.
+- **`bootstrap()`**: Centraliza checks de administrador, instância única (Mutex) e setup de logging.
+- **`start_core()`**: Inicia serviços de backend (API e WorkerManager) independentemente de interface.
+- **`run_headless()`**: Loop de espera para execução sem GUI.
+
+**Motivo:** Desacoplar a lógica de negócio da interface gráfica (Tkinter), permitindo maior robustez e facilidade em testes.
+
+---
+
+### 2. [main.py](main.py) - BOOTSTRAP MINIMALISTA E MODO HEADLESS
+
+**Mudança:** Redução drástica do arquivo principal.
+- Adicionado suporte ao argumento `--headless`.
+- Delegação total da inicialização para o `SystemOrchestrator`.
+- Removido setup de logging manual (agora feito pelo orquestrador).
+
+**Uso:**
+- `python main.py` -> Inicia com GUI (padrão).
+- `python main.py --headless` -> Inicia apenas serviços de backend.
+
+---
+
+### 3. [core/launcher.py](core/launcher.py) - DESACOPLAMENTO DE UI
+
+**Mudança:** Refatoração de `run_app()`.
+- Agora consome o `system_orchestrator` para subir o core.
+- Foca exclusivamente na criação do `tk.Tk()` e componentes de interface.
+- **Fallback:** Se a criação da UI falhar, o sistema entra automaticamente em modo headless em vez de encerrar.
+
+---
+
+## VALIDAÇÃO
+
+### ✓ Testes Executados
+
+```
+Test Integration Results:
+├─ test_startup.py: ✓ PASS (Inicialização limpa)
+├─ test_integration_system.py: ✓ PASS (Fluxo completo validado)
+├─ Modo Headless: ✓ VALIDADO (Backend sobe sem Tkinter)
+└─ Mutex/Admin: ✓ VALIDADO (Orquestrado centralizadamente)
+```
+
+---
+
+## COMO OPERAR
+
+### Inicialização com GUI:
+```powershell
+python main.py
+```
+
+### Inicialização Headless (Servidor):
+```powershell
+python main.py --headless
+```
+
+---
+
+# RESUMO DAS MUDANÇAS ANTERIORES - OMNI CORE V2
+
 Data: 13 de Maio de 2026  
 Status: ✓ SISTEMA RESTAURADO E OPERACIONAL
 
