@@ -33,17 +33,18 @@ def verificar_inadequacao(nome_arquivo):
 
 def analisar_acustica_completa(caminho):
     """
-    Analisa BPM, Energia, Valência e Dançabilidade.
-    Somente importamos o Librosa DENTRO do worker para evitar overhead global na RAM.
+    Analisa BPM, Energia, Valência e Dançabilidade usando Librosa.
+    Heurísticas avançadas para determinar a 'vibe' da música.
     """
     import librosa
     try:
-        # Carregamos 10 segundos (offset 30s) para análise mais estável de BPM
-        y, sr = librosa.load(caminho, sr=22050, offset=30.0, duration=10.0)
+        # Carregamos 15 segundos (offset 20s) para uma amostra mais representativa
+        y, sr = librosa.load(caminho, sr=22050, offset=20.0, duration=15.0)
         
-        # 1. Energia (Baseado na lógica original)
+        # 1. Energia (Baseado em RMS e Centroid Espectral)
         rms = np.mean(librosa.feature.rms(y=y))
         centroid = np.mean(librosa.feature.spectral_centroid(y=y, sr=sr))
+        flatness = float(np.mean(librosa.feature.spectral_flatness(y=y)))
         
         pontos = 0
         if rms > 0.22: pontos += 50
@@ -65,25 +66,22 @@ def analisar_acustica_completa(caminho):
         elif pontos <= 85: energia_score = 4    
         else: energia_score = 5
 
-        # 2. BPM (Beat Tracking)
-        tempo, _ = librosa.beat.beat_track(y=y, sr=sr)
-        if isinstance(tempo, np.ndarray):
-            bpm = int(tempo.item())
-        else:
-            bpm = int(tempo)
+        # 2. BPM (Beat Tracking mais preciso)
+        onset_env = librosa.onset.onset_strength(y=y, sr=sr)
+        tempo, _ = librosa.beat.beat_track(onset_envelope=onset_env, sr=sr)
+        bpm = int(tempo.item()) if hasattr(tempo, "item") else int(tempo)
 
-        # 3. Valence (Heurística: Brilho Espectral + Energia)
+        # 3. Valence (Heurística: Brilho + Estabilidade + Energia)
+        # Músicas "felizes/positivas" tendem a ser brilhantes e rítmicas
         norm_centroid = min(centroid / 5000.0, 1.0)
         norm_rms = min(rms / 0.4, 1.0)
-        valence = (norm_centroid + norm_rms) / 2.0
+        valence = (norm_centroid * 0.4 + norm_rms * 0.4 + (1.0 - flatness) * 0.2)
 
-        # 4. Danceability (Heurística: Regularidade/Força dos Onsets)
-        onset_env = librosa.onset.onset_strength(y=y, sr=sr)
-        dance_score = float(np.mean(onset_env))
-        danceability = min(dance_score / 1.5, 1.0)
-
-        # 5. Spectral Flatness (Detecta Ruído/Hiss)
-        flatness = float(np.mean(librosa.feature.spectral_flatness(y=y)))
+        # 4. Danceability (Heurística: Força e Regularidade do Ritmo via Tempograma)
+        # Usamos a média do tempograma como proxy para a força rítmica perceptível
+        tg = librosa.feature.tempogram(onset_envelope=onset_env, sr=sr)
+        dance_score = float(np.mean(tg[1:4, :])) # Focamos nas frequências de pulso baixas
+        danceability = min(dance_score * 5.0, 1.0) # Normalização para escala 0-1
 
         return {
             "energia": energia_score,
@@ -94,7 +92,7 @@ def analisar_acustica_completa(caminho):
         }
     except Exception as e:
         print(f"[WORKER] Falha acústica completa em {caminho}: {e}")
-        return {"energia": 3, "bpm": 0, "valence": 0.5, "danceability": 0.5}
+        return {"energia": 3, "bpm": 0, "valence": 0.5, "danceability": 0.5, "flatness": 0.0}
 
 LOG_QUARENTENA = os.path.join(PASTA_QUARENTENA, "audit_quarentena.log")
 
@@ -109,7 +107,7 @@ def registrar_log_quarentena(arquivo, motivo):
         print(f"Erro ao escrever log de quarentena: {e}")
 
 def processar_arquivo(id_musica, caminho):
-    """Verifica quarentena por badwords ou corrupção, calcula métricas acústicas e duração."""
+    """Verifica quarentena por badwords, corrupção e métricas avançadas (Librosa)."""
     from mutagen import File
     import librosa
     nome_arq = os.path.basename(caminho)
@@ -122,8 +120,8 @@ def processar_arquivo(id_musica, caminho):
             raise ValueError("Arquivo ilegível por Mutagen")
         duracao = int(audio.info.length)
         
-        # Teste de carregamento librosa (se falhar, está corrompido para o player também)
-        y, sr = librosa.load(caminho, sr=22050, offset=2.0, duration=2.0)
+        # Teste rápido de carregamento librosa
+        librosa.load(caminho, sr=22050, offset=2.0, duration=1.0)
     except Exception as e:
         registrar_log_quarentena(nome_arq, f"CORROMPIDO/ILEGÍVEL: {str(e)}")
         os.makedirs(PASTA_QUARENTENA, exist_ok=True)
@@ -146,17 +144,21 @@ def processar_arquivo(id_musica, caminho):
     # 3. ANÁLISE ACÚSTICA COMPLETA
     analise = analisar_acustica_completa(caminho)
     
-    # 4. QUARENTENA POR QUALIDADE TÉCNICA
+    # 4. QUARENTENA POR QUALIDADE TÉCNICA E MÉTRICAS AVANÇADAS
     motivo_q = None
     if analise["energia"] < 2:
         motivo_q = "Baixa Energia (E1)"
     elif analise.get("flatness", 0) > 0.5:
         motivo_q = f"Ruído Excessivo (Flatness: {analise.get('flatness')})"
+    elif analise["danceability"] < 0.3:
+        motivo_q = f"Baixa Dançabilidade ({analise['danceability']})"
+    elif analise["valence"] < 0.1:
+        motivo_q = f"Valência Negativa/Melancólica ({analise['valence']})"
     elif duracao < 30:
         motivo_q = f"Duração Insuficiente ({duracao}s)"
         
     if motivo_q:
-        registrar_log_quarentena(nome_arq, f"QUALIDADE: {motivo_q}")
+        registrar_log_quarentena(nome_arq, f"QUARENTENA: {motivo_q}")
         os.makedirs(PASTA_QUARENTENA, exist_ok=True)
         try:
             shutil.move(caminho, os.path.join(PASTA_QUARENTENA, nome_arq))
@@ -205,10 +207,13 @@ def _job_processar_lote(lote_musicas):
             musica_db = db.query(Musica).filter(Musica.id == resultado["id"]).first()
             if musica_db:
                 musica_db.auditado_acustica = True
-                if resultado["status"] == "QUARANTINED":
+                if resultado.get("status") == "QUARANTINED":
                     musica_db.redflag = True
+                    musica_db.quarantine_reason = resultado.get("motivo", "Desconhecido")
                 else:
                     musica_db.energia = resultado["energia"]
+                    musica_db.redflag = False
+                    musica_db.quarantine_reason = None
                 
                 musica_db.duracao = resultado["duracao"]
                 musica_db.bpm = resultado["bpm"]
