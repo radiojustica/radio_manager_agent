@@ -35,6 +35,13 @@ class WorkerBase(ABC):
         self.running = False
         self.worker_logger = logging.getLogger(f"OmniCore.Worker.{name}")
 
+        # Atributos do Circuit Breaker para tolerância a falhas
+        self.failure_count = 0
+        self.max_failures = self.config.get("circuit_breaker_max_failures", 3)
+        self.circuit_open = False
+        self.circuit_open_time: datetime | None = None
+        self.cooldown_period = self.config.get("circuit_breaker_cooldown", 60)
+
     def log_action(self, action: str, level: str = "info", **kwargs) -> None:
         """Registra uma ação do worker com contexto estruturado."""
         log_data = {
@@ -75,8 +82,32 @@ class WorkerBase(ABC):
         raise NotImplementedError
 
     def execute_cycle(self, **kwargs) -> WorkerResult:
-        """Executa um ciclo completo com logging e reward tracking."""
+        """Executa um ciclo completo com logging, reward tracking e circuit breaker."""
         cycle_id = f"{self.name}_{datetime.now(UTC).strftime('%Y%m%d_%H%M%S_%f')}"
+
+        # Verifica o estado do Circuit Breaker antes de iniciar
+        if self.circuit_open:
+            time_since_open = (datetime.now(UTC) - self.circuit_open_time).total_seconds()
+            if time_since_open < self.cooldown_period:
+                self.log_action(
+                    "CIRCUIT_BREAKER_BLOCKED",
+                    level="warning",
+                    cycle_id=cycle_id,
+                    time_remaining=self.cooldown_period - time_since_open
+                )
+                return WorkerResult(
+                    status="circuit_breaker_open",
+                    score=-1,
+                    violations=["Circuit breaker is open due to consecutive failures. Execution blocked."],
+                    metadata={"circuit_state": "open", "time_remaining": self.cooldown_period - time_since_open}
+                )
+            else:
+                self.log_action(
+                    "CIRCUIT_BREAKER_HALF_OPEN",
+                    level="info",
+                    cycle_id=cycle_id,
+                    message_detail="Testing worker in HALF-OPEN state after cooldown."
+                )
 
         self.log_action("CYCLE_START", cycle_id=cycle_id, kwargs=kwargs)
         self.running = True
@@ -84,6 +115,19 @@ class WorkerBase(ABC):
 
         try:
             result = self.run_cycle(**kwargs)
+            
+            # Se for bem-sucedido, reseta contadores e fecha o circuito
+            if self.circuit_open:
+                self.log_action(
+                    "CIRCUIT_BREAKER_CLOSED",
+                    level="info",
+                    cycle_id=cycle_id,
+                    message_detail="Worker recovered. Closing circuit."
+                )
+                self.circuit_open = False
+                self.circuit_open_time = None
+            self.failure_count = 0
+
             self.log_action(
                 "CYCLE_SUCCESS",
                 cycle_id=cycle_id,
@@ -105,11 +149,31 @@ class WorkerBase(ABC):
 
         except Exception as e:
             self.log_error(e, "CYCLE_FAILED", cycle_id=cycle_id)
+            self.failure_count += 1
+            
+            # Se atingir o limite de falhas consecutivas, abre o circuito
+            if self.failure_count >= self.max_failures:
+                if not self.circuit_open:
+                    self.circuit_open = True
+                    self.circuit_open_time = datetime.now(UTC)
+                    self.log_action(
+                        "CIRCUIT_BREAKER_TRIPPED",
+                        level="critical",
+                        cycle_id=cycle_id,
+                        failure_count=self.failure_count,
+                        message_detail=f"Worker failed {self.failure_count} consecutive times. Tripping circuit breaker!"
+                    )
+
             result = WorkerResult(
                 status="error",
                 score=-5,
                 violations=[f"Exception: {str(e)}"],
-                metadata={"exception": type(e).__name__, "cycle_id": cycle_id}
+                metadata={
+                    "exception": type(e).__name__,
+                    "cycle_id": cycle_id,
+                    "circuit_state": "open" if self.circuit_open else "closed",
+                    "failure_count": self.failure_count
+                }
             )
 
         # Registra no reward store

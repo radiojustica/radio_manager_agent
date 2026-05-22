@@ -2,6 +2,7 @@ import os
 import glob
 import logging
 from datetime import datetime, timedelta
+from core.time_utils import now_local
 from collections import Counter
 from core.database import SessionLocal
 from core.models import Musica
@@ -27,7 +28,7 @@ class MusicRecommender:
         """
         Analisa os logs dos últimos X dias para identificar estilos e artistas dominantes.
         """
-        hoje = datetime.now()
+        hoje = now_local()
         arquivos_log = []
         for i in range(days):
             data_str = (hoje - timedelta(days=i)).strftime("%Y-%m-%d")
@@ -100,7 +101,7 @@ class MusicRecommender:
                             f"{art} rádio mix"
                         ]
                         # Escolhe um termo baseado no dia para variar a lista
-                        idx = datetime.now().day % len(sugestoes_termos)
+                        idx = now_local().day % len(sugestoes_termos)
                         termo = sugestoes_termos[idx]
 
                         recs.append({

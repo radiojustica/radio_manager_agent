@@ -2,7 +2,11 @@ from fastapi import APIRouter, Depends
 import os
 import time
 import json
+import logging
 from datetime import datetime
+from core.time_utils import now_local
+
+logger = logging.getLogger("OmniCore.Router.Status")
 from core.database import get_db
 from sqlalchemy.orm import Session
 from core.models import Musica
@@ -170,7 +174,8 @@ def get_now_playing(db: Session = Depends(get_db)):
         try:
             with open(status_file, "r", encoding="utf-8") as f:
                 curadoria_status = f.read().strip()
-        except: pass
+        except Exception as e:
+            logger.warning(f"Erro ao ler status do worker: {e}")
 
     payload = {
         "title": title, 
@@ -180,7 +185,7 @@ def get_now_playing(db: Session = Depends(get_db)):
         "butt_ativos": butt_ativos,
         "butt_detalhes": butt_instances,
         "curadoria_status": curadoria_status,
-        "updated_at": datetime.now().isoformat()
+        "updated_at": now_local().isoformat()
     }
     CACHE_STATUS["payload"] = payload
     CACHE_STATUS["timestamp"] = agora

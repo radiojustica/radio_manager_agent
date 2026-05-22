@@ -13,6 +13,7 @@ import csv
 import io
 import shutil
 from datetime import datetime
+from core.time_utils import now_local, now_utc
 
 from core.database import get_db
 from core.models import Musica
@@ -247,7 +248,7 @@ async def sincronizar_acervo(db: Session = Depends(get_db)):
                         energia=3,
                         auditado_acustica=False,
                         redflag=False,
-                        ultima_reproducao=datetime.utcnow()
+                        ultima_reproducao=now_utc()
                     )
                     db.add(nova_musica)
                     novos += 1
@@ -305,7 +306,7 @@ async def exportar_acervo(
         })
     
     output.seek(0)
-    filename = f"export_acervo_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
+    filename = f"export_acervo_{now_local().strftime('%Y%m%d_%H%M%S')}.csv"
     
     return StreamingResponse(
         iter([output.getvalue()]),

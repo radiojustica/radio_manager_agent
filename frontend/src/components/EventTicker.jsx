@@ -9,9 +9,13 @@ export default function EventTicker() {
     const ws = new WebSocket(`${protocol}//${window.location.host}/ws/status`);
 
     ws.onmessage = (event) => {
-      const json = JSON.parse(event.data);
-      if (json.events) {
-        setEvents(json.events);
+      try {
+        const json = JSON.parse(event.data);
+        if (json && Array.isArray(json.events)) {
+          setEvents(json.events);
+        }
+      } catch (err) {
+        console.error("Falha ao ler eventos do WebSocket:", err);
       }
     };
 

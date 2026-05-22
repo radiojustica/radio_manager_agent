@@ -5,6 +5,7 @@ import subprocess
 import sys
 import time
 from datetime import datetime
+from core.time_utils import now_local, now_utc
 from pathlib import Path
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
@@ -63,7 +64,7 @@ class ConnectionManager:
         for connection in self.active_connections:
             try:
                 await connection.send_text(message)
-            except:
+            except Exception:
                 pass
 
 manager = ConnectionManager()
@@ -78,7 +79,7 @@ async def broadcast_event(event: dict):
             # Usamos call_soon_threadsafe se não estivermos na mesma thread, 
             # mas aqui assumimos que será chamado via async onde possível.
             await connection.send_text(message)
-        except:
+        except Exception:
             pass
 
 @app.websocket("/ws/status")
@@ -88,7 +89,7 @@ async def websocket_endpoint(websocket: WebSocket):
         # Loop passivo: apenas mantém a conexão viva e envia heartbeats
         while True:
             # Heartbeat para evitar timeout do browser/proxy
-            await websocket.send_text(json.dumps({"type": "heartbeat", "timestamp": datetime.now().isoformat()}))
+            await websocket.send_text(json.dumps({"type": "heartbeat", "timestamp": now_utc().isoformat()}))
             await asyncio.sleep(30) 
     except WebSocketDisconnect:
         manager.disconnect(websocket)
@@ -149,7 +150,7 @@ def run_api_server():
         logger.error(error_msg)
         exe_dir = os.path.dirname(sys.executable) if getattr(sys, 'frozen', False) else os.getcwd()
         with open(os.path.join(exe_dir, "fastapi_crash.log"), "a", encoding="utf-8") as f:
-            f.write(f"{datetime.now()} - {error_msg}\n")
+            f.write(f"{now_local()} - {error_msg}\n")
 
 def wait_for_server(host="127.0.0.1", port=8001, timeout=30):
     """Aguarda até que o servidor web esteja aceitando conexões."""

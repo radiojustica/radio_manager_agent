@@ -15,6 +15,7 @@ NÃO coloque lógica de negócio aqui. Toda regra de grade fica em grade_rules.p
 import os
 import logging
 from datetime import datetime, timedelta
+from core.time_utils import now_local, now_utc
 
 from sqlalchemy.orm import Session
 from core.database import SessionLocal
@@ -74,7 +75,7 @@ class PlaylistEngine:
     @staticmethod
     def _atualizar_reproducao(db: Session, musicas_tocadas: list):
         """Marca músicas como tocadas e incrementa o contador de execuções."""
-        agora = datetime.utcnow()
+        agora = now_utc()
         for m in musicas_tocadas:
             # Incremento individual para garantir atomicidade no contador
             db.query(Musica).filter(Musica.id == m.id).update(
@@ -243,7 +244,7 @@ class PlaylistEngine:
             assets = GR.carregar_assets_apoio()
             linhas = GR.montar_bloco(acervo, segundos, assets)
 
-            agora = datetime.now()
+            agora = now_local()
             nome_arquivo = f"PROG_EXTRA_{agora.strftime('%H%M')}.m3u"
             caminho_m3u  = os.path.join(cfg["pasta_programacao"], nome_arquivo)
 
@@ -270,7 +271,7 @@ class PlaylistEngine:
         # Sincroniza boletins do GDrive
         self._sync_bulletins_before_gen()
         
-        now = datetime.now()
+        now = now_local()
         bloco_atual  = (now.hour // 2) * 2
         bloco_proximo = (bloco_atual + 2) % 24
         pasta = GR.CFG["pasta_programacao"]

@@ -19,7 +19,7 @@ class TestHeadlessExecution(unittest.TestCase):
                 # Recarrega para garantir que os mocks sejam aplicados se já foi importado
                 import importlib
                 importlib.reload(core.launcher)
-                print("✓ core.launcher importado com sucesso sem bibliotecas de GUI.")
+                print("[OK] core.launcher importado com sucesso sem bibliotecas de GUI.")
             except ImportError as e:
                 self.fail(f"Falha ao importar core.launcher sem bibliotecas de GUI: {e}")
 
@@ -38,7 +38,7 @@ class TestHeadlessExecution(unittest.TestCase):
             mock_orchestrator.bootstrap.assert_called_once()
             mock_orchestrator.start_core.assert_called_once()
             mock_orchestrator.run_headless.assert_called_once()
-            print("✓ run_app redirecionou corretamente para modo headless na ausência de Tkinter.")
+            print("[OK] run_app redirecionou corretamente para modo headless na ausência de Tkinter.")
 
 if __name__ == "__main__":
     unittest.main()

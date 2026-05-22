@@ -2,6 +2,7 @@ import os
 import csv
 import logging
 from datetime import datetime, timedelta
+from core.time_utils import now_local, to_local
 from pathlib import Path
 from core.reward import RewardStore
 
@@ -15,7 +16,7 @@ class ReportManager:
 
     def generate_worker_audit_csv(self, days: int = 7) -> str:
         """Gera um CSV detalhado de todas as execuções de workers no período."""
-        end_date = datetime.now()
+        end_date = now_local()
         start_date = end_date - timedelta(days=days)
         
         filename = f"Worker_Audit_{end_date.strftime('%Y%m%d')}.csv"
@@ -27,9 +28,8 @@ class ReportManager:
         filtered_history = []
         for entry in history:
             try:
-                ts = datetime.fromisoformat(entry['timestamp'].replace('Z', '+00:00'))
-                # Remover timezone para comparação se necessário, ou manter isoformat
-                if ts.replace(tzinfo=None) >= start_date:
+                ts = to_local(datetime.fromisoformat(entry['timestamp'].replace('Z', '+00:00')))
+                if ts >= start_date:
                     filtered_history.append(entry)
             except:
                 filtered_history.append(entry)
@@ -62,7 +62,7 @@ class ReportManager:
 
     def generate_worker_performance_csv(self) -> str:
         """Gera um CSV de resumo de performance por worker (Ranking)."""
-        filename = f"Worker_Performance_Summary_{datetime.now().strftime('%Y%m%d')}.csv"
+        filename = f"Worker_Performance_Summary_{now_local().strftime('%Y%m%d')}.csv"
         path = os.path.join(self.output_dir, filename)
         
         workers_data = self.reward_store.summary()
@@ -110,7 +110,7 @@ class ReportManager:
         return {
             "audit": audit_path,
             "performance": perf_path,
-            "timestamp": datetime.now().isoformat()
+            "timestamp": now_local().isoformat()
         }
 
 if __name__ == "__main__":

@@ -10,6 +10,7 @@ import win32con
 import win32api
 import win32process
 from datetime import datetime
+from core.time_utils import now_local
 from typing import Optional
 
 from core.config_loader import get_settings
@@ -41,7 +42,7 @@ class GuardianService(RadioMonitor):
         super().log_event(event_type, message)
         
         # Keep events list updated for API consumption
-        timestamp = datetime.now().strftime('%H:%M:%S')
+        timestamp = now_local().strftime('%H:%M:%S')
         self.events_list.insert(0, {"time": timestamp, "type": event_type, "message": message})
         if len(self.events_list) > 100:
             self.events_list.pop()

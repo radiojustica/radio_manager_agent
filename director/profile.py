@@ -6,11 +6,12 @@ Este arquivo é a única fonte de verdade para as regras de negócio.
 """
 
 from datetime import datetime
+from core.time_utils import now_local
 
 PROFILE = {
     "name": "Direção Artística TJRN",
     "version": "2.1.0",
-    "last_update": datetime.now().isoformat(),
+    "last_update": now_local().isoformat(),
     
     # 1. Regras de Rodízio (Fair Rotation)
     "constraints": {

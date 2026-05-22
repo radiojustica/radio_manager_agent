@@ -1,19 +1,31 @@
 import logging
 from google import genai
 from typing import Optional
+from core.config_loader import get_secret
 import os
+
+from services.rate_limiter import RateLimiter
 
 logger = logging.getLogger("OmniCore.GeminiService")
 
+# Limita chamadas para evitar estouro da cota de API do Gemini (ex: 15 chamadas/min)
+_gemini_limiter = RateLimiter(max_calls=15, period_seconds=60)
+
 class GeminiService:
     def __init__(self, api_key: Optional[str] = None):
-        # Tenta carregar do arquivo se não fornecido
+        # Tenta carregar do ambiente via config_loader ou fallback para arquivo local
         if not api_key:
-            try:
-                with open("config/gdrive_api_key.txt", "r") as f:
-                    api_key = f.read().strip()
-            except Exception:
-                api_key = os.getenv("GOOGLE_API_KEY")
+            api_key = (
+                get_secret("GEMINI_API_KEY")
+                or get_secret("GDRIVE_API_KEY")
+                or get_secret("GOOGLE_API_KEY")
+            )
+            if not api_key:
+                try:
+                    with open("config/gdrive_api_key.txt", "r") as f:
+                        api_key = f.read().strip()
+                except Exception:
+                    pass
 
         if api_key:
             try:
@@ -34,6 +46,9 @@ class GeminiService:
         """
         if not self.enabled:
             return None
+
+        # Aguarda autorização da cota de requisição (Rate Limit)
+        _gemini_limiter.wait_and_acquire()
 
         prompt = (
             f"Classifique o estilo/humor da música '{title}' do artista '{artist}'. "

@@ -6,6 +6,7 @@ from email.mime.multipart import MIMEMultipart
 import os
 import logging
 from datetime import datetime
+from core.time_utils import now_local
 
 # Placeholder values that indicate credentials were never configured
 _PLACEHOLDER_VALUES = {"YOUR_GMAIL@gmail.com", "YOUR_APP_PASSWORD", "", None}
@@ -43,7 +44,7 @@ class EmailReporter:
         msg = MIMEMultipart()
         msg['From']    = self.sender_email
         msg['To']      = self.target_email
-        msg['Subject'] = f"RELATÓRIO DE OPERAÇÃO — {datetime.now().strftime('%d/%m/%Y')}"
+        msg['Subject'] = f"RELATÓRIO DE OPERAÇÃO — {now_local().strftime('%d/%m/%Y')}"
 
         body = self.generate_html_body(summary_data)
         msg.attach(MIMEText(body, 'html', 'utf-8'))

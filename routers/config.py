@@ -5,6 +5,9 @@ import json
 import os
 import shutil
 
+from pathlib import Path
+from core.path_utils import safe_path
+
 router = APIRouter(prefix="/api/config", tags=["Configurações"])
 
 CONFIG_FILE = "config/settings.json"
@@ -64,11 +67,15 @@ async def get_quarantine_files():
 @router.post("/quarantine/restore")
 async def restore_quarantine_file(filename: str, db: Session = Depends(get_db)):
     from core.models import Musica
-    source = os.path.join(r"D:\RADIO\QUARENTENA_TJ", filename)
-    target = os.path.join(r"D:\RADIO\MUSICAS", filename)
+    try:
+        source = safe_path(Path(r"D:\RADIO\QUARENTENA_TJ"), filename)
+        target = safe_path(Path(r"D:\RADIO\MUSICAS"), filename)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+        
     if os.path.exists(source):
         try:
-            shutil.move(source, target)
+            shutil.move(str(source), str(target))
             
             # Blindagem no Banco: Marca como auditado e remove redflag
             musica = db.query(Musica).filter(Musica.caminho.ilike(f"%{filename}")).first()

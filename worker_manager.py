@@ -3,6 +3,7 @@ import json
 from pathlib import Path
 from typing import Any
 from datetime import datetime
+from core.time_utils import now_local
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.interval import IntervalTrigger
 from apscheduler.triggers.cron import CronTrigger
@@ -117,7 +118,7 @@ class WorkerManager:
                     "status": result.status if hasattr(result, "status") else "unknown",
                     "score": result.score if hasattr(result, "score") else 0,
                     "metadata": result.metadata if hasattr(result, "metadata") else {},
-                    "timestamp": datetime.now().isoformat()
+                    "timestamp": now_local().isoformat()
                 }
                 
                 # Executa o broadcast de forma segura entre threads

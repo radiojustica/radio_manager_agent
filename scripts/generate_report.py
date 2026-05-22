@@ -3,6 +3,7 @@ import os
 from pathlib import Path
 from core.reward import RewardStore
 from datetime import datetime
+from core.time_utils import now_local, to_local
 
 def generate_detailed_report():
     store = RewardStore()
@@ -10,7 +11,7 @@ def generate_detailed_report():
     
     report = [
         '# 🏆 RELATÓRIO COMPLETO DE DESEMPENHO - OMNI CORE V2',
-        f'**Extraído em:** {datetime.now().strftime("%d/%m/%Y %H:%M:%S")}',
+        f'**Extraído em:** {now_local().strftime("%d/%m/%Y %H:%M:%S")}',
         '',
         'Este relatório apresenta uma visão exaustiva da performance de todos os agentes (workers) do sistema Omni Core V2, baseando-se nos logs de recompensas e penalidades.',
         ''
@@ -34,7 +35,7 @@ def generate_detailed_report():
             # Formatar timestamp para algo mais legível
             ts = last['timestamp']
             try:
-                ts_obj = datetime.fromisoformat(ts.replace('Z', '+00:00'))
+                ts_obj = to_local(datetime.fromisoformat(ts.replace('Z', '+00:00')))
                 ts_str = ts_obj.strftime("%d/%m/%Y %H:%M:%S")
             except:
                 ts_str = ts
@@ -54,7 +55,7 @@ def generate_detailed_report():
             report.append('| :--- | :--- | :--- |')
             for h in reversed(history[-10:]):
                 try:
-                    h_ts = datetime.fromisoformat(h['timestamp'].replace('Z', '+00:00')).strftime("%H:%M:%S")
+                    h_ts = to_local(datetime.fromisoformat(h['timestamp'].replace('Z', '+00:00'))).strftime("%H:%M:%S")
                 except:
                     h_ts = h['timestamp']
                 

@@ -2,6 +2,7 @@ import os
 from core.database import SessionLocal, engine
 from core.models import Base, Musica
 from datetime import datetime
+from core.time_utils import now_utc
 
 # Garante que as tabelas existam
 Base.metadata.create_all(bind=engine)
@@ -35,7 +36,7 @@ def sincronizar_fisico():
                             energia=3,
                             auditado_acustica=False,
                             redflag=False,
-                            ultima_reproducao=datetime.utcnow()
+                            ultima_reproducao=now_utc()
                         )
                         db.add(nova_musica)
                         novos += 1

@@ -10,6 +10,7 @@ import json
 import random
 import logging
 from datetime import datetime, timezone
+from core.time_utils import now_local
 from scripts.artist_cleaner import clean_artist_name
 
 logger = logging.getLogger("OmniCore.GradeRules")
@@ -52,7 +53,8 @@ def _carregar_config() -> dict:
                     data = json.load(f)
                 cfg = {**defaults, **data.get("grade", {})}
                 return cfg
-            except: pass
+            except Exception as e:
+                logger.error(f"Erro ao ler settings.json em {path}: {e}")
     return defaults
 
 CFG = _carregar_config()
@@ -103,7 +105,7 @@ def pasta_boletins_hoje() -> str:
     """Retorna o caminho da pasta de boletins do dia atual (usando timezone local correto)."""
     # Usa datetime.now() mas com tratamento de timezone para garantir o dia correto
     # Se o servidor está em Brasil (UTC-3), o dia sempre será o correto
-    agora = datetime.now()
+    agora = now_local()
     dia_nome = DIAS_SEMANA.get(agora.weekday(), "SEGUNDA")
     return os.path.join(CFG["pasta_boletins_raiz"], dia_nome)
 
@@ -112,7 +114,7 @@ def listar_mp3(pasta: str) -> list[str]:
         if not pasta or not os.path.exists(pasta): return []
         # Filtro central: ignora arquivos com '?' no nome que crasham o leitor
         return [os.path.join(pasta, f) for f in os.listdir(pasta) if f.lower().endswith(".mp3") and "?" not in f]
-    except: return []
+    except Exception: return []
 
 def carregar_assets_apoio() -> dict:
     return {
@@ -158,7 +160,7 @@ class GestorFila:
                 with open(HISTORICO_PATH, "r", encoding="utf-8") as f:
                     data = json.load(f)
                     return data.get("artistas", []), data.get("musicas", [])
-        except:
+        except Exception:
             pass
         return [], []
 
@@ -183,9 +185,9 @@ class GestorFila:
                 json.dump({
                     "artistas": self.historico_artistas,
                     "musicas": self.historico_musicas,
-                    "updated_at": datetime.now().isoformat()
+                    "updated_at": now_local().isoformat()
                 }, f, indent=4)
-        except:
+        except Exception:
             pass
 
     def _shuffle_by_priority(self, lista):
@@ -297,7 +299,7 @@ def montar_bloco(
     segundos_acumulados = 0
     contador_musicas = 0
     
-    hora = hora_inicio if hora_inicio is not None else datetime.now().hour
+    hora = hora_inicio if hora_inicio is not None else now_local().hour
     energias_base = obter_regras_energia_por_hora(hora)
     n_regional = CFG.get("regional_a_cada_n", 8)
     
@@ -354,7 +356,7 @@ def montar_bloco(
     return playlist
 
 def segundos_restantes_no_bloco() -> int:
-    now = datetime.now()
+    now = now_local()
     proximo_bloco_hora = ((now.hour // 2) + 1) * 2
     from datetime import timedelta
     proximo_dt = now.replace(hour=proximo_bloco_hora % 24, minute=0, second=0, microsecond=0)

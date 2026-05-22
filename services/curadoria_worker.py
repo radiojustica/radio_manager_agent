@@ -6,6 +6,7 @@ import re
 import shutil
 import json
 from datetime import datetime
+from core.time_utils import now_local
 
 PASTA_QUARENTENA = r"D:\RADIO\QUARENTENA_TJ"
 
@@ -22,7 +23,7 @@ def carregar_badwords():
         try:
             with open(badwords_path, "r", encoding="utf-8") as f:
                 return json.load(f)
-        except:
+        except Exception:
             pass
     return ["puta", "safadao", "baroes da pisadinha"] # Fallback
 
@@ -100,7 +101,7 @@ LOG_QUARENTENA = os.path.join(PASTA_QUARENTENA, "audit_quarentena.log")
 def registrar_log_quarentena(arquivo, motivo):
     """Registra a movimentação de arquivos para a quarentena."""
     os.makedirs(PASTA_QUARENTENA, exist_ok=True)
-    timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    timestamp = now_local().strftime('%Y-%m-%d %H:%M:%S')
     try:
         with open(LOG_QUARENTENA, "a", encoding="utf-8") as f:
             f.write(f"[{timestamp}] ARQUIVO: {arquivo} | MOTIVO: {motivo}\n")
@@ -139,7 +140,7 @@ def processar_arquivo(id_musica, caminho):
         try:
             shutil.move(caminho, os.path.join(PASTA_QUARENTENA, nome_arq))
             return {"id": id_musica, "status": "QUARANTINED", "motivo": "Inadequação", "energia": 3, "duracao": duracao, "bpm": 0, "valence": 0.5, "danceability": 0.5}
-        except:
+        except Exception:
             return {"id": id_musica, "status": "ERROR_MOVE", "energia": 3, "duracao": duracao, "bpm": 0, "valence": 0.5, "danceability": 0.5}
             
     # 3. ANÁLISE ACÚSTICA COMPLETA
@@ -173,7 +174,7 @@ def processar_arquivo(id_musica, caminho):
                 "valence": analise["valence"], 
                 "danceability": analise["danceability"]
             }
-        except:
+        except Exception:
             pass
 
     return {
@@ -196,7 +197,7 @@ def _job_processar_lote(lote_musicas):
         f.write("Iniciando lote...")
 
     db = SessionLocal()
-    print(f"[{datetime.now().strftime('%H:%M:%S')}] [WORKER] Iniciando processamento de {len(lote_musicas)} faixas pendentes no background...")
+    print(f"[{now_local().strftime('%H:%M:%S')}] [WORKER] Iniciando processamento de {len(lote_musicas)} faixas pendentes no background...")
     try:
         total = len(lote_musicas)
         for i, (m_id, caminho) in enumerate(lote_musicas):
@@ -226,7 +227,7 @@ def _job_processar_lote(lote_musicas):
         with open(status_path, "w", encoding="utf-8") as f:
             f.write("Ocioso (Próximo ciclo em 5 min)")
             
-        print(f"[{datetime.now().strftime('%H:%M:%S')}] [WORKER] Lote de auditoria acústica concluído.")
+        print(f"[{now_local().strftime('%H:%M:%S')}] [WORKER] Lote de auditoria acústica concluído.")
     except Exception as e:
         print(f"[WORKER] Erro crítico no worker: {e}")
         with open(status_path, "w", encoding="utf-8") as f:

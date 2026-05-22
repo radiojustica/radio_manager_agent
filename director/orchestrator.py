@@ -90,7 +90,7 @@ class SystemOrchestrator:
         logger = logging.getLogger("OmniCore.Orchestrator")
         logger.info("Logging orquestrado iniciado.")
 
-    def bootstrap(self, force_admin: bool = True):
+    def bootstrap(self, force_admin: bool = True, open_browser_if_running: bool = False):
         """Realiza os checks iniciais de sistema (Admin, Instância Única)."""
         import sys
         from core.system import is_admin, verificar_instancia_unica, run_as_admin
@@ -107,6 +107,10 @@ class SystemOrchestrator:
 
         if not verificar_instancia_unica():
             logger.error("[Orchestrator] Outra instância já está em execução. Encerrando.")
+            if open_browser_if_running:
+                import webbrowser
+                logger.info("[Orchestrator] Abrindo o Dashboard no navegador para a instância ativa...")
+                webbrowser.open("http://localhost:8001")
             sys.exit(0)
         
         logger.info("[Orchestrator] Bootstrap concluído com sucesso.")

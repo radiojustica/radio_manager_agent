@@ -80,13 +80,15 @@ class RadioAgentGUI:
             self.log_area.insert(tk.END, f"[{timestamp}] ", "time")
             self.log_area.insert(tk.END, f"{message}\n", tag)
             self.log_area.see(tk.END)
-        except: pass
+        except Exception as e:
+            logger.debug(f"GUI: Falha ao escrever log: {e}")
 
     def update_status_loop(self):
         try:
             zara_on = "ON" if self.guardian.check_processes().get("zararadio") == "Running" else "OFF"
             self.status_var.set(f"ZARA: {zara_on} | TELEMETRIA: ATIVA | DASHBOARD: http://localhost:8001")
-        except: pass
+        except Exception as e:
+            logger.debug(f"GUI: Falha ao atualizar status: {e}")
         self.root.after(5000, self.update_status_loop)
 
     def on_open_dashboard(self):

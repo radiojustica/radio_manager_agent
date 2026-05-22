@@ -10,6 +10,7 @@ import logging
 import subprocess
 import time
 from datetime import datetime
+from core.time_utils import now_local
 from pathlib import Path
 from typing import Any
 
@@ -126,10 +127,10 @@ class UpdateWorker(WorkerBase):
                 # Notifica via Telegram
                 try:
                     guardian_instance.notifier.send_alert("UPDATE", {
-                        "time": datetime.now().strftime("%H:%M:%S"),
+                        "time": now_local().strftime("%H:%M:%S"),
                         "message": "Omni Core atualizado. Nova versão em uso na próxima reinicialização."
                     })
-                except:
+                except Exception:
                     pass
                 
                 return WorkerResult(

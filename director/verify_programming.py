@@ -3,6 +3,7 @@ import sys
 import json
 import logging
 from datetime import datetime
+from core.time_utils import now_local
 
 # Adiciona o diretório base ao sys.path para importar os módulos locais
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -60,7 +61,7 @@ def audit_m3u(file_path):
     return violations
 
 def run_daily_audit():
-    print(f"[{datetime.now()}] Iniciando Auditoria de Programação...")
+    print(f"[{now_local()}] Iniciando Auditoria de Programação...")
     folder = r"D:\RADIO\PROGRAMACAO"
     if not os.path.exists(folder):
         print(f"Pasta de programação não encontrada: {folder}")

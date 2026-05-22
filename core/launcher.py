@@ -21,7 +21,7 @@ def run_app() -> None:
     except ImportError as e:
         logger.warning(f"Dependências de UI não encontradas ({e}). Iniciando em modo Headless...")
         from director.orchestrator import system_orchestrator
-        system_orchestrator.bootstrap()
+        system_orchestrator.bootstrap(open_browser_if_running=True)
         system_orchestrator.start_core()
         system_orchestrator.run_headless()
         return
@@ -29,7 +29,7 @@ def run_app() -> None:
     from director.orchestrator import system_orchestrator
     
     # 1. Inicializa o Core (Admin, Mutex, API, Workers)
-    system_orchestrator.bootstrap()
+    system_orchestrator.bootstrap(open_browser_if_running=True)
     system_orchestrator.start_core()
 
     # 2. Cria interface Tkinter

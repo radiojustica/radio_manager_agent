@@ -68,14 +68,14 @@
                 "instance_id": "",
                 "token": ""
             },
-            "target_number": "5584996066876",
+            "target_number": "${WHATSAPP_TARGET_NUMBER}",
             "notify_on_critical": true
         },
         "telegram": {
             "enabled": true,
             "bot_token": "${TELEGRAM_BOT_TOKEN}",
             "chat_id": "${TELEGRAM_CHAT_ID}",
-            "phone_target": "+5584996066876",
+            "phone_target": "${WHATSAPP_TARGET_NUMBER}",
             "notify_on_restart": true,
             "notify_on_error": true
         },
@@ -93,7 +93,12 @@
         "enabled": false,
         "ip": "${VMIX_IP}",
         "port": "${VMIX_PORT}",
-        "trigger_keywords": ["SESSAO", "VINHETA", "ABERTURA", "CAM_ABERTA"],
+        "trigger_keywords": [
+            "SESSAO",
+            "VINHETA",
+            "ABERTURA",
+            "CAM_ABERTA"
+        ],
         "auto_switch_audio": true,
         "track_triggers": {
             "ABERTURA": {"function": "Cut", "input": "CENA_ABERTURA"},

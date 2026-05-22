@@ -1,6 +1,7 @@
 import logging
 from typing import Any
 from datetime import datetime
+from core.time_utils import now_local
 
 from core.worker_base import WorkerBase, WorkerResult
 from core.reward import RewardStore
@@ -24,7 +25,7 @@ class WeatherWorker(WorkerBase):
             
             metadata = {
                 "mood": mood,
-                "timestamp": datetime.now().isoformat(),
+                "timestamp": now_local().isoformat(),
                 "location": "Natal/RN"
             }
             

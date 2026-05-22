@@ -4,6 +4,9 @@ import os
 import glob
 from worker_manager import worker_manager_instance
 
+from pathlib import Path
+from core.path_utils import safe_path
+
 router = APIRouter(prefix="/api/reports", tags=["Relatórios"])
 
 REPORTS_DIR = "reports"
@@ -30,9 +33,9 @@ def list_reports():
 @router.get("/download/{filename}")
 def download_report(filename: str):
     """Faz o download de um arquivo de relatório específico."""
-    path = os.path.join(REPORTS_DIR, filename)
-    # Segurança básica para evitar path traversal
-    if not os.path.abspath(path).startswith(os.path.abspath(REPORTS_DIR)):
+    try:
+        path = safe_path(Path(REPORTS_DIR), filename)
+    except ValueError as e:
         raise HTTPException(status_code=403, detail="Acesso negado.")
     
     if not os.path.exists(path):

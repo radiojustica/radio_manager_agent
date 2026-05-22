@@ -1,6 +1,7 @@
 import os
 import sys
 from datetime import datetime
+from core.time_utils import now_local
 
 # Adiciona o diretório base ao sys.path para importar os módulos locais
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -11,10 +12,10 @@ from director.auditor import ProgrammingAuditor
 
 def run_historical_audit():
     auditor = ProgrammingAuditor()
-    hoje = datetime.now().strftime("%Y-%m-%d")
+    hoje = now_local().strftime("%Y-%m-%d")
     log_path = f"D:\\RADIO\\LOG ZARARADIO\\{hoje}.log"
     
-    print(f"[{datetime.now()}] Iniciando Auditoria Histórica de Execução...")
+    print(f"[{now_local()}] Iniciando Auditoria Histórica de Execução...")
     print(f"Analisando log real: {log_path}")
     
     violations = auditor.audit_execution_log(log_path)

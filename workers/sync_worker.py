@@ -44,7 +44,8 @@ class SyncWorker(WorkerBase):
                             normalizados += 1
                             try:
                                 os.remove(in_p)
-                            except: pass
+                            except Exception:
+                                pass
                         else:
                             violations.append(f"Falha ao normalizar: {file}")
 

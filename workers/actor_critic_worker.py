@@ -1,6 +1,7 @@
 import logging
 from typing import Any
 from datetime import datetime
+from core.time_utils import now_local
 
 from core.worker_base import WorkerBase, WorkerResult
 from core.reward import RewardStore
@@ -17,7 +18,7 @@ class ActorCriticWorker(WorkerBase):
 
     def run_cycle(self, hora_inicio: int | None = None, mood: str | None = None, output_path: str | None = None, **kwargs) -> WorkerResult:
         if hora_inicio is None:
-            hora_inicio = datetime.now().hour
+            hora_inicio = now_local().hour
 
         try:
             # actor_critic_instance.run_cycle já faz a avaliação e salva na memória interna dele.

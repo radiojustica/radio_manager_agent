@@ -8,6 +8,7 @@ import shutil
 import win32gui
 from collections import deque
 from datetime import datetime
+from core.time_utils import now_local
 from pathlib import Path
 import psutil
 import pywinauto
@@ -112,7 +113,7 @@ class RadioMonitor:
             
         os.makedirs(log_dir, exist_ok=True)
 
-        log_file = os.path.join(log_dir, f"radio_agent_{datetime.now().strftime('%Y%m%d')}.log")
+        log_file = os.path.join(log_dir, f"radio_agent_{now_local().strftime('%Y%m%d')}.log")
 
         # Avoid adding duplicate handlers if setup_logging is called more than once
         logger = logging.getLogger("RadioManagerAgent.Monitor")
@@ -131,7 +132,7 @@ class RadioMonitor:
     def log_event(self, event_type: str, message: str):
         """Logs an event to the daily history and to the logger."""
         entry = {
-            "time": datetime.now().strftime("%H:%M:%S"),
+            "time": now_local().strftime("%H:%M:%S"),
             "type": event_type,
             "message": message
         }
@@ -140,7 +141,7 @@ class RadioMonitor:
 
     def get_current_block_hour(self) -> int:
         """Returns the start hour of the current 2-hour block."""
-        hour = datetime.now().hour
+        hour = now_local().hour
         return (hour // 2) * 2
 
     def get_target_playlist(self) -> str:
@@ -187,7 +188,7 @@ class RadioMonitor:
             if notif_cfg.get("notify_on_restart"):
                 msg = f"ZaraRadio was {reason}. Restarting engine and forcing playback."
                 self.notifier.send_alert("RESTART", {
-                    "time": datetime.now().strftime("%H:%M:%S"),
+                    "time": now_local().strftime("%H:%M:%S"),
                     "message": msg
                 })
                 self.log_event("RESTART", msg)
@@ -341,12 +342,12 @@ class RadioMonitor:
         dest_path = os.path.join(quarantine_dir, filename)
         try:
             if os.path.exists(dest_path):
-                ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+                ts = now_local().strftime("%Y%m%d_%H%M%S")
                 dest_path = os.path.join(quarantine_dir, f"{ts}_{filename}")
             shutil.move(file_path, dest_path)
             self.logger.warning(f"☣️ FILE QUARANTINED: {filename} (Reason: {reason})")
             audit_log = os.path.join(quarantine_dir, "audit_quarentena.log")
-            ts_now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            ts_now = now_local().strftime("%Y-%m-%d %H:%M:%S")
             with open(audit_log, "a", encoding="utf-8") as f:
                 f.write(f"[{ts_now}] ARQUIVO: {filename} | ORIGEM: {file_path} | MOTIVO: {reason}\n")
             msg = f"☣️ *ARQUIVO EM QUARENTENA*\n\n*Arquivo:* {filename}\n*Motivo:* {reason}"
@@ -431,7 +432,7 @@ class RadioMonitor:
         self.logger.info("--- Monitoring Cycle END ---")
 
     def check_and_send_daily_report(self):
-        now = datetime.now()
+        now = now_local()
         current_date = now.strftime("%Y-%m-%d")
         report_time_str = self.settings.get("notifications", {}).get("email", {}).get("report_time", "07:00")
         try: report_hour, report_minute = map(int, report_time_str.split(":"))
@@ -482,7 +483,7 @@ class RadioMonitor:
                 title = win32gui.GetWindowText(hwnd).lower()
                 if any(k in title for k in ("ndi monitor", "plenário", "plenario", "sessão", "sessao")): ndi_active = True
         try: win32gui.EnumWindows(callback, None)
-        except: pass
+        except Exception as e: self.logger.debug(f"EnumWindows error: {e}")
         if ndi_active and not self.suspended: self.suspended = True
         elif not ndi_active and self.suspended: self.suspended = False
 

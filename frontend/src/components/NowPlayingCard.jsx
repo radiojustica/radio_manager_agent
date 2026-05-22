@@ -10,9 +10,16 @@ export default function NowPlayingCard() {
     const ws = new WebSocket(`${protocol}//${window.location.host}/ws/status`);
 
     ws.onmessage = (event) => {
-      const json = JSON.parse(event.data);
-      if (json.player) {
-        setData(json.player);
+      try {
+        const json = JSON.parse(event.data);
+        if (json && json.player && typeof json.player === 'object') {
+          setData(prev => ({
+            ...prev,
+            ...json.player
+          }));
+        }
+      } catch (err) {
+        console.error("Falha ao ler dados de telemetria do WebSocket:", err);
       }
     };
 

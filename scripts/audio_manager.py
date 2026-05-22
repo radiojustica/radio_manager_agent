@@ -16,7 +16,8 @@ class AudioManager:
         """Yields all audio sessions matching the given process name."""
         try:
             comtypes.CoInitialize()
-        except:
+        except Exception as e:
+            # Já inicializado na thread ou erro não crítico
             pass
         sessions = AudioUtilities.GetAllSessions()
         name_lower = process_name.lower()
@@ -58,7 +59,9 @@ class AudioManager:
         with self._lock:
             try:
                 try: comtypes.CoInitialize()
-                except: pass
+                except Exception as e:
+                    # Inicializado previamente na thread
+                    pass
 
                 # 1. Reuse cached meter if possible
                 if self._cached_meter and self._cached_device_name == device_name:
@@ -98,7 +101,9 @@ class AudioManager:
                 return -1.0
             finally:
                 try: comtypes.CoUninitialize()
-                except: pass
+                except Exception as e:
+                    # Finalização COM não crítica
+                    pass
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)

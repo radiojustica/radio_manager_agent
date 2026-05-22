@@ -117,7 +117,8 @@ class BulletinSync:
                             # Limpa destino
                             for f in os.listdir(target_dir):
                                 try: os.remove(os.path.join(target_dir, f))
-                                except: pass
+                                except OSError as oe:
+                                    logger.debug(f"Não foi possível remover {f}: {oe}")
                             
                             # Move arquivos
                             for f in os.listdir(temp_maneuver):

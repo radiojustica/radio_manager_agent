@@ -1,4 +1,5 @@
 from datetime import datetime
+from core.time_utils import now_utc
 from typing import Any
 
 from core.worker_base import WorkerBase, WorkerResult
@@ -16,6 +17,6 @@ class PlaylistWorker(WorkerBase):
         metadata = {
             "hora_inicio": hora_inicio,
             "mood": mood,
-            "generated_at": datetime.utcnow().isoformat(),
+            "generated_at": now_utc().isoformat(),
         }
         return WorkerResult(status="success" if result else "failed", score=score, violations=violations, metadata=metadata)

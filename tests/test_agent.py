@@ -6,7 +6,7 @@ from unittest.mock import MagicMock, patch
 # Add the project root to sys.path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from scripts.monitor import RadioMonitor
+from core.monitor import RadioMonitor
 
 class TestRadioMonitor:
     @pytest.fixture

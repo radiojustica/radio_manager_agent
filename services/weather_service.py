@@ -1,6 +1,7 @@
 import logging
 import requests
 from datetime import datetime
+from core.time_utils import now_local
 
 logger = logging.getLogger("OmniCore.WeatherService")
 
@@ -58,7 +59,7 @@ def get_fallback_mood() -> str:
     Heurística local baseada na hora do dia e dia da semana.
     Usada apenas se a API externa falhar.
     """
-    now = datetime.now()
+    now = now_local()
     hour = now.hour
     weekday = now.weekday() # 0 = Seg, 6 = Dom
     

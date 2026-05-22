@@ -2,6 +2,7 @@ import os
 import csv
 import glob
 from datetime import datetime, timedelta
+from core.time_utils import now_local
 
 class WeeklyCSVGenerator:
     def __init__(self, log_dir: str, output_dir: str):
@@ -10,7 +11,7 @@ class WeeklyCSVGenerator:
 
     def generate_report(self, days: int = 7) -> str:
         """Parses ZaraRadio logs for the last N days and generates a CSV report."""
-        end_date = datetime.now()
+        end_date = now_local()
         start_date = end_date - timedelta(days=days)
         
         report_filename = f"Execution_Report_{start_date.strftime('%Y%m%d')}_{end_date.strftime('%Y%m%d')}.csv"
