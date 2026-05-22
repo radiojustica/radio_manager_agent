@@ -68,30 +68,28 @@ class ConnectionManager:
 
 manager = ConnectionManager()
 
+async def broadcast_event(event: dict):
+    """Envia um evento para todos os clientes WebSocket conectados de forma assíncrona."""
+    # Como o broadcast_event pode ser chamado de threads síncronas (workers),
+    # precisamos garantir que ele rode no loop de eventos do FastAPI se necessário.
+    message = json.dumps(event)
+    for connection in manager.active_connections:
+        try:
+            # Usamos call_soon_threadsafe se não estivermos na mesma thread, 
+            # mas aqui assumimos que será chamado via async onde possível.
+            await connection.send_text(message)
+        except:
+            pass
+
 @app.websocket("/ws/status")
 async def websocket_endpoint(websocket: WebSocket):
     await manager.connect(websocket)
     try:
-        # Loop para manter a conexão aberta e enviar atualizações periódicas
+        # Loop passivo: apenas mantém a conexão viva e envia heartbeats
         while True:
-            # Coleta dados atuais
-            from routers.status import analisar_instancias_butt, get_now_playing, get_nowplaying_path
-            from services.guardian_service import guardian_instance
-            
-            # Criamos uma sessão manual para o banco de dados
-            db = SessionLocal()
-            try:
-                player_data = get_now_playing(db)
-            finally:
-                db.close()
-                
-            data = {
-                "player": player_data,
-                "events": guardian_instance.events_list[:10],
-                "timestamp": datetime.now().strftime('%H:%M:%S')
-            }
-            await websocket.send_text(json.dumps(data))
-            await asyncio.sleep(1) # Atualiza a cada 1 segundo (mais responsivo)
+            # Heartbeat para evitar timeout do browser/proxy
+            await websocket.send_text(json.dumps({"type": "heartbeat", "timestamp": datetime.now().isoformat()}))
+            await asyncio.sleep(30) 
     except WebSocketDisconnect:
         manager.disconnect(websocket)
     except Exception as e:
@@ -99,6 +97,22 @@ async def websocket_endpoint(websocket: WebSocket):
         manager.disconnect(websocket)
 
 BASE_PATH = Path(__file__).resolve().parent.parent
+
+@app.get("/api/status/logs/system")
+async def get_system_logs():
+    """Lê as últimas 50 linhas do log do sistema de forma eficiente."""
+    log_file = BASE_PATH / "logs" / "omni_system.log"
+    if not log_file.exists():
+        return {"logs": ["Log file not found."]}
+    
+    try:
+        with open(log_file, "r", encoding="utf-8") as f:
+            # Lendo as últimas 50 linhas
+            lines = f.readlines()
+            return {"logs": [line.strip() for line in lines[-50:]]}
+    except Exception as e:
+        return {"logs": [f"Error reading logs: {str(e)}"]}
+
 FRONTEND_PATH = BASE_PATH / "frontend" / "dist"
 
 Base.metadata.create_all(bind=engine)

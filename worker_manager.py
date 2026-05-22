@@ -99,11 +99,41 @@ class WorkerManager:
             if not worker:
                 raise ValueError(f"Worker desconhecido: {name}")
             result = worker.execute_cycle(**kwargs)
-            return {
+            
+            response_data = {
                 "worker": name,
                 "result": result.to_dict(),
                 "health": worker.health(),
             }
+
+            # Notifica via WebSocket sobre a conclusão do ciclo
+            try:
+                from api.manager import broadcast_event
+                import asyncio
+                
+                event_data = {
+                    "type": "worker_cycle",
+                    "worker": name,
+                    "status": result.status if hasattr(result, "status") else "unknown",
+                    "score": result.score if hasattr(result, "score") else 0,
+                    "metadata": result.metadata if hasattr(result, "metadata") else {},
+                    "timestamp": datetime.now().isoformat()
+                }
+                
+                # Executa o broadcast de forma segura entre threads
+                try:
+                    loop = asyncio.get_event_loop()
+                    if loop.is_running():
+                        asyncio.run_coroutine_threadsafe(broadcast_event(event_data), loop)
+                    else:
+                        loop.run_until_complete(broadcast_event(event_data))
+                except RuntimeError:
+                    # Se não houver loop na thread atual, criamos um temporário
+                    asyncio.run(broadcast_event(event_data))
+            except Exception as broadcast_err:
+                logger.debug(f"Aviso: Não foi possível enviar broadcast (API pode estar offline): {broadcast_err}")
+
+            return response_data
         except Exception as e:
             logger.error(f"Erro crítico no orquestrador para o worker {name}: {e}")
             # Registro persistente de falha crítica no RewardStore
@@ -287,12 +317,16 @@ class WorkerManager:
         )
 
         # 14. Playlist Maintenance (Garantir que blocos existam e estejam atualizados)
-        self.scheduler.add_job(
-            lambda: playlist_engine_instance.auto_gerar_proximos_blocos(),
-            trigger=IntervalTrigger(hours=1),
-            id='worker_playlist_maintenance',
-            replace_existing=True
-        )
+        try:
+            from director.playlist_engine import playlist_engine_instance
+            self.scheduler.add_job(
+                lambda: playlist_engine_instance.auto_gerar_proximos_blocos(),
+                trigger=IntervalTrigger(hours=1),
+                id='worker_playlist_maintenance',
+                replace_existing=True
+            )
+        except ImportError:
+            logger.error("Não foi possível importar playlist_engine_instance para manutenção.")
 
         self.scheduler.start()
         logger.info("Orquestrador iniciado com sucesso dinamicamente.")

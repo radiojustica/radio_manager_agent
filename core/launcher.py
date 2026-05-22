@@ -36,9 +36,9 @@ def run_app() -> None:
     logger.info("Configurando interface gráfica (Tkinter)...")
     try:
         root = tk.Tk()
-        state.SHOW_UI_CALLBACK = lambda: root.after(0, root.deiconify)
+        # Retiramos a janela da tela IMEDIATAMENTE
         root.withdraw()
-        root.after(1000, root.withdraw)
+        state.SHOW_UI_CALLBACK = lambda: root.after(0, root.deiconify)
     except Exception as e:
         logger.error(f"Erro ao criar interface Tkinter: {e}")
         # Se falhar a UI, o core já está rodando. Podemos decidir se morre ou continua.

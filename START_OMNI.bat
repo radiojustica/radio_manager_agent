@@ -12,7 +12,7 @@ echo [1/1] Verificando dependencias e iniciando sistema...
 echo.
 
 :: Tenta rodar o main.py que gerencia a GUI e Elevacao Admin
-python main.py
+start /B pythonw main.py
 
 if %errorlevel% neq 0 (
     echo.
