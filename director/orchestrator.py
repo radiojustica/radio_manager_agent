@@ -90,7 +90,7 @@ class SystemOrchestrator:
         logger = logging.getLogger("OmniCore.Orchestrator")
         logger.info("Logging orquestrado iniciado.")
 
-    def bootstrap(self, force_admin: bool = True, open_browser_if_running: bool = False):
+    def bootstrap(self, force_admin: bool = False, open_browser_if_running: bool = False):
         """Realiza os checks iniciais de sistema (Admin, Instância Única)."""
         import sys
         from core.system import is_admin, verificar_instancia_unica, run_as_admin
