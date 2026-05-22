@@ -3,9 +3,16 @@ Omni Core V2 - Inicializador Principal
 Suporta modo Headless via argumento --headless.
 """
 
+import os
 import sys
-import logging
 from pathlib import Path
+
+# Fixa o diretório de trabalho na pasta do executável para garantir a resolução
+# correta de caminhos relativos (banco de dados, configurações) sob qualquer iniciador (como schtasks).
+if getattr(sys, 'frozen', False):
+    os.chdir(Path(sys.executable).resolve().parent)
+
+import logging
 from director.orchestrator import system_orchestrator
 
 def main():

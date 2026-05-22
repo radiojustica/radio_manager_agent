@@ -46,8 +46,8 @@ def on_reload_config(icon, item):
     logging.info(f"Configurações recarregadas via Tray: {cfg}")
 
 def on_open_dashboard(icon, item):
-    import webbrowser
-    webbrowser.open("http://localhost:8001")
+    from core.system import abrir_no_navegador
+    abrir_no_navegador("http://127.0.0.1:8001")
 
 def on_exit(icon, item):
     from worker_manager import worker_manager_instance

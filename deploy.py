@@ -4,10 +4,14 @@ Deploy Script - Instala e configura Omni Core V2 para execução automática.
 
 import os
 import sys
+import io
 import shutil
 import subprocess
 from pathlib import Path
-import winreg
+
+if sys.platform == 'win32':
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
+    sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace')
 
 BASE_PATH = Path(__file__).resolve().parent
 DIST_PATH = BASE_PATH / "dist"
@@ -25,7 +29,12 @@ def ensure_pyinstaller():
         print("✓ PyInstaller instalado")
 
 def build_exe():
-    """Constrói o EXE."""
+    """Constrói o EXE (pula se já existir)."""
+    exe_path = BASE_PATH / "dist" / "omni_core.exe"
+    if exe_path.exists():
+        print("✓ Usando EXE existente em dist/omni_core.exe")
+        return True
+        
     print("\n🔨 Compilando EXE...")
     result = subprocess.run([sys.executable, str(BASE_PATH / "build.py")], cwd=str(BASE_PATH))
     if result.returncode != 0:
@@ -64,13 +73,12 @@ def copy_files():
             shutil.copytree(src_path, dst_path)
             print(f"  ✓ {dst}/")
 
-def create_scheduled_task():
-    """Cria uma tarefa agendada interativa para rodar como Administrador p001642."""
+def create_scheduled_task(user):
+    """Cria uma tarefa agendada interativa para rodar como Administrador."""
     print("\n⚡ Configurando inicialização interativa (Desktop Visível)...")
     
     task_name = "OmniCore_Admin"
     exe_path = INSTALL_PATH / "omni_core.exe"
-    user = "p001642"
     
     # Para evitar o "Isolamento da Sessão 0":
     # 1. NÃO fornecemos a senha (/rp) no comando, o que força o modo "Executar apenas quando logado".
@@ -114,7 +122,15 @@ def main():
     
     print("✓ Privilégios de Administrador verificados\n")
     
-    # Execução
+    # Obter o usuário interativo via argumento se fornecido
+    user = None
+    for i, arg in enumerate(sys.argv):
+        if arg == "--user" and i + 1 < len(sys.argv):
+            user = sys.argv[i+1]
+            break
+    if not user:
+        user = os.environ.get('USERNAME') or "STREAMING"
+
     ensure_pyinstaller()
     
     if not build_exe():
@@ -122,13 +138,7 @@ def main():
     
     create_install_dir()
     copy_files()
-    create_scheduled_task()
-    
-    try:
-        add_registry_entry()
-    except:
-        pass
-    
+    create_scheduled_task(user)
     print("\n" + "="*40)
     print("✅ DEPLOY CONCLUÍDO COM SUCESSO!")
     print("="*40)

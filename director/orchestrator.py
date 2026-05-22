@@ -108,9 +108,9 @@ class SystemOrchestrator:
         if not verificar_instancia_unica():
             logger.error("[Orchestrator] Outra instância já está em execução. Encerrando.")
             if open_browser_if_running:
-                import webbrowser
+                from core.system import abrir_no_navegador
                 logger.info("[Orchestrator] Abrindo o Dashboard no navegador para a instância ativa...")
-                webbrowser.open("http://localhost:8001")
+                abrir_no_navegador("http://127.0.0.1:8001")
             sys.exit(0)
         
         logger.info("[Orchestrator] Bootstrap concluído com sucesso.")

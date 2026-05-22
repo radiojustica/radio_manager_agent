@@ -56,3 +56,32 @@ def run_as_admin() -> bool:
     except Exception as e:
         print(f"Falha ao solicitar elevação: {e}")
         return False
+
+def abrir_no_navegador(url: str) -> None:
+    """
+    Abre uma URL no navegador padrão do usuário de forma robusta.
+    Em ambientes Windows elevados (Admin), o webbrowser.open padrão frequentemente falha
+    devido a restrições de sandbox/UAC dos navegadores (Chrome/Edge). Usamos o explorer.exe
+    como intermediário para desviar a execução para o contexto do usuário não-elevado.
+    """
+    import logging
+    logger = logging.getLogger("OmniCore.System.Browser")
+    logger.info(f"Solicitação para abrir URL: {url}")
+    
+    if sys.platform == "win32":
+        try:
+            import subprocess
+            # O explorer.exe sabe como despachar links HTTP para o navegador padrão do usuário ativo,
+            # rodando na sessão desktop (não-elevada) dele.
+            subprocess.Popen(["explorer.exe", url])
+            logger.info("URL aberta com sucesso via explorer.exe")
+            return
+        except Exception as e:
+            logger.warning(f"Falha ao abrir via explorer.exe: {e}. Apelando para o webbrowser...")
+
+    try:
+        import webbrowser
+        webbrowser.open(url)
+        logger.info("URL aberta via webbrowser.open")
+    except Exception as e:
+        logger.error(f"Erro ao abrir URL no navegador padrão: {e}")

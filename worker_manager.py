@@ -329,6 +329,13 @@ class WorkerManager:
         except ImportError:
             logger.error("Não foi possível importar playlist_engine_instance para manutenção.")
 
+        # Garante que a API inicie imediatamente no startup
+        try:
+            logger.info("Forçando inicialização imediata do ApiWorker...")
+            self.run_cycle("ApiWorker")
+        except Exception as e:
+            logger.error(f"Erro ao forçar inicialização imediata do ApiWorker: {e}")
+
         self.scheduler.start()
         logger.info("Orquestrador iniciado com sucesso dinamicamente.")
 

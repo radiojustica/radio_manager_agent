@@ -8,7 +8,24 @@ from typing import Any
 
 logger = logging.getLogger("OmniCore.Reward")
 
-DEFAULT_REWARD_STORE_PATH = Path(__file__).resolve().parent.parent / "worker_rewards.json"
+import os
+import sys
+
+DATA_DIR = Path(r"D:\RADIO")
+try:
+    if not DATA_DIR.exists():
+        DATA_DIR.mkdir(parents=True, exist_ok=True)
+    test_file = DATA_DIR / ".write_test"
+    with open(test_file, "w") as f:
+        f.write("test")
+    os.remove(test_file)
+except Exception:
+    if getattr(sys, 'frozen', False):
+        DATA_DIR = Path(os.path.dirname(sys.executable))
+    else:
+        DATA_DIR = Path(__file__).resolve().parent.parent
+
+DEFAULT_REWARD_STORE_PATH = DATA_DIR / "worker_rewards.json"
 
 
 class RewardStore:

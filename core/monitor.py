@@ -107,11 +107,19 @@ class RadioMonitor:
 
     def setup_logging(self):
         """Sets up logging for the monitor agent."""
-        log_dir = "logs"
-        if getattr(sys, 'frozen', False):
-            log_dir = os.path.join(os.path.dirname(sys.executable), "logs")
-            
-        os.makedirs(log_dir, exist_ok=True)
+        log_dir = r"D:\RADIO\LOG ZARARADIO"
+        try:
+            os.makedirs(log_dir, exist_ok=True)
+            # Test writing
+            test_file = os.path.join(log_dir, ".write_test")
+            with open(test_file, "w") as f:
+                f.write("test")
+            os.remove(test_file)
+        except Exception:
+            log_dir = "logs"
+            if getattr(sys, 'frozen', False):
+                log_dir = os.path.join(os.path.dirname(sys.executable), "logs")
+            os.makedirs(log_dir, exist_ok=True)
 
         log_file = os.path.join(log_dir, f"radio_agent_{now_local().strftime('%Y%m%d')}.log")
 

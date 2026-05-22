@@ -153,12 +153,20 @@ def run_api_server():
             f.write(f"{now_local()} - {error_msg}\n")
 
 def wait_for_server(host="127.0.0.1", port=8001, timeout=30):
-    """Aguarda até que o servidor web esteja aceitando conexões."""
+    """Aguarda até que o servidor web esteja aceitando conexões HTTP reais."""
+    import http.client
     start = time.time()
     while time.time() - start < timeout:
         try:
-            with socket.create_connection((host, port), timeout=0.5):
+            conn = http.client.HTTPConnection(host, port, timeout=1.0)
+            conn.request("GET", "/")
+            resp = conn.getresponse()
+            if resp.status in (200, 301, 302, 307, 308, 404):
+                conn.close()
+                time.sleep(1.0)  # Cooldown de estabilização para o navegador
                 return True
+            conn.close()
         except Exception:
-            time.sleep(0.5)
+            pass
+        time.sleep(0.5)
     return False

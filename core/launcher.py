@@ -4,7 +4,7 @@ import threading
 import time
 
 from core import state
-from core.system import is_admin, verificar_instancia_unica, run_as_admin
+from core.system import is_admin, verificar_instancia_unica, run_as_admin, abrir_no_navegador
 from api.manager import run_api_server, wait_for_server
 from services.guardian_service import guardian_instance
 from worker_manager import worker_manager_instance
@@ -73,13 +73,11 @@ def run_app() -> None:
     # 6. Autostart Dashboard
     def open_browser():
         if wait_for_server():
-            import webbrowser
-            logger.info("Abrindo Dashboard no navegador...")
-            webbrowser.open("http://localhost:8001")
+            abrir_no_navegador("http://127.0.0.1:8001")
 
     threading.Thread(target=open_browser, daemon=True).start()
 
-    logger.info("Sistema pronto (GUI). Dashboard em http://localhost:8001")
+    logger.info("Sistema pronto (GUI). Dashboard em http://127.0.0.1:8001")
     root.mainloop()
 
 if __name__ == "__main__":
