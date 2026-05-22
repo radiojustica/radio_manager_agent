@@ -29,14 +29,13 @@ class DailyReportWorker(WorkerBase):
                 violations_count = len(stats.get("last_violations", []))
                 
                 total_score += score
-                total_actions += stats.get("runs", 0)
-                
+                total_actions += stats.get("cycles", 0)
+
                 if worker_name == "GuardianWorker":
                     # Heurística: cada violação no Guardian costuma ser uma correção
                     guardian_fixes = violations_count
-                
-                report_lines.append(f"• *{worker_name}*: {score} pts ({stats.get('runs', 0)} ciclos)")
 
+                report_lines.append(f"• *{worker_name}*: {score} pts ({stats.get('cycles', 0)} ciclos)")
             report_lines.append(f"\n📈 *Resumo Executivo*:")
             report_lines.append(f"• Ações Processadas: {total_actions}")
             report_lines.append(f"• Correções do Guardião: {guardian_fixes}")
