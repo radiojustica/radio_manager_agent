@@ -1,5 +1,5 @@
 import requests
-import xml.etree.ElementTree as ET
+import defusedxml.ElementTree as ET
 import logging
 from typing import Tuple, Optional
 
@@ -18,7 +18,7 @@ class VMixController:
             response = requests.get(self.base_url, timeout=0.5)
             if response.status_code == 200:
                 self.connected = True
-                return ET.fromstring(response.text)
+                return ET.fromstring(response.content)
             self.logger.warning(f"vMix returned HTTP {response.status_code}")
             return None
         except requests.exceptions.ConnectionError:

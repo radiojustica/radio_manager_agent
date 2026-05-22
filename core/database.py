@@ -22,27 +22,22 @@ def init_db():
     """Garante que as tabelas e colunas existam."""
     Base.metadata.create_all(bind=engine)
     
-    # Lógica de migração manual para SQLite (adiciona coluna se não existir)
     import sqlite3
+    # Whitelist explícita — nunca interpolar input externo em DDL
+    ALLOWED_COLUMNS = {
+        "mood": "TEXT",
+        "bpm": "INTEGER",
+        "valence": "REAL",
+        "danceability": "REAL",
+        "quarantine_reason": "TEXT",
+    }
     conn = sqlite3.connect("./core/radio_omni.db")
     cursor = conn.cursor()
-    
-    colunas = [
-        ("mood", "TEXT"),
-        ("bpm", "INTEGER"),
-        ("valence", "REAL"),
-        ("danceability", "REAL"),
-        ("quarantine_reason", "TEXT")
-    ]
-    
-    for nome_col, tipo_col in colunas:
+    for nome_col, tipo_col in ALLOWED_COLUMNS.items():
         try:
             cursor.execute(f"ALTER TABLE musicas ADD COLUMN {nome_col} {tipo_col}")
-            print(f"Coluna '{nome_col}' adicionada com sucesso.")
         except sqlite3.OperationalError:
-            # Coluna já existe ou erro operacional (ignorar)
-            pass
-            
+            pass  # Coluna já existe — comportamento esperado
     conn.commit()
     conn.close()
 

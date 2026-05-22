@@ -21,13 +21,17 @@ wheels/
 .installed.cfg
 *.egg
 
+# Segredos — NUNCA versionar
+.env
+config/gdrive_api_key.txt
+config/settings.json
+
 # Logs
 logs/*.log
 *.log
 
 # Databases
 *.db
-!core/radio_omni.db
 
 # Project Specific
 worker_rewards.json

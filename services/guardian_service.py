@@ -12,8 +12,10 @@ import win32process
 from datetime import datetime
 from typing import Optional
 
-# Import the original monitor logic to preserve all features
+from core.config_loader import get_settings
 from core.monitor import RadioMonitor
+
+logger = logging.getLogger("OmniCore.GuardianService")
 
 class GuardianService(RadioMonitor):
     """
@@ -22,10 +24,7 @@ class GuardianService(RadioMonitor):
     """
     def __init__(self, config_path="config/settings.json"):
         super().__init__(config_path)
-        # Ensure events list is available for the status API
         self.events_list = []
-        
-        # MODO FREEZE: Desativar alertas externos para foco em logs locais
         notifications = self.settings.get("notifications", {})
         if "telegram" in notifications:
             notifications["telegram"]["enabled"] = False
@@ -67,14 +66,20 @@ class GuardianService(RadioMonitor):
         """
         self.log_event("SYSTEM", "Acionando reinicialização programada do ZaraRadio.")
         try:
-            subprocess.run(["taskkill", "/F", "/IM", "ZaraRadio.exe", "/T"], capture_output=True, text=True, timeout=5)
+            subprocess.run(["taskkill", "/F", "/IM", "ZaraRadio.exe", "/T"], capture_output=True, timeout=5)
             time.sleep(2)
-        except: pass
+        except Exception as e:
+            self.log_event("WARNING", f"taskkill falhou: {e}")
 
         playlist = self.get_target_playlist()
         executable = self.settings.get("apps", {}).get("zararadio", {}).get("executable_path", r"D:\ZaraRadio\ZaraRadio.exe")
-        
-        cmd = [executable]
+        from pathlib import Path
+        exe = Path(executable)
+        if not exe.exists():
+            self.log_event("ERROR", f"Executável não encontrado: {exe}")
+            return
+
+        cmd = [str(exe)]
         if os.path.exists(playlist):
             cmd.append(playlist)
             self.log_event("SYSTEM", f"Iniciando Zara com playlist: {os.path.basename(playlist)}")
@@ -82,7 +87,7 @@ class GuardianService(RadioMonitor):
             self.log_event("WARNING", "Playlist do bloco não encontrada para restart.")
 
         try:
-            subprocess.Popen(cmd, shell=False)
+            subprocess.Popen(cmd)
             time.sleep(5)
             self.force_play()
         except Exception as e:
@@ -150,7 +155,9 @@ class GuardianService(RadioMonitor):
             for mod in reversed(modifiers): win32api.keybd_event(vk_map[mod], 0, win32con.KEYEVENTF_KEYUP, 0)
 
             return True
-        except: return False
+        except Exception as e:
+            logger.debug(f"Falha ao enviar comando ao BUTT PID {pid}: {e}")
+            return False
         finally:
             if target_thread:
                 ctypes.windll.user32.AttachThreadInput(curr_thread, target_thread, False)
@@ -163,14 +170,9 @@ class GuardianService(RadioMonitor):
         for task_uri in tasks_to_block:
             self.log_event("BLOCKER", f"Verificando tarefa: {task_uri}")
             try:
-                cmd = ['schtasks', '/Change', '/TN', task_uri, '/Disable']
                 result = subprocess.run(
-                    cmd,
-                    capture_output=True,
-                    text=True,
-                    encoding='cp1252',
-                    errors='replace',
-                    timeout=15
+                    ["schtasks", "/Change", "/TN", task_uri, "/Disable"],
+                    capture_output=True, text=True, encoding="cp1252", errors="replace", timeout=15
                 )
 
                 if result.returncode == 0:

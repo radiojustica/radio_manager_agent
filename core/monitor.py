@@ -1,6 +1,5 @@
 import os
 import time
-import json
 import logging
 import subprocess
 import sys
@@ -9,9 +8,11 @@ import shutil
 import win32gui
 from collections import deque
 from datetime import datetime
+from pathlib import Path
 import psutil
 import pywinauto
 from pywinauto import Desktop
+from core.config_loader import get_settings, reload_settings
 
 # Updated imports to point to scripts/
 from scripts.reboot_blocker import RebootBlocker
@@ -95,24 +96,13 @@ class RadioMonitor:
         self.suspended = False  # Manual suspension flag (e.g. during NDI sessions)
 
     def load_config(self):
-        """Loads configuration from settings.json."""
-        try:
-            with open(self.config_path, 'r', encoding='utf-8') as f:
-                self.settings = json.load(f)
-        except FileNotFoundError:
-            print(f"[CRITICAL] Config file not found: {self.config_path}")
-            self.settings = {}
-        except json.JSONDecodeError as e:
-            print(f"[CRITICAL] Invalid JSON in config file: {e}")
-            self.settings = {}
-        except Exception as e:
-            print(f"[CRITICAL] Error loading config: {e}")
-            self.settings = {}
+        """Loads configuration via config_loader (settings.json + .env)."""
+        self.settings = get_settings()
 
     def reload_config(self):
         """Hot-reloads configuration without restarting the agent."""
         self.logger.info("Reloading configuration from disk...")
-        self.load_config()
+        self.settings = reload_settings()
 
     def setup_logging(self):
         """Sets up logging for the monitor agent."""
@@ -188,7 +178,7 @@ class RadioMonitor:
             reason = "FROZEN (HUNG)" if is_hung else "stopped"
             if is_hung:
                 self.logger.error("ZaraRadio is FROZEN (HUNG). Killing and restarting...")
-                subprocess.run("taskkill /F /IM ZaraRadio.exe /T", shell=True, capture_output=True)
+                subprocess.run(["taskkill", "/F", "/IM", "ZaraRadio.exe", "/T"], capture_output=True, timeout=10)
                 time.sleep(2)
 
             self.logger.info(f"Restarting ZaraRadio (reason: {reason})...")
@@ -222,15 +212,18 @@ class RadioMonitor:
                 else:
                     self.logger.warning("RADIO.py module not available. Skipping emergency playlist generation.")
 
-            executable = zara_set.get("executable_path", "")
-            if not executable:
-                self.logger.error("ZaraRadio executable_path not configured in settings.json!")
+            executable = Path(zara_set.get("executable_path", ""))
+            if not executable.name:
+                self.logger.error("ZaraRadio executable_path não configurado em settings.json!")
+                return
+            if not executable.exists():
+                self.logger.error(f"Executável não encontrado: {executable}")
                 return
 
             if os.path.exists(playlist):
-                subprocess.Popen([executable, playlist])
+                subprocess.Popen([str(executable), playlist])
             else:
-                subprocess.Popen([executable])
+                subprocess.Popen([str(executable)])
 
             time.sleep(7)
             self.trigger_play_on_zara()
@@ -404,12 +397,21 @@ class RadioMonitor:
         forbidden = self.settings.get("monitoring", {}).get("forbidden_tasks", [])
         for task in forbidden:
             try:
-                check_result = subprocess.run(f'schtasks /Query /TN "{task}" /FO LIST', shell=True, capture_output=True, text=True, encoding='latin1')
-                if check_result.returncode != 0: continue
+                check_result = subprocess.run(
+                    ["schtasks", "/Query", "/TN", task, "/FO", "LIST"],
+                    capture_output=True, text=True, encoding="cp1252", errors="replace", timeout=15
+                )
+                if check_result.returncode != 0:
+                    continue
                 self.logger.warning(f"⚠️  Forbidden task '{task}' found! DELETING...")
-                delete_result = subprocess.run(f'schtasks /delete /tn "{task}" /f', shell=True, capture_output=True, text=True, encoding='latin1')
-                if delete_result.returncode == 0: self.log_event("TASK_DELETED", f"Scheduled task '{task}' was deleted.")
-            except Exception as e: self.logger.error(f"Exception while managing task '{task}': {e}")
+                delete_result = subprocess.run(
+                    ["schtasks", "/delete", "/tn", task, "/f"],
+                    capture_output=True, text=True, encoding="cp1252", errors="replace", timeout=15
+                )
+                if delete_result.returncode == 0:
+                    self.log_event("TASK_DELETED", f"Scheduled task '{task}' was deleted.")
+            except Exception as e:
+                self.logger.error(f"Exception while managing task '{task}': {e}")
 
     def run_cycle(self):
         self.logger.info("--- Monitoring Cycle START ---")
