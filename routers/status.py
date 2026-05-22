@@ -245,3 +245,31 @@ def get_bulletins_status():
 def sync_bulletins():
     """Dispara a sincronização manual dos boletins via GDrive."""
     return bulletin_syncer.sync()
+
+@router.get("/logs/system")
+def get_system_logs(lines: int = 50):
+    """Retorna as últimas N linhas do log do sistema (omni_system.log)."""
+    log_path = r"D:\RADIO\LOG ZARARADIO\omni_system.log"
+    if not os.path.exists(log_path):
+        return {"error": "Arquivo de log não encontrado", "path": log_path}
+    
+    try:
+        # Usa um buffer para ler o final do arquivo de forma eficiente
+        with open(log_path, "rb") as f:
+            f.seek(0, os.SEEK_END)
+            size = f.tell()
+            buffer_size = 1024 * 64 # 64KB
+            if size < buffer_size:
+                buffer_size = size
+                
+            f.seek(-buffer_size, os.SEEK_END)
+            content = f.read().decode("utf-8", errors="replace")
+            last_lines = content.splitlines()[-lines:]
+            
+            return {
+                "path": log_path,
+                "lines": last_lines,
+                "total_size_mb": round(size / (1024*1024), 2)
+            }
+    except Exception as e:
+        return {"error": str(e)}

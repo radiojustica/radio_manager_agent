@@ -88,8 +88,70 @@ class RewardStore:
             worker_data = self.data.get("workers", {}).get(worker_name, {})
             # Tenta usar o histórico persistente por worker (rolling log)
             if "history" in worker_data:
-                return worker_data["history"][-limit:]
-            # Fallback para scan global (migração)
-            return [h for h in self.data.get("history", []) if h.get("worker") == worker_name][-limit:]
+                records = worker_data["history"][-limit:]
+            else:
+                # Fallback para scan global (migração)
+                records = [h for h in self.data.get("history", []) if h.get("worker") == worker_name][-limit:]
+        else:
+            records = self.data.get("history", [])[-limit:]
+            
+        # Adiciona descrições amigáveis
+        for r in records:
+            r["description"] = self.generate_description(r)
+        return records
+
+    @staticmethod
+    def generate_description(record: dict[str, Any]) -> str:
+        """Gera uma descrição legível para humanos baseada no worker e metadados."""
+        worker = record.get("worker")
+        metadata = record.get("metadata", {})
+        violations = record.get("violations", [])
+        score = record.get("score", 0)
         
-        return self.data.get("history", [])[-limit:]
+        if worker == "GuardianWorker":
+            procs = metadata.get("processes", {})
+            zara = procs.get("zararadio", "Desconhecido")
+            butt = procs.get("butt", "Desconhecido")
+            silence = metadata.get("silence_seconds", 0)
+            desc = f"Monitoramento: ZaraRadio ({zara}), BUTT ({butt}). Silêncio detectado: {silence}s."
+            if violations:
+                desc += f" Ocorrências: {', '.join(violations)}"
+            return desc
+        
+        if worker == "ButtWorker":
+            recon = metadata.get("reconnected", 0)
+            total = metadata.get("total_instances", 0)
+            if recon > 0:
+                return f"Reconexão BUTT: {recon} de {total} instâncias foram restauradas."
+            return f"Status BUTT estável: {total} instâncias monitoradas."
+        
+        if worker == "CuradoriaWorker":
+            msg = metadata.get("message", "")
+            added = metadata.get("added_count", 0)
+            if added > 0:
+                return f"Curadoria: {added} novas faixas adicionadas ao acervo."
+            return msg or "Ciclo de curadoria: Nenhuma alteração necessária."
+
+        if worker == "DownloaderWorker":
+            success = metadata.get("success_count", 0)
+            failed = metadata.get("failed_count", 0)
+            if success > 0 or failed > 0:
+                return f"Downloads: {success} concluídos, {failed} falhas."
+            return "Downloads: Fila vazia."
+            
+        if worker == "WeatherWorker":
+            temp = metadata.get("temp", "N/A")
+            cond = metadata.get("condition", "N/A")
+            return f"Clima atualizado: {temp}C, {cond}."
+
+        # Genérico para workers não mapeados
+        if score < 0:
+            msg = f"Worker {worker} reportou falhas"
+            if violations:
+                msg += f" ({', '.join(violations)})"
+            return msg + "."
+            
+        if violations:
+            return f"Ação de {worker} concluída com avisos: {', '.join(violations)}."
+        
+        return f"O worker {worker} completou sua tarefa com sucesso (Score: {score})."

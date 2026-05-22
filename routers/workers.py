@@ -24,6 +24,20 @@ def get_workers_history(name: str | None = None, limit: int = 50) -> list[Dict[s
     """Retorna o histórico de execução do worker ou histórico global."""
     return worker_manager_instance.reward_store.history(worker_name=name, limit=limit)
 
+@router.get("/history/descriptive")
+def get_workers_history_descriptive(name: str | None = None, limit: int = 50) -> list[Dict[str, Any]]:
+    """Retorna um histórico simplificado e descritivo das ações dos workers."""
+    history = worker_manager_instance.reward_store.history(worker_name=name, limit=limit)
+    return [
+        {
+            "timestamp": h.get("timestamp"),
+            "worker": h.get("worker"),
+            "description": h.get("description"),
+            "score": h.get("score")
+        }
+        for h in history
+    ]
+
 @router.post("/{name}/run")
 def run_worker_manually(name: str):
     """
