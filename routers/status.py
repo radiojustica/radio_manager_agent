@@ -14,11 +14,13 @@ import psutil
 import win32gui
 import win32process
 from scripts.bulletin_sync import BulletinSync
+from scripts.njud_sync import NjudSync
 from services.acervo_sync import sync_acervo
 
 router = APIRouter(prefix="/api/status", tags=["Telemetria"])
 
 bulletin_syncer = BulletinSync()
+njud_syncer = NjudSync()
 
 CACHE_STATUS = {"timestamp": 0, "payload": None}
 CACHE_BUTT = {"timestamp": 0, "payload": None}
@@ -250,16 +252,51 @@ def get_bulletins_status():
 
 @router.post("/bulletins/sync")
 @router.post("/bulletins/sync/")
-def sync_bulletins():
+def sync_bulletins(db: Session = Depends(get_db)):
     """Dispara a sincronização manual dos boletins via GDrive."""
-    return bulletin_syncer.sync()
+    res = bulletin_syncer.sync()
+    from services.autopilot_service import autopilot_service
+    if res.get("success", False):
+        msg = f"Sincronização manual de boletins concluída. {res.get('updated', 0)} atualizações."
+        autopilot_service.log_action(db, "SYNC_BULLETIN", msg, success=True)
+    else:
+        msg = f"Falha na sincronização manual de boletins: {res.get('error', 'Erro desconhecido')}"
+        autopilot_service.log_action(db, "SYNC_BULLETIN", msg, success=False)
+    return res
 
 @router.post("/acervo/sync")
 @router.post("/acervo/sync/")
-def sync_acervo_endpoint():
+def sync_acervo_endpoint(db: Session = Depends(get_db)):
     """Sincroniza o acervo de músicas a partir da pasta configurada."""
-    result = sync_acervo()
-    return result
+    res = sync_acervo()
+    from services.autopilot_service import autopilot_service
+    if "error" in res:
+        msg = f"Falha na sincronização manual do acervo: {res['error']}"
+        autopilot_service.log_action(db, "SYNC_ACERVO", msg, success=False)
+    else:
+        msg = f"Sincronização manual do acervo concluída. {res.get('inserted', 0)} faixas inseridas, {res.get('updated', 0)} atualizadas."
+        autopilot_service.log_action(db, "SYNC_ACERVO", msg, success=True)
+    return res
+
+@router.get("/njud/status")
+@router.get("/njud/status/")
+def get_njud_status():
+    """Retorna o status dos jornais locais (NJUD)."""
+    return njud_syncer.get_status()
+
+@router.post("/njud/sync")
+@router.post("/njud/sync/")
+def sync_njud(db: Session = Depends(get_db)):
+    """Dispara a sincronização manual do NJUD (Jornais) via GDrive."""
+    res = njud_syncer.sync()
+    from services.autopilot_service import autopilot_service
+    if res.get("success", False):
+        msg = f"Sincronização manual do NJUD (Jornais) concluída. {res.get('updated', 0)} atualizações."
+        autopilot_service.log_action(db, "SYNC_NJUD", msg, success=True)
+    else:
+        msg = f"Falha na sincronização manual do NJUD (Jornais): {res.get('error', 'Erro desconhecido')}"
+        autopilot_service.log_action(db, "SYNC_NJUD", msg, success=False)
+    return res
 
 @router.get("/logs/system")
 def get_system_logs(lines: int = 50):

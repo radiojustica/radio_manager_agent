@@ -44,6 +44,22 @@ class AutopilotService:
         db.add(log_entry)
         db.commit()
         logger.info(f"[AUTOPILOT ACTION] {action_type} - {message} (Success: {success})")
+        
+        # Limita logs no banco para evitar acúmulo ad eternum (mantém no máximo 100)
+        try:
+            total_logs = db.query(AutopilotLog).count()
+            if total_logs > 100:
+                cutoff = db.query(AutopilotLog.timestamp)\
+                    .order_by(AutopilotLog.timestamp.desc())\
+                    .offset(100)\
+                    .limit(1)\
+                    .scalar()
+                if cutoff:
+                    db.query(AutopilotLog).filter(AutopilotLog.timestamp <= cutoff).delete()
+                    db.commit()
+        except Exception as e:
+            logger.warning(f"Erro ao limpar logs antigos do piloto automático: {e}")
+            
         return log_entry
 
     @staticmethod

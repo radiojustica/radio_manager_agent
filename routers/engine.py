@@ -129,20 +129,28 @@ def get_regras():
 # ---------------------------------------------------------------------------
 
 @router.post("/gerar-24h")
-def trigger_24h(mood: str = "Ensolarado"):
+def trigger_24h(mood: str = "Ensolarado", db: Session = Depends(get_db)):
     """Gera manualmente a programação completa de 24h (12 blocos de 2h)."""
     ok = playlist_engine_instance.gerar_programacao_diaria(mood)
+    from services.autopilot_service import autopilot_service
     if ok:
+        autopilot_service.log_action(db, "PLAYLIST_GEN", f"Geração manual da programação diária 24h concluída com sucesso (Mood: {mood}).", success=True)
         return {"status": "success", "message": f"Programação 24h gerada (Mood: {mood})."}
+    else:
+        autopilot_service.log_action(db, "PLAYLIST_GEN", f"Falha ao gerar programação diária 24h manualmente (Mood: {mood}).", success=False)
     raise HTTPException(status_code=500, detail="Falha ao gerar programação 24h.")
 
 
 @router.post("/gerar-extra")
-def trigger_extra(mood: str = "Ensolarado"):
+def trigger_extra(mood: str = "Ensolarado", db: Session = Depends(get_db)):
     """Gera manualmente o Bloco Extra para cobrir o horário restante do bloco atual."""
     ok = playlist_engine_instance.gerar_bloco_extra(mood)
+    from services.autopilot_service import autopilot_service
     if ok:
+        autopilot_service.log_action(db, "PLAYLIST_GEN", f"Bloco extra de programação gerado manualmente (Mood: {mood}).", success=True)
         return {"status": "success", "message": "Bloco Extra gerado com sucesso."}
+    else:
+        autopilot_service.log_action(db, "PLAYLIST_GEN", f"Falha ao gerar bloco extra de programação manualmente (Mood: {mood}).", success=False)
     raise HTTPException(status_code=500, detail="Falha ao gerar Bloco Extra.")
 
 

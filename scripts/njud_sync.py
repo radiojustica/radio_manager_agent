@@ -138,3 +138,23 @@ class NjudSync:
         except Exception as e:
             logger.error(f"Erro no espelhamento do NJUD: {e}")
             return {"success": False, "error": str(e)}
+
+    def get_status(self):
+        status = {}
+        for day in ["SEGUNDA", "TERCA", "QUARTA", "QUINTA", "SEXTA"]:
+            day_path = os.path.join(self.target_local_dir, day)
+            if not os.path.exists(day_path):
+                status[day] = {"count": 0, "dates": []}
+                continue
+            files = [f for f in os.listdir(day_path) if f.lower().endswith(".mp3")]
+            dates = set()
+            for f in files:
+                filepath = os.path.join(day_path, f)
+                try:
+                    mtime = os.path.getmtime(filepath)
+                    dt = datetime.fromtimestamp(mtime)
+                    dates.add(dt.strftime("%d/%m/%Y"))
+                except:
+                    pass
+            status[day] = {"count": len(files), "dates": sorted(list(dates), reverse=True)}
+        return status

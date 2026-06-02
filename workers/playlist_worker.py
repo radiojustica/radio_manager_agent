@@ -204,6 +204,18 @@ class PlaylistWorker(SubAgentBase):
                 "generated_at": now_utc().isoformat(),
                 "blocos": metadata_blocos
             }
+            
+            # Registrar no AutopilotLog
+            from services.autopilot_service import autopilot_service
+            db = SessionLocal()
+            try:
+                msg = f"Geração automática de programação diária 24h concluída. {sucessos} blocos com sucesso, {erros} erros."
+                autopilot_service.log_action(db, "PLAYLIST_GEN", msg, success=(erros == 0))
+            except Exception as le:
+                logger.error(f"Erro ao registrar log de geração automática no AutopilotLog: {le}")
+            finally:
+                db.close()
+                
             return WorkerResult(status=status, score=score, violations=violations, metadata=metadata)
         else:
             # Geração de um bloco de 2h individual

@@ -20,17 +20,33 @@ class NjudWorker(WorkerBase):
             "updated_count": 0
         }
         
+        from core.database import SessionLocal
+        from services.autopilot_service import autopilot_service
+        db = SessionLocal()
+        
         try:
             njud_res = self.syncer.sync()
             metadata["njud_sync"] = njud_res
             if not njud_res.get("success", False):
-                violations.append(f"NJUD: {njud_res.get('error', 'Erro desconhecido')}")
+                err_msg = njud_res.get('error', 'Erro desconhecido')
+                violations.append(f"NJUD: {err_msg}")
+                autopilot_service.log_action(db, "SYNC_NJUD", f"Falha na sincronização automática de jornais (NJUD): {err_msg}", success=False)
             else:
-                metadata["updated_count"] += njud_res.get("updated", 0)
+                updated = njud_res.get("updated", 0)
+                metadata["updated_count"] += updated
+                msg = f"Sincronização automática do NJUD (Jornais) concluída. {updated} atualizações."
+                autopilot_service.log_action(db, "SYNC_NJUD", msg, success=True)
         except Exception as e:
             self.log_error(e, "NJUD_SYNC_FAILED")
             violations.append(f"NJUD: {str(e)}")
+            try:
+                autopilot_service.log_action(db, "SYNC_NJUD", f"Erro crítico na sincronização automática de jornais (NJUD): {str(e)}", success=False)
+            except Exception as le:
+                logger.error(f"Erro ao registrar log de erro no NjudWorker: {le}")
+        finally:
+            db.close()
 
+         # Corrigido indentação
         if violations:
             return WorkerResult(
                 status="error",

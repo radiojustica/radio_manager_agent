@@ -57,6 +57,10 @@ export default function AutopilotCard() {
       case 'PROCESS_RESTART': return 'badge-restart';
       case 'SILENCE_RECOVERY': return 'badge-silence';
       case 'BUTT_RECONNECT': return 'badge-butt';
+      case 'PLAYLIST_GEN': return 'badge-playlist';
+      case 'SYNC_ACERVO': return 'badge-acervo';
+      case 'SYNC_BULLETIN': return 'badge-bulletin';
+      case 'SYNC_NJUD': return 'badge-njud';
       default: return 'badge-system';
     }
   };
@@ -163,16 +167,7 @@ export default function AutopilotCard() {
                   }}
                 >
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2px' }}>
-                    <span
-                      style={{
-                        fontWeight: 700,
-                        fontSize: '0.56rem',
-                        padding: '1px 4px',
-                        borderRadius: '2px',
-                        background: 'rgba(255,255,255,0.05)',
-                        color: 'var(--text-color)'
-                      }}
-                    >
+                    <span className={`badge-action ${getBadgeClass(action.action_type)}`}>
                       {action.action_type}
                     </span>
                     <span style={{ fontSize: '0.6rem', color: 'var(--text-muted)', fontWeight: 600 }}>

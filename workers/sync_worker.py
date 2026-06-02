@@ -114,11 +114,21 @@ class SyncWorker(WorkerBase):
                 "total_banco": len(caminhos_fisicos)
             }
 
+            # Registrar no AutopilotLog
+            from services.autopilot_service import autopilot_service
+            msg = f"Sincronização automática de acervo concluída. {novos} faixas novas, {removidos} removidas, {mantidos} mantidas."
+            autopilot_service.log_action(db, "SYNC_ACERVO", msg, success=True)
+
             return WorkerResult(status="success", score=score, violations=violations, metadata=metadata)
 
         except Exception as e:
             db.rollback()
             logger.error(f"Erro crítico no SyncWorker: {e}")
+            try:
+                from services.autopilot_service import autopilot_service
+                autopilot_service.log_action(db, "SYNC_ACERVO", f"Falha na sincronização automática de acervo: {e}", success=False)
+            except Exception as le:
+                logger.error(f"Erro ao registrar log de erro no SyncWorker: {le}")
             return WorkerResult(status="error", score=-10, violations=[str(e)], metadata={"error": str(e)})
         finally:
             db.close()
