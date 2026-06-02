@@ -332,4 +332,44 @@ def listar_quarentena(db: Session = Depends(get_db)):
     quarentenadas = db.query(Musica).filter(Musica.redflag == True).all()
     return [m.to_dict() for m in quarentenadas]
 
+@router.post("/quarantine/{musica_id}/release")
+def liberar_quarentena(musica_id: int, db: Session = Depends(get_db)):
+    """
+    Remove uma música da quarentena, movendo o arquivo físico de volta e limpando o flag.
+    """
+    musica = db.query(Musica).filter(Musica.id == musica_id).first()
+    if not musica:
+        raise HTTPException(status_code=404, detail="Música não encontrada")
+        
+    caminho_orig = musica.caminho
+    if os.path.exists(caminho_orig):
+        PASTA_MUSICAS = r"D:\RADIO\MUSICAS"
+        if musica.tema_especial and musica.tema_especial.strip().lower() == "junho":
+            dest_dir = os.path.join(PASTA_MUSICAS, "ESPECIAL_JUNHO")
+        else:
+            dest_dir = os.path.join(PASTA_MUSICAS, "NACIONAL")
+            
+        if not os.path.exists(dest_dir):
+            os.makedirs(dest_dir)
+            
+        filename = os.path.basename(caminho_orig)
+        caminho_dest = os.path.join(dest_dir, filename)
+        
+        if os.path.normpath(caminho_orig) != os.path.normpath(caminho_dest):
+            try:
+                if os.path.exists(caminho_dest):
+                    os.remove(caminho_dest)
+                shutil.move(caminho_orig, caminho_dest)
+                musica.caminho = caminho_dest
+            except Exception as e:
+                raise HTTPException(status_code=500, detail=f"Erro ao mover arquivo de volta: {e}")
+                
+    musica.redflag = False
+    musica.quarantine_reason = None
+    musica.auditado_acustica = True
+    db.commit()
+    
+    return {"status": "success", "musica": musica.to_dict()}
+
+
 

@@ -9,6 +9,7 @@ import ConfigPage from './components/ConfigPage';
 import AcquisitionPage from './components/AcquisitionPage';
 import AutopilotCard from './components/AutopilotCard';
 import SchedulePage from './components/SchedulePage';
+import QuarantineCard from './components/QuarantineCard';
 
 /* ── ICONS ─────────────────────────────────────────── */
 const Icon = {
@@ -192,6 +193,7 @@ function InnerApp() {
             <div className="col-stack">
               <NowPlayingCard />
               <BulletinCard />
+              <QuarantineCard />
 
               {/* Stats trio */}
               <div className="stats-trio">
