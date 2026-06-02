@@ -111,7 +111,13 @@ class BulletinSync:
                         os.makedirs(temp_maneuver)
                         
                         for f_path in data['files']:
-                            shutil.copy2(f_path, os.path.join(temp_maneuver, os.path.basename(f_path)))
+                            fname = os.path.basename(f_path)
+                            info = self.parse_bulletin_info(fname)
+                            if info:
+                                target_name = f"BOLETIM_B{info['b_num']}.mp3"
+                            else:
+                                target_name = fname
+                            shutil.copy2(f_path, os.path.join(temp_maneuver, target_name))
                         
                         if os.listdir(temp_maneuver):
                             # Limpa destino
@@ -149,8 +155,13 @@ class BulletinSync:
         dates = []
         if not os.path.exists(directory): return []
         for f in os.listdir(directory):
-            info = self.parse_bulletin_info(f)
-            if info: dates.append(info['date'])
+            if f.lower().endswith(".mp3"):
+                try:
+                    mtime = os.path.getmtime(os.path.join(directory, f))
+                    dt = datetime.fromtimestamp(mtime)
+                    dates.append(dt)
+                except:
+                    pass
         return dates
 
     def get_status(self):
@@ -163,8 +174,13 @@ class BulletinSync:
             files = [f for f in os.listdir(day_path) if f.lower().endswith(".mp3")]
             dates = set()
             for f in files:
-                info = self.parse_bulletin_info(f)
-                if info: dates.add(info['date'].strftime("%d/%m/%Y"))
+                filepath = os.path.join(day_path, f)
+                try:
+                    mtime = os.path.getmtime(filepath)
+                    dt = datetime.fromtimestamp(mtime)
+                    dates.add(dt.strftime("%d/%m/%Y"))
+                except:
+                    pass
             status[day] = {"count": len(files), "dates": sorted(list(dates), reverse=True)}
         return status
 

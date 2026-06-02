@@ -101,7 +101,7 @@ class NjudSync:
             # 2. Substituição atômica local
             for day, info in newest_files_by_day.items():
                 target_dir = os.path.join(self.target_local_dir, day)
-                target_file = os.path.join(target_dir, info["filename"])
+                target_file = os.path.join(target_dir, "JORNAL_NJUD.mp3")
                 
                 # Verifica se o arquivo final já existe no destino
                 if os.path.exists(target_file):

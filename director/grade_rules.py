@@ -580,7 +580,7 @@ def montar_bloco(
                 
                 # Adapta dinamicamente a pasta do NJUD para buscar o jornal local sincronizado por dia da semana
                 if item == "NOTICIAS_DO_JUDICIARIO":
-                    pasta_prog = os.path.join(r"D:\SERVIDOR\PROGRAMAS\NOTICIAS_DO_JUDICIARIO", dia_nome.upper())
+                    pasta_prog = os.path.join(r"D:\SERVIDOR\PROGRAMAS\JORNAL", dia_nome.upper())
                 
                 caminho_item = obter_programa_mais_recente(pasta_prog)
                 duracao_estimada = prog_cfg.get("duracao_minutos", 5) * 60
