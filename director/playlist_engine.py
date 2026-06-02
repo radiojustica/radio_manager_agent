@@ -18,12 +18,14 @@ from datetime import datetime, timedelta
 from core.time_utils import now_local, now_utc
 
 from sqlalchemy.orm import Session
+from sqlalchemy import or_, not_, func
 from core.database import SessionLocal
 from core.models import Musica
 from services.guardian_service import guardian_instance
 from director import grade_rules as GR
 from director.actor_critic import actor_critic_instance
 from services import weather_service
+from services.acervo_sync import sync_acervo
 
 logger = logging.getLogger("OmniCore.PlaylistEngine")
 
@@ -46,11 +48,42 @@ class PlaylistEngine:
     @staticmethod
     def _buscar_acervo(db: Session, estilos: list[str]) -> list:
         """Retorna músicas válidas priorizando as menos tocadas e mais antigas (Fair Rotation)."""
+        mes_atual = now_local().month
+        
+        # Mapa de sazonalidade: quais meses cada tag tem permissão de tocar
+        mapa_sazonal = {
+            "verao_reis": [1, 12],
+            "carnaval": [2, 3],
+            "mulheres": [3],
+            "choro_instrumental": [4],
+            "cultura_popular": [5],
+            "junho": [6],
+            "jazz_bossa": [7],
+            "cultura_potiguar": [8, 12],
+            "nova_cena": [9],
+            "nordestino": [10],
+            "consciencia_negra": [11],
+            "natal": [12]
+        }
+        
+        exclusoes_sazonais = []
+        for tag, meses_permitidos in mapa_sazonal.items():
+            if mes_atual not in meses_permitidos:
+                # Se o mês atual não permite a tag, bloqueamos qualquer música que tenha essa tag explicitamente
+                exclusoes_sazonais.append(or_(Musica.tema_especial != tag, Musica.tema_especial == None))
+                
+        # Legado: exclusão por caminho para proteger as pastas físicas caso o usuário continue arrastando arquivos
+        if mes_atual != 12:
+            exclusoes_sazonais.append(not_(func.lower(Musica.caminho).contains("especial_natal")))
+        if mes_atual != 6:
+            exclusoes_sazonais.append(not_(func.lower(Musica.caminho).contains("especial_junho")))
+
         candidatas = (
             db.query(Musica)
             .filter(
                 Musica.redflag == False,
                 Musica.estilo.in_(estilos),
+                *exclusoes_sazonais
             )
             .order_by(
                 Musica.vezes_tocada.asc(),        # 1. Menos executadas primeiro
@@ -59,14 +92,14 @@ class PlaylistEngine:
             .all()
         )
         if not candidatas:
-            # Fallback: qualquer música sem redflag
+            # Fallback: qualquer música sem redflag e respeitando a sazonalidade
             logger.warning(
                 f"[Engine] Nenhuma música encontrada para estilos {estilos}. "
                 "Usando fallback (todos os estilos)."
             )
             candidatas = (
                 db.query(Musica)
-                .filter(Musica.redflag == False)
+                .filter(Musica.redflag == False, *exclusoes_sazonais)
                 .order_by(Musica.vezes_tocada.asc(), Musica.ultima_reproducao.asc())
                 .all()
             )
@@ -146,10 +179,21 @@ class PlaylistEngine:
                 aprovado = music_director_instance.approve_or_redo(caminho_m3u, hora_inicio)
                 
                 if aprovado:
+                    # Atualiza o histórico de reproduções para rotatividade justa (Fair Rotation)
+                    selecionadas = [m for m in acervo if m.caminho in linhas]
+                    self._atualizar_reproducao(db, selecionadas)
+                    
                     guardian_instance.log_event(
                         "ENGINE",
                         f"Playlist {nome_arquivo} aprovada e salva."
                     )
+                    # Envia alerta imediato ao WhatsApp (agora corretamente importado ou ignorado)
+                    try:
+                        from services.notification_service import send_whatsapp_alert
+                        send_whatsapp_alert(f"Bloco {hora_inicio:02d}H gerado e aprovado.")
+                    except Exception as e:
+                        logger.debug(f"[Engine] Erro ao notificar WhatsApp: {e}")
+                        
                 return aprovado
             return False
 
@@ -168,6 +212,10 @@ class PlaylistEngine:
         Returns:
             True se todos os blocos foram gerados com sucesso.
         """
+        # Sincroniza acervo antes de iniciar a geração
+        sync_result = sync_acervo()
+        logger.info(f"[Engine] Resultado da sincronização do acervo: {sync_result}")
+
         # Sincroniza boletins do GDrive antes de começar
         self._sync_bulletins_before_gen()
         
@@ -285,7 +333,10 @@ class PlaylistEngine:
                 )
                 if precisa:
                     logger.info(f"[Engine.auto] Gerando bloco {hora:02d}H")
-                    self.gerar_playlist_bloco(hora)
+                    success = self.gerar_playlist_bloco(hora)
+                    if success:
+                        from services.guardian_service import guardian_instance
+                        guardian_instance.log_event("PLAYLIST_GENERATED", f"Bloco {hora:02d}H gerado.")
             except Exception as e:
                 logger.error(f"[Engine.auto] Erro no bloco {hora:02d}H: {e}")
 

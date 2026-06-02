@@ -5,15 +5,29 @@ from core.time_utils import now_local
 
 logger = logging.getLogger("OmniCore.WeatherService")
 
+import time
+
 # Coordenadas de Natal/RN (Base de operação)
 LATITUDE = -5.79448
 LONGITUDE = -35.211
+
+# Cache em memória para evitar rate limit na API de clima
+_cached_mood = None
+_last_check = 0.0
+CACHE_DURATION_SECONDS = 900  # 15 minutos
 
 def get_natal_weather_mood() -> str:
     """
     Consulta a API Open-Meteo para obter o clima real de Natal/RN.
     Mapeia o weathercode para os moods da rádio: Ensolarado, Nublado, Chuvoso.
+    Utiliza cache local para não sobrecarregar a API a cada requisição de telemetria.
     """
+    global _cached_mood, _last_check
+    current_time = time.time()
+
+    if _cached_mood is not None and (current_time - _last_check) < CACHE_DURATION_SECONDS:
+        return _cached_mood
+
     url = "https://api.open-meteo.com/v1/forecast"
     params = {
         "latitude": LATITUDE,
@@ -32,26 +46,26 @@ def get_natal_weather_mood() -> str:
             weather_code = data["current_weather"].get("weathercode", 0)
             logger.info(f"[WeatherService] WeatherCode recebido: {weather_code}")
             
-            # Mapeamento Open-Meteo Weather Codes
-            # 0: Céu limpo
-            # 1, 2, 3: Parcialmente nublado, nublado
-            # 45, 48: Nevoeiro
-            # 51, 53, 55: Garoa
-            # 61, 63, 65: Chuva
-            # 71, 73, 75: Neve
-            # 80, 81, 82: Pancadas de chuva
-            # 95, 96, 99: Tempestade
-            
             if weather_code == 0:
-                return "Ensolarado"
+                mood = "Ensolarado"
             elif weather_code in [1, 2, 3, 45, 48]:
-                return "Nublado"
+                mood = "Nublado"
             else:
-                return "Chuvoso"
+                mood = "Chuvoso"
+            
+            _cached_mood = mood
+            _last_check = current_time
+            return mood
 
     except Exception as e:
         logger.warning(f"[WeatherService] Falha ao consultar API de clima ({e}). Usando heurística local.")
+        # Cacheia o fallback por 60 segundos em caso de falha para evitar spam na API se ela estiver com problemas
+        fallback_mood = get_fallback_mood()
+        _cached_mood = fallback_mood
+        _last_check = current_time - (CACHE_DURATION_SECONDS - 60)
+        return fallback_mood
     
+    # Se de alguma forma chegar aqui sem retornar
     return get_fallback_mood()
 
 def get_fallback_mood() -> str:

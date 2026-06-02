@@ -1,104 +1,107 @@
-import { useEffect, useState, useRef } from 'react';
+import { useState } from 'react';
+import { useWsData } from '../context/WebSocketContext';
 import './Telemetria.css';
 
+const EVENT_ICONS = {
+  RESTART:    '🔄',
+  QUARANTINE: '☣️',
+  WARNING:    '⚠️',
+  LIVE_START: '🎙️',
+  LIVE_END:   '📴',
+  TASK_DELETED: '🗑️',
+  DEFAULT:    '◆',
+};
+
 export default function NowPlayingCard() {
-  const [data, setData] = useState({ title: 'Carregando...', status: 'stopped', energy: 0, butt_ativos: 0, butt_count: 3 });
-  const [isReconnecting, setIsReconnecting] = useState(false);
+  const { player, connected } = useWsData();
+  const [reconnecting, setReconnecting] = useState(false);
+  const [reconnectMsg, setReconnectMsg] = useState(null);
 
-  useEffect(() => {
-    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const ws = new WebSocket(`${protocol}//${window.location.host}/ws/status`);
+  const { title = '—', status = 'stopped', energy = 0, butt_ativos = 0, butt_count = 3, curadoria_status = 'IDLE' } = player;
 
-    ws.onmessage = (event) => {
-      try {
-        const json = JSON.parse(event.data);
-        if (json && json.player && typeof json.player === 'object') {
-          setData(prev => ({
-            ...prev,
-            ...json.player
-          }));
-        }
-      } catch (err) {
-        console.error("Falha ao ler dados de telemetria do WebSocket:", err);
-      }
-    };
+  const energyLevel = Math.round(energy * 5);
+  const isLong = title.length > 40;
 
-    ws.onerror = (err) => console.error("WebSocket Error:", err);
-    return () => ws.close();
-  }, []);
-
-  const handleForceReconnect = async () => {
-    setIsReconnecting(true);
+  const handleReconnect = async () => {
+    setReconnecting(true);
+    setReconnectMsg(null);
     try {
-      const res = await fetch('/api/butt/reconnect', { method: 'POST' });
+      const res = await fetch('/api/status/butt/reconnect', { method: 'POST' });
       const json = await res.json();
-      if (json.success) {
-        alert(`✅ Reconexão forçada: ${json.reconnected} BUTTs acionados.`);
-      }
-    } catch (e) {
-      alert('Erro de conexão com o backend.');
+      setReconnectMsg(json.success ? `✓ ${json.reconnected} instâncias acionadas` : `✗ ${json.error || 'Falha'}`);
+    } catch {
+      setReconnectMsg('✗ Sem resposta do backend');
     } finally {
-      setIsReconnecting(false);
+      setReconnecting(false);
+      setTimeout(() => setReconnectMsg(null), 4000);
     }
   };
 
-  const energyLevel = Math.round(data.energy * 5);
-  const segments = [1, 2, 3, 4, 5];
+  const statusLabel = status === 'playing' ? 'LIVE' : status === 'frozen' ? 'CONGELADO' : 'PARADO';
 
   return (
-    <div className={`premium-card now-playing-card ${data.status}`}>
-      <div className="card-header-flex">
-        <h3 className="module-tag">NO AR AGORA</h3>
-        <div className={`status-pill ${data.status}`}>
-           {data.status === 'playing' ? 'LIVE' : data.status === 'frozen' ? 'FROZEN' : 'STOPPED'}
-        </div>
+    <div className={`card now-playing-card ${status}`}>
+      <div className="status-ring" />
+
+      <div className="np-header">
+        <span className="np-module-label">NO AR AGORA</span>
+        <span className={`status-badge ${status}`}>{statusLabel}</span>
       </div>
 
-      <div className="track-info">
-        <div className="track-title-container">
-          <h2 className="track-title" title={data.title}>{data.title}</h2>
+      <div className="np-track-block">
+        <div className="np-title-wrap">
+          <h2 className={`np-title ${isLong ? 'long' : ''}`} title={title}>
+            {title}
+          </h2>
         </div>
-        <p className="track-meta">SINCRONIA TEMPORAL 24/7 • ZARARADIO ENGINE</p>
+        <p className="np-subtitle">SINCRONIA TEMPORAL 24/7 • ZARARADIO ENGINE</p>
       </div>
-      
-      <div className="vu-meter-section">
+
+      <div className="vu-section">
         <div className="vu-header">
-           <span className="vu-label">NÍVEL DE ENERGIA ACÚSTICA (LIBROSA)</span>
-           <span className="vu-value">{energyLevel.toFixed(1)} <small>/ 5.0</small></span>
+          <span className="vu-label">NÍVEL DE ENERGIA ACÚSTICA (LIBROSA)</span>
+          <span className="vu-value">{energyLevel.toFixed(1)} <small>/ 5.0</small></span>
         </div>
-        <div className="vu-container">
-          {segments.map(s => (
-            <div 
-              key={s} 
-              className={`vu-segment s${s} ${energyLevel >= s ? 'active' : ''}`}
-            />
+        <div className="vu-segments">
+          {[1, 2, 3, 4, 5].map(s => (
+            <div key={s} className={`vu-seg e${s} ${energyLevel >= s ? 'on' : ''}`} />
           ))}
         </div>
       </div>
-      
-      <div className="card-footer-stats">
-        <div className="butt-status-group">
-           <div className="stat-icon">📡</div>
-           <div className="stat-text">
-              <span className="stat-label">STREAMING NODES</span>
-              <span className="stat-value">{data.butt_ativos} / {data.butt_count} ATIVOS</span>
-           </div>
+
+      <div className="np-footer">
+        <div className="butt-info">
+          <span className="butt-icon">📡</span>
+          <div className="butt-texts">
+            <span className="butt-label">STREAMING NODES</span>
+            <span className="butt-value">{butt_ativos} / {butt_count} ATIVOS</span>
+          </div>
         </div>
-        
-        <button 
-          onClick={handleForceReconnect} 
-          disabled={isReconnecting}
-          className="btn-action"
-          style={{ padding: '0.6rem 1rem', fontSize: '0.75rem' }}
-          title="Forçar reconexão de encoders"
-        >
-          {isReconnecting ? '...' : 'RECONECTAR HUB'}
-        </button>
+
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
+          <button
+            onClick={handleReconnect}
+            disabled={reconnecting}
+            className="btn btn-sm"
+            title="Forçar reconexão dos encoders BUTT"
+          >
+            {reconnecting ? <span className="spinner" /> : null}
+            {reconnecting ? 'Conectando...' : 'RECONECTAR HUB'}
+          </button>
+          {reconnectMsg && (
+            <span style={{ fontSize: '0.65rem', color: reconnectMsg.startsWith('✓') ? 'var(--accent-success)' : 'var(--accent-danger)', fontWeight: 700 }}>
+              {reconnectMsg}
+            </span>
+          )}
+        </div>
       </div>
 
-      <div className="worker-status-banner">
-         <span className="worker-label">WORKER STATUS:</span>
-         <span className="worker-value">{data.curadoria_status || 'IDLE'}</span>
+      <div className="worker-banner">
+        <span className="worker-key">WORKER STATUS:</span>
+        <span className="worker-val">{curadoria_status}</span>
+        <span style={{ marginLeft: 'auto' }}>
+          <span style={{ width: 6, height: 6, borderRadius: '50%', background: connected ? 'var(--accent-success)' : 'var(--accent-danger)', display: 'inline-block', verticalAlign: 'middle', boxShadow: connected ? '0 0 6px rgba(16,185,129,0.6)' : 'none' }} />
+        </span>
       </div>
     </div>
   );

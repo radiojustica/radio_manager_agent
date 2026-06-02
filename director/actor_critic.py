@@ -228,6 +228,25 @@ class ActorCriticDirector:
         if output_path:
             if not self._write_playlist(selection, output_path):
                 return False
+            
+            # Atualiza histórico de reproduções no banco de dados para evitar repetição
+            db = SessionLocal()
+            try:
+                from core.time_utils import now_utc
+                agora = now_utc()
+                db.query(Musica).filter(Musica.caminho.in_(selection)).update(
+                    {
+                        Musica.ultima_reproducao: agora,
+                        Musica.vezes_tocada: Musica.vezes_tocada + 1
+                    },
+                    synchronize_session=False,
+                )
+                db.commit()
+            except Exception as e:
+                logger.error(f"[ActorCritic] Falha ao atualizar reproduções no banco: {e}")
+                db.rollback()
+            finally:
+                db.close()
 
         logger.info(f"[ActorCritic] Playlist aprovada com score {score}.")
         return True

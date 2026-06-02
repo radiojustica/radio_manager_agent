@@ -2,139 +2,117 @@ import os
 import logging
 from typing import Any
 
-from core.worker_base import WorkerBase, WorkerResult
+from core.subagent_base import SubAgentBase, tool
+from core.worker_base import WorkerResult
 from core.reward import RewardStore
 from services.downloader_service import downloader_instance
 from core.database import SessionLocal
 from core.models import Musica
-from sqlalchemy import or_, and_
 
 logger = logging.getLogger("OmniCore.Workers.Downloader")
 
-class DownloaderWorker(WorkerBase):
+class DownloaderWorker(SubAgentBase):
     """
-    Worker responsável pelo processamento de downloads de músicas.
-    Atua sob demanda (via UI) ou de forma proativa (automática).
+    Subagente de Aquisição Musical (A&R Scout).
+    Procura músicas recomendadas ou sob demanda, realiza o download via YouTube/fontes
+    e cataloga as faixas no acervo com validação de metadados.
     """
     def __init__(self, reward_store: RewardStore | None = None, config: dict[str, Any] | None = None):
         super().__init__(name="DownloaderWorker", reward_store=reward_store, config=config)
         self.proactive_limit = self.config.get("proactive_limit", 3)
 
-    def run_cycle(self, queries: list[str] | None = None, estilo: str = "outros", **kwargs) -> WorkerResult:
-        is_proactive = queries is None
-        
-        if is_proactive:
+    @tool
+    def obter_recomendacoes_acervo(self) -> list:
+        """
+        Consulta o motor de recomendação interno para analisar os últimos 5 dias de execução
+        e sugerir faixas que combinam com a programação da rádio.
+        Retorna uma lista de strings contendo sugestões de busca (queries).
+        """
+        try:
             from director.recommender import recommender_instance
-            logger.info("[DownloaderWorker] Iniciando ciclo proativo de aquisição.")
-            try:
-                analysis = recommender_instance.analyze_last_days(5)
-                recs = recommender_instance.generate_recommendations(analysis)
-                if not recs:
-                    return WorkerResult(status="idle", score=0, metadata={"message": "Nenhuma recomendação proativa encontrada."})
-                
-                queries = [r["sugestao"] for r in recs[:self.proactive_limit]]
-                logger.info(f"[DownloaderWorker] {len(queries)} sugestões selecionadas para download automático.")
-            except Exception as e:
-                logger.error(f"[DownloaderWorker] Erro ao gerar recomendações: {e}", exc_info=True)
-                return WorkerResult(
-                    status="failed",
-                    score=-10,
-                    violations=[f"Erro ao gerar recomendações: {str(e)}"],
-                    metadata={"message": str(e)}
-                )
+            analysis = recommender_instance.analyze_last_days(5)
+            recs = recommender_instance.generate_recommendations(analysis)
+            return [r["sugestao"] for r in recs[:self.proactive_limit]]
+        except Exception as e:
+            logger.error(f"Erro ao gerar recomendações no motor: {e}")
+            return []
 
-        if not queries:
-            return WorkerResult(status="idle", score=0, metadata={"message": "Nenhuma query de download fornecida."})
+    @tool
+    def buscar_e_baixar_faixa(self, query: str) -> dict:
+        """
+        Busca e executa o download físico da música a partir do YouTube/fontes externas baseando-se na query.
+        Retorna um dicionário com os campos 'success', 'path', 'title', 'skipped' ou 'error'.
+        """
+        try:
+            res = downloader_instance.search_and_download(query)
+            return res
+        except TimeoutError as e:
+            return {"success": False, "error": f"Timeout: {e}"}
+        except Exception as e:
+            return {"success": False, "error": str(e)}
 
-        results = []
-        violations = []
-        score = 0
-        metadata = {"processed": 0, "success": 0, "failed": 0, "skipped": 0, "proactive": is_proactive}
-
+    @tool
+    def cadastrar_musica(self, caminho: str, artista: str, titulo: str, estilo: str) -> str:
+        """
+        Cadastra a música baixada com sucesso no banco de dados SQLite da rádio, evitando duplicações.
+        """
         db = SessionLocal()
         try:
-            for query in queries:
-                metadata["processed"] += 1
-                try:
-                    # Verifica se temos exatamente esse arquivo baixado recentemente
-                    # Para evitar download redundante da mesma query
-                    
-                    # Tenta download com tratamento específico de timeout
-                    res = downloader_instance.search_and_download(query)
-                    
-                    if res["success"]:
-                        file_path = res["path"]
-                        metadata["success"] += 1
-                        score += 10 if is_proactive else 5
-
-                        filename = os.path.basename(file_path).replace(".mp3", "")
-                        
-                        yt_title = res.get("title", "")
-                        # Se o serviço indicou que já existia antes de baixar (cache ou checagem de disco)
-                        if res.get("skipped"):
-                            metadata["skipped"] += 1
-                            metadata["success"] -= 1
-                            results.append({"query": query, "status": "skipped", "reason": "already_exists", "file": filename})
-                            logger.info(f"[DownloaderWorker] Arquivo já existe fisicamente: {file_path}")
-                            continue
-
-                        if " - " in yt_title:
-                            art, tit = yt_title.split(" - ", 1)
-                        elif " - " in filename:
-                            art, tit = filename.split(" - ", 1)
-                        else:
-                            art, tit = "VÁRIOS", filename
-                        
-                        art = art.strip().upper()
-                        tit = tit.strip()
-
-                        # Verifica duplicidade no banco
-                        musica_existente = db.query(Musica).filter(Musica.caminho == file_path).first()
-                        if not musica_existente:
-                            nova_musica = Musica(
-                                caminho=file_path,
-                                artista=art,
-                                titulo=tit,
-                                estilo=estilo.lower(),
-                                auditado_acustica=False
-                            )
-                            db.add(nova_musica)
-                            db.commit()
-                            results.append({"query": query, "status": "success", "file": filename, "id": nova_musica.id})
-                            logger.info(f"[DownloaderWorker] Música catalogada: {art} - {tit}")
-                        else:
-                            metadata["skipped"] += 1
-                            metadata["success"] -= 1
-                            results.append({"query": query, "status": "skipped", "reason": "already_in_db", "file": filename})
-                            logger.info(f"[DownloaderWorker] Registro já presente no banco: {file_path}")
-                    else:
-                        metadata["failed"] += 1
-                        score -= 2
-                        error_msg = res.get("error", "Erro desconhecido")
-                        violations.append(f"Download falhou para '{query}': {error_msg}")
-                        results.append({"query": query, "status": "failed", "error": error_msg})
-                        logger.error(f"[DownloaderWorker] Download falhou: {query} - {error_msg}")
-                        
-                except TimeoutError as e:
-                    metadata["failed"] += 1
-                    score -= 3
-                    error_msg = f"Timeout ao processar: {str(e)}"
-                    violations.append(error_msg)
-                    results.append({"query": query, "status": "failed", "error": "timeout"})
-                    logger.error(f"[DownloaderWorker] Timeout: {query}")
-                except Exception as e:
-                    metadata["failed"] += 1
-                    score -= 5
-                    error_msg = f"Erro inesperado: {str(e)}"
-                    logger.error(f"[DownloaderWorker] Erro ao processar '{query}': {e}", exc_info=True)
-                    violations.append(error_msg)
-                    results.append({"query": query, "status": "failed", "error": str(e)})
+            # Verifica duplicidade no banco
+            musica_existente = db.query(Musica).filter(Musica.caminho == caminho).first()
+            if musica_existente:
+                return f"Música já presente no banco de dados (ID: {musica_existente.id})."
+            
+            nova_musica = Musica(
+                caminho=caminho,
+                artista=artista.strip().upper(),
+                titulo=titulo.strip(),
+                estilo=estilo.lower(),
+                auditado_acustica=False
+            )
+            db.add(nova_musica)
+            db.commit()
+            return f"Música '{artista} - {titulo}' cadastrada com sucesso com ID {nova_musica.id}."
+        except Exception as e:
+            db.rollback()
+            return f"Erro ao cadastrar música no banco: {e}"
         finally:
             db.close()
 
-        status = "success" if metadata["failed"] == 0 else "partial_success"
-        if metadata["success"] == 0 and metadata["processed"] > 0:
-            status = "failed"
+    def run_cycle(self, queries: list[str] | None = None, estilo: str = "outros", **kwargs) -> WorkerResult:
+        is_proactive = queries is None
+        self.log_action("DOWNLOAD_CYCLE_START", proactive=is_proactive)
+        
+        system_prompt = (
+            "Você é o Subagente de Aquisição Musical (A&R Scout) do Omni Core V2.\n"
+            "Seu trabalho é encontrar novas músicas que complementam a programação, baixá-las e registrá-las no banco.\n"
+            "Instruções:\n"
+            "1. Se nenhuma query/música específica for fornecida, use a ferramenta 'obter_recomendacoes_acervo' para descobrir sugestões automáticas.\n"
+            "2. Para cada sugestão/query, chame a ferramenta 'buscar_e_baixar_faixa'.\n"
+            "3. Se o download for um sucesso, extraia o Artista e o Título de forma limpa.\n"
+            "   (Ex: se o título do vídeo for 'Eminem - Without Me', Artista='EMINEM', Título='Without Me').\n"
+            "4. Chame a ferramenta 'cadastrar_musica' para persistir a nova música no banco de dados.\n"
+            "5. Finalize reportando o resumo dos downloads executados."
+        )
 
-        metadata["results"] = results
-        return WorkerResult(status=status, score=score, violations=violations, metadata=metadata)
+        task = f"Executar ciclo de download. Proativo: {is_proactive}. Queries fornecidas: {queries}. Estilo alvo: {estilo}"
+
+        try:
+            # Configura um parâmetro dinâmico nas ferramentas para simplificar
+            self.register_tool_func("cadastrar_musica", lambda caminho, artista, titulo: self.cadastrar_musica(caminho, artista, titulo, estilo))
+            
+            res = self.run_agent_loop(task, system_prompt, max_steps=6)
+            
+            if res.get("status") == "success":
+                score = 10 if is_proactive else 5
+                return WorkerResult(status="success", score=score, metadata={"result": res.get("result"), "proactive": is_proactive})
+            else:
+                return WorkerResult(
+                    status="failed", 
+                    score=-5, 
+                    violations=[f"Subagente falhou no loop de download: {res.get('result')}"],
+                    metadata={"proactive": is_proactive}
+                )
+        except Exception as e:
+            logger.error(f"Erro no ciclo do DownloaderWorker: {e}")
+            return WorkerResult(status="error", score=-10, violations=[str(e)])

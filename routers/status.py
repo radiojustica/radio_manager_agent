@@ -14,6 +14,7 @@ import psutil
 import win32gui
 import win32process
 from scripts.bulletin_sync import BulletinSync
+from services.acervo_sync import sync_acervo
 
 router = APIRouter(prefix="/api/status", tags=["Telemetria"])
 
@@ -112,18 +113,20 @@ def verificar_zara_status():
     
     status = "stopped"
     zara_win = guardian_instance.find_zara_window()
+    is_playing = guardian_instance.is_zara_playing()
+    
     if not zara_win:
         import psutil
         for proc in psutil.process_iter(['name']):
             if proc.info['name'] and proc.info['name'].lower() == "zararadio.exe":
-                status = "playing"
+                status = "playing" if is_playing else "stopped"
                 break
     else:
         IsHungAppWindow = ctypes.windll.user32.IsHungAppWindow
         if bool(IsHungAppWindow(zara_win.handle)):
             status = "frozen"
         else:
-            status = "playing"
+            status = "playing" if is_playing else "stopped"
             
     CACHE_ZARA_WINDOW["status"] = status
     CACHE_ZARA_WINDOW["timestamp"] = agora
@@ -250,6 +253,13 @@ def get_bulletins_status():
 def sync_bulletins():
     """Dispara a sincronização manual dos boletins via GDrive."""
     return bulletin_syncer.sync()
+
+@router.post("/acervo/sync")
+@router.post("/acervo/sync/")
+def sync_acervo_endpoint():
+    """Sincroniza o acervo de músicas a partir da pasta configurada."""
+    result = sync_acervo()
+    return result
 
 @router.get("/logs/system")
 def get_system_logs(lines: int = 50):

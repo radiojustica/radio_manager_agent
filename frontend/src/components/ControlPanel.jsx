@@ -1,67 +1,104 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 
-const ControlPanel = ({ onTrigger, onSync, currentMood, setMood }) => {
+const MOODS = [
+  { value: 'Ensolarado', label: '☀️ Ensolarado' },
+  { value: 'Chuvoso',    label: '🌧️ Chuvoso' },
+  { value: 'Nublado',    label: '☁️ Nublado' },
+  { value: 'Frio',       label: '❄️ Frio' },
+];
+
+function ActionButton({ label, onClick, disabled, loadingLabel, variant = '' }) {
   const [loading, setLoading] = useState(false);
+  const [feedback, setFeedback] = useState(null);
 
-  const handleAction = async (action, fn) => {
+  const handleClick = async () => {
     setLoading(true);
+    setFeedback(null);
     try {
-      await fn();
+      await onClick();
+      setFeedback({ ok: true, msg: '✓ Ok' });
     } catch (e) {
-      console.error(e);
+      setFeedback({ ok: false, msg: '✗ Erro' });
+    } finally {
+      setLoading(false);
+      setTimeout(() => setFeedback(null), 3000);
     }
-    setLoading(false);
   };
 
   return (
-    <div className="premium-card">
-      <h3 style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '12px', fontSize: '1rem' }}>
-        <span style={{ color: 'var(--accent-primary)', fontSize: '1.2rem' }}>⚡</span> 
-        CONTROLE DE PROGRAMAÇÃO
-      </h3>
-      
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+      <button
+        className={`btn ${variant}`}
+        onClick={handleClick}
+        disabled={disabled || loading}
+      >
+        {loading && <span className="spinner" />}
+        {loading ? (loadingLabel || 'Aguarde...') : label}
+      </button>
+      {feedback && (
+        <span style={{
+          fontSize: '0.62rem',
+          fontWeight: 700,
+          color: feedback.ok ? 'var(--accent-success)' : 'var(--accent-danger)',
+          textAlign: 'center',
+        }}>
+          {feedback.msg}
+        </span>
+      )}
+    </div>
+  );
+}
+
+export default function ControlPanel({ onTrigger, onSync, currentMood, setMood }) {
+  return (
+    <div className="card">
+      <div className="section-header" style={{ marginBottom: '1.5rem' }}>
+        <div className="section-title">
+          <div className="accent-line" />
+          CONTROLE DE PROGRAMAÇÃO
+        </div>
+        <span style={{ fontSize: '1.2rem' }}>⚡</span>
+      </div>
+
       <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <label style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-secondary)', flexShrink: 0, textTransform: 'uppercase' }}>Vibe Atual:</label>
-          <select 
-            value={currentMood} 
+        {/* Mood Selector */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <label style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-muted)', flexShrink: 0, textTransform: 'uppercase', letterSpacing: '1px' }}>
+            Vibe Atual:
+          </label>
+          <select
+            value={currentMood}
             onChange={(e) => setMood(e.target.value)}
-            className="btn-action"
-            style={{ flexGrow: 1, padding: '0.6rem 1rem', textTransform: 'none' }}
+            className="btn select"
+            style={{ flexGrow: 1, textTransform: 'none' }}
           >
-            <option value="Ensolarado">☀️ Ensolarado</option>
-            <option value="Chuvoso">🌧️ Chuvoso</option>
-            <option value="Nublado">☁️ Nublado</option>
+            {MOODS.map(m => (
+              <option key={m.value} value={m.value}>{m.label}</option>
+            ))}
           </select>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-          <button 
-            disabled={loading}
-            onClick={() => handleAction('24h', () => onTrigger('gerar-24h'))}
-            className="btn-action"
-          >
-            Gera 24h
-          </button>
-          <button 
-            disabled={loading}
-            onClick={() => handleAction('extra', () => onTrigger('gerar-extra'))}
-            className="btn-action"
-          >
-            Bloco Extra
-          </button>
+        {/* Action Buttons */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+          <ActionButton
+            label="Gera 24h"
+            loadingLabel="Gerando..."
+            onClick={() => onTrigger('gerar-24h')}
+          />
+          <ActionButton
+            label="Bloco Extra"
+            loadingLabel="Gerando..."
+            onClick={() => onTrigger('gerar-extra')}
+          />
         </div>
 
-        <button
-          disabled={loading}
-          onClick={() => handleAction('sync', onSync)}
-          className="btn-action btn-primary"
-          style={{ width: '100%' }}
-        >
-          🔄 Sincronizar Acervo
-        </button>
-        </div>
-        </div>
-        );
-        };
-export default ControlPanel;
+        <ActionButton
+          label="🔄 Sincronizar Acervo"
+          loadingLabel="Sincronizando..."
+          variant="btn-primary"
+          onClick={onSync}
+        />
+      </div>
+    </div>
+  );
+}

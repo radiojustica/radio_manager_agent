@@ -37,6 +37,8 @@ try:
     from workers.daily_report_worker import DailyReportWorker
     logger.info("Importando BulletinWorker...")
     from workers.bulletin_worker import BulletinWorker
+    logger.info("Importando NjudWorker...")
+    from workers.njud_worker import NjudWorker
     logger.info("Importando ReportWorker...")
     from workers.report_worker import ReportWorker
     logger.info("Importando ApiWorker...")
@@ -230,7 +232,7 @@ class WorkerManager:
         # 6. PlaylistWorker (Geração Diária)
         playlist_cfg = self.config.get("PlaylistWorker", {})
         def daily_playlist_job():
-            self.run_cycle("PlaylistWorker", hora_inicio=0, mood=state.CURRENT_MOOD)
+            self.run_cycle("PlaylistWorker", hora_inicio=None, mood=state.CURRENT_MOOD)
 
         self.scheduler.add_job(
             daily_playlist_job,
@@ -277,14 +279,25 @@ class WorkerManager:
             misfire_grace_time=3600
         )
 
-        # 10. BulletinWorker (Sincronização de Boletins)
-        bulletin_cfg = self.config.get("BulletinWorker", {})
-        self.scheduler.add_job(
-            lambda: self.run_cycle("BulletinWorker"),
-            trigger=IntervalTrigger(minutes=bulletin_cfg.get("interval_minutes", 30)),
-            id='worker_bulletin',
-            replace_existing=True
-        )
+        # 10. BulletinWorker (Sincronização de Boletins 3x ao dia)
+        for idx, (h, m) in enumerate([(11, 30), (15, 30), (20, 30)]):
+            self.scheduler.add_job(
+                lambda: self.run_cycle("BulletinWorker"),
+                trigger=CronTrigger(hour=h, minute=m),
+                id=f'worker_bulletin_cron_{idx}',
+                replace_existing=True,
+                misfire_grace_time=3600
+            )
+
+        # 10b. NjudWorker (Sincronização do Notícias do Judiciário 3x ao dia)
+        for idx, (h, m) in enumerate([(11, 0), (15, 0), (20, 0)]):
+            self.scheduler.add_job(
+                lambda: self.run_cycle("NjudWorker"),
+                trigger=CronTrigger(hour=h, minute=m),
+                id=f'worker_njud_cron_{idx}',
+                replace_existing=True,
+                misfire_grace_time=3600
+            )
 
         # 11. DownloaderWorker (Aquisição Proativa às 01:00)
         downloader_cfg = self.config.get("DownloaderWorker", {})
@@ -371,6 +384,8 @@ def create_default_manager() -> WorkerManager:
     manager.register_worker(DailyReportWorker(reward_store=manager.reward_store))
     logger.info("Registrando BulletinWorker...")
     manager.register_worker(BulletinWorker(reward_store=manager.reward_store))
+    logger.info("Registrando NjudWorker...")
+    manager.register_worker(NjudWorker(reward_store=manager.reward_store))
     logger.info("Registrando ReportWorker...")
     manager.register_worker(ReportWorker(reward_store=manager.reward_store))
     logger.info("Registrando ApiWorker...")

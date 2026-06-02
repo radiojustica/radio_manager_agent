@@ -1,36 +1,45 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef } from 'react';
+import { useWsData } from '../context/WebSocketContext';
 import './Telemetria.css';
 
+const EVENT_ICONS = {
+  RESTART:      '🔄',
+  QUARANTINE:   '☣️',
+  WARNING:      '⚠️',
+  LIVE_START:   '🎙️',
+  LIVE_END:     '📴',
+  TASK_DELETED: '🗑️',
+};
+
+function getIcon(type) {
+  return EVENT_ICONS[type] || '◆';
+}
+
 export default function EventTicker() {
-  const [events, setEvents] = useState([]);
+  const { events } = useWsData();
+  const listRef = useRef(null);
 
+  // Auto-scroll to bottom when new events arrive
   useEffect(() => {
-    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const ws = new WebSocket(`${protocol}//${window.location.host}/ws/status`);
-
-    ws.onmessage = (event) => {
-      try {
-        const json = JSON.parse(event.data);
-        if (json && Array.isArray(json.events)) {
-          setEvents(json.events);
-        }
-      } catch (err) {
-        console.error("Falha ao ler eventos do WebSocket:", err);
-      }
-    };
-
-    return () => ws.close();
-  }, []);
+    if (listRef.current) {
+      listRef.current.scrollTop = listRef.current.scrollHeight;
+    }
+  }, [events]);
 
   return (
-    <div className="event-ticker glass-panel">
-      <h3 className="module-title">TRACKER DO GUARDIÃO</h3>
-      <div className="events-list">
+    <div className="card event-ticker">
+      <div className="ticker-header">
+        <div className="accent-line" style={{ background: 'var(--accent-purple)' }} />
+        TRACKER DO GUARDIÃO
+      </div>
+
+      <div className="events-list" ref={listRef}>
         {events.length === 0 ? (
-          <div className="event-item text-muted">Aguardando eventos...</div>
+          <div className="event-empty">Aguardando eventos do guardião...</div>
         ) : (
-          events.map((evt, i) => (
-            <div key={i} className="event-item">
+          [...events].reverse().map((evt, i) => (
+            <div key={i} className={`event-item ${evt.type || ''}`}>
+              <span className="event-icon">{getIcon(evt.type)}</span>
               <span className="event-time">{evt.time}</span>
               <span className="event-msg">{evt.message}</span>
             </div>

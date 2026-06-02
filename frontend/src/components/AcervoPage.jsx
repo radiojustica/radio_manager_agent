@@ -16,7 +16,7 @@ const AcervoPage = () => {
     const [selectedIds, setSelectedIds] = useState(new Set());
     const [pagination, setPagination] = useState({ page: 1, limit: 100, total: 0, pages: 1 });
     const [editingId, setEditingId] = useState(null);
-    const [editValues, setEditValues] = useState({ energia: 3, estilo: '', redflag: false });
+    const [editValues, setEditValues] = useState({ energia: 3, estilo: '', redflag: false, tema_especial: '' });
     const [generatingAiId, setGeneratingAiId] = useState(null);
 
     // Carregar estilos para o filtro
@@ -123,7 +123,8 @@ const AcervoPage = () => {
         setEditValues({
             energia: musica.energia,
             estilo: musica.estilo || '',
-            redflag: musica.redflag || false
+            redflag: musica.redflag || false,
+            tema_especial: musica.tema_especial || ''
         });
     };
 
@@ -257,6 +258,7 @@ const AcervoPage = () => {
                                     <th>Título</th>
                                     <th>Artista</th>
                                     <th>Estilo</th>
+                                    <th>Tema Especial</th>
                                     <th>Energia</th>
                                     <th>Status</th>
                                     <th>IA Insight (Ollama)</th>
@@ -279,6 +281,23 @@ const AcervoPage = () => {
                                                 {estilos.map(e => <option key={e} value={e}>{e}</option>)}
                                             </select>
                                         ) : m.estilo}</td>
+                                        <td>{editingId === m.id ? (
+                                            <select value={editValues.tema_especial} onChange={e => setEditValues({ ...editValues, tema_especial: e.target.value })}>
+                                                <option value="">Nenhum</option>
+                                                <option value="verao_reis">Jan: Verão/Reis</option>
+                                                <option value="carnaval">Fev: Carnaval</option>
+                                                <option value="mulheres">Mar: Mulheres</option>
+                                                <option value="choro_instrumental">Abr: Choro/Instrumental</option>
+                                                <option value="cultura_popular">Mai: Cultura Popular</option>
+                                                <option value="junho">Jun: São João</option>
+                                                <option value="jazz_bossa">Jul: Jazz/Bossa</option>
+                                                <option value="cultura_potiguar">Ago: Cultura Potiguar</option>
+                                                <option value="nova_cena">Set: Nova Cena</option>
+                                                <option value="nordestino">Out: Dia do Nordestino</option>
+                                                <option value="consciencia_negra">Nov: Consciência Negra</option>
+                                                <option value="natal">Dez: Natal</option>
+                                            </select>
+                                        ) : (m.tema_especial || '---')}</td>
                                         <td>
                                             {editingId === m.id ? (
                                                 <input type="number" min="1" max="5" value={editValues.energia} onChange={e => setEditValues({ ...editValues, energia: parseInt(e.target.value) })} />

@@ -87,7 +87,7 @@ def create_scheduled_task(user):
         "schtasks", "/create", "/tn", task_name,
         "/tr", f'"{exe_path}"',
         "/sc", "onlogon",
-        "/rl", "highest",
+        "/rl", "limited",
         "/ru", user,
         "/it", # Garante interatividade com o desktop
         "/f"

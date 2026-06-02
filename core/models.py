@@ -20,6 +20,8 @@ class Musica(Base):
     auditado_acustica = Column(Boolean, default=False)
     redflag = Column(Boolean, default=False)
     mood = Column(String, nullable=True, index=True) # Ex: Ensolarado, Sombrio, Foco
+    tema_especial = Column(String, nullable=True, index=True) # Ex: junho, natal, nordestino
+
     
     # Anti-repetição (Lógica Musical)
     ultima_reproducao = Column(DateTime, nullable=True)
@@ -45,5 +47,19 @@ class RegraProgramacao(Base):
     hora_inicio = Column(Integer)
     hora_fim = Column(Integer)
     energia_alvo = Column(Integer, default=3)
+
+class SystemConfig(Base):
+    __tablename__ = "system_configs"
+    id = Column(Integer, primary_key=True)
+    key = Column(String, unique=True, index=True, nullable=False)
+    value = Column(String, nullable=True)
+
+class AutopilotLog(Base):
+    __tablename__ = "autopilot_logs"
+    id = Column(Integer, primary_key=True)
+    timestamp = Column(DateTime, default=datetime.utcnow, nullable=False)
+    action_type = Column(String, nullable=False, index=True) # Ex: PROCESS_RESTART, SILENCE_RECOVERY, OS_PREVENTION
+    message = Column(String, nullable=False)
+    success = Column(Boolean, default=True)
 
 

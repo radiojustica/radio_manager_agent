@@ -40,3 +40,7 @@ build_process.log
 
 # VS Code
 .vscode/
+
+# Downloads Temporários NJUD
+NJUD-main.zip
+NJUD_extracted/

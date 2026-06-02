@@ -5,6 +5,22 @@ from pathlib import Path
 
 logger = logging.getLogger("OmniCore.AudioNormalizer")
 
+def find_ffmpeg_executable() -> str:
+    """Busca o caminho do executável do FFmpeg no sistema."""
+    import shutil
+    
+    # 1. Verifica se está no PATH do sistema
+    ffmpeg_in_path = shutil.which("ffmpeg")
+    if ffmpeg_in_path:
+        return ffmpeg_in_path
+        
+    # 2. Verifica o caminho conhecido no OneDrive
+    onedrive_path = r"C:\Users\STREAMING\OneDrive\ARQUIVOS STREAMING\PROGRAMA_MUSICAS\ffmpeg.exe"
+    if os.path.exists(onedrive_path):
+        return onedrive_path
+        
+    return "ffmpeg"
+
 def normalize_audio(input_path: str, output_path: str, target_lufs: float = -14.0):
     """
     Normaliza o volume do áudio usando o padrão EBU R128 via filtro loudnorm do ffmpeg.
@@ -16,12 +32,15 @@ def normalize_audio(input_path: str, output_path: str, target_lufs: float = -14.
     # Garante que o diretório de saída exista
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
 
+    # Resolve o caminho do executável
+    ffmpeg_bin = find_ffmpeg_executable()
+
     # Comando FFmpeg para loudnorm (One-pass)
     # I = Integrated loudness target
     # LRA = Loudness range target
     # TP = True peak target
     cmd = [
-        'ffmpeg', '-y', '-i', input_path,
+        ffmpeg_bin, '-y', '-i', input_path,
         '-af', f'loudnorm=I={target_lufs}:LRA=11:TP=-1.5',
         '-c:a', 'libmp3lame', '-b:a', '192k',
         output_path

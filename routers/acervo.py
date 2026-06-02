@@ -33,7 +33,8 @@ def listar_acervo(
     energia_min: Optional[int] = None,
     energia_max: Optional[int] = None,
     auditado: Optional[bool] = None,
-    redflag: Optional[bool] = None
+    redflag: Optional[bool] = None,
+    tema_especial: Optional[str] = None
 ):
     """
     Lista as músicas do acervo com suporte a filtros e paginação.
@@ -71,6 +72,11 @@ def listar_acervo(
         query = query.filter(Musica.auditado_acustica == auditado)
     if redflag is not None:
         query = query.filter(Musica.redflag == redflag)
+    if tema_especial:
+        if tema_especial == "nenhum":
+            query = query.filter(or_(Musica.tema_especial == None, Musica.tema_especial == ""))
+        else:
+            query = query.filter(Musica.tema_especial == tema_especial)
 
     total = query.count()
     items = query.offset((page - 1) * limit).limit(limit).all()
@@ -117,7 +123,7 @@ def atualizar_musica(
     if not musica:
         raise HTTPException(status_code=404, detail="Música não encontrada")
 
-    campos_permitidos = {"energia", "estilo", "redflag", "auditado_acustica"}
+    campos_permitidos = {"energia", "estilo", "redflag", "auditado_acustica", "tema_especial"}
     for campo, valor in data.items():
         if campo in campos_permitidos:
             setattr(musica, campo, valor)
@@ -198,6 +204,9 @@ async def importar_csv(
                     musica.auditado_acustica = str(row[cols['auditado_acustica']]).lower() == 'true'
                 if 'redflag' in cols:
                     musica.redflag = str(row[cols['redflag']]).lower() == 'true'
+                if 'tema_especial' in cols:
+                    val = row[cols['tema_especial']].strip().lower()
+                    musica.tema_especial = val if val else None
                 
                 atualizados += 1
             except:
@@ -291,7 +300,7 @@ async def exportar_acervo(
     musicas = query.all()
     
     output = io.StringIO()
-    writer = csv.DictWriter(output, fieldnames=["Caminho", "Artista", "Titulo", "Estilo", "Energia", "Auditado", "Redflag"], delimiter=";")
+    writer = csv.DictWriter(output, fieldnames=["Caminho", "Artista", "Titulo", "Estilo", "Energia", "Auditado", "Redflag", "TemaEspecial"], delimiter=";")
     writer.writeheader()
     
     for m in musicas:
@@ -302,7 +311,8 @@ async def exportar_acervo(
             "Estilo": m.estilo,
             "Energia": m.energia,
             "Auditado": m.auditado_acustica,
-            "Redflag": m.redflag
+            "Redflag": m.redflag,
+            "TemaEspecial": m.tema_especial
         })
     
     output.seek(0)

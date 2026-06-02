@@ -15,6 +15,10 @@ import pywinauto
 from pywinauto import Desktop
 from core.config_loader import get_settings, reload_settings
 
+# Notifiers
+from scripts.notifier import TelegramNotifier
+from scripts.whatsapp_notifier import WhatsAppNotifier
+
 # Updated imports to point to scripts/
 from scripts.reboot_blocker import RebootBlocker
 from scripts.log_analyser import LogAnalyser
@@ -49,24 +53,18 @@ class RadioMonitor:
         self.load_config()
         self.setup_logging()
 
-        # Inject PROGRAMA_MUSICAS path from settings (not hardcoded)
-        programa_path = self.settings.get("paths", {}).get("programa_musicas", "")
-        if programa_path and os.path.isdir(programa_path) and programa_path not in sys.path:
-            sys.path.insert(0, programa_path)
-            # Re-attempt import after path injection
-            try:
-                global MotorLogico, Config
-                from RADIO import MotorLogico, Config
-            except ImportError:
-                pass
+        # Modulo de Playlist atualizado usa PlaylistEngine modular. Nao há mais necessidade de RADIO legado.
+        pass
 
         self.reboot_blocker = RebootBlocker()
         self.log_analyser = LogAnalyser(self.settings)
         self.audio_manager = AudioManager(limit=0.24)
 
-        # Initialize Notifier (Telegram/WhatsApp)
+        # Initialize Notifiers (Telegram & WhatsApp)
         notif_cfg = self.settings.get("notifications", {}).get("telegram", {})
         self.notifier = TelegramNotifier(notif_cfg)
+        whatsapp_cfg = self.settings.get("notifications", {}).get("whatsapp", {})
+        self.whatsapp_notifier = WhatsAppNotifier(whatsapp_cfg)
 
 
         # Initialize Email Reporter
@@ -175,6 +173,30 @@ class RadioMonitor:
             self.logger.error(f"Error checking processes: {e}")
         return status
 
+    def is_autopilot_active(self) -> bool:
+        """Verifica se o Autopilot está ativado no banco de dados SQLite."""
+        try:
+            from core.database import SessionLocal
+            from services.autopilot_service import autopilot_service
+            db = SessionLocal()
+            active = autopilot_service.is_autopilot_active(db)
+            db.close()
+            return active
+        except Exception as e:
+            self.logger.debug(f"Erro ao verificar se Autopilot está ativo: {e}")
+            return True # Fallback seguro
+
+    def log_autopilot_action(self, action_type: str, message: str, success: bool = True):
+        """Registra a ação corretiva tomada pelo piloto automático no SQLite."""
+        try:
+            from core.database import SessionLocal
+            from services.autopilot_service import autopilot_service
+            db = SessionLocal()
+            autopilot_service.log_action(db, action_type, message, success)
+            db.close()
+        except Exception as e:
+            self.logger.debug(f"Erro ao registrar log de ação do Autopilot: {e}")
+
     def ensure_apps_running(self):
         """Ensures ZaraRadio and BUTT instances are active."""
         apps_status = self.check_processes()
@@ -188,9 +210,11 @@ class RadioMonitor:
             if is_hung:
                 self.logger.error("ZaraRadio is FROZEN (HUNG). Killing and restarting...")
                 subprocess.run(["taskkill", "/F", "/IM", "ZaraRadio.exe", "/T"], capture_output=True, timeout=10)
+                self.log_autopilot_action("PROCESS_RESTART", "ZaraRadio congelado. Processo encerrado via taskkill.", True)
                 time.sleep(2)
 
             self.logger.info(f"Restarting ZaraRadio (reason: {reason})...")
+            self.log_autopilot_action("PROCESS_RESTART", f"Iniciando ZaraRadio. Motivo: {reason}", True)
 
             notif_cfg = self.settings.get("notifications", {}).get("telegram", {})
             if notif_cfg.get("notify_on_restart"):
@@ -204,22 +228,18 @@ class RadioMonitor:
             playlist = self.get_target_playlist()
 
             if not os.path.exists(playlist):
-                self.logger.warning(f"Playlist {playlist} not found. Running emergency generation via RADIO.py...")
-                if MotorLogico is not None and Config is not None:
-                    try:
-                        def on_success(filename):
-                            nonlocal playlist
-                            playlist = os.path.join(Config.PASTA_PROGRAMACAO, filename)
-
-                        MotorLogico.gerar_bloco_extra(
-                            "Ensolarado", self.logger.info, lambda v, t: None,
-                            lambda m: self.logger.info(m), lambda e: self.logger.error(e),
-                            on_success
-                        )
-                    except Exception as e:
-                        self.logger.error(f"Failed to run RADIO.py generator: {e}")
-                else:
-                    self.logger.warning("RADIO.py module not available. Skipping emergency playlist generation.")
+                self.logger.warning(f"Playlist {playlist} not found. Running emergency generation via PlaylistEngine...")
+                try:
+                    from director.playlist_engine import playlist_engine_instance
+                    block_h = self.get_current_block_hour()
+                    success = playlist_engine_instance.gerar_playlist_bloco(block_h, "Ensolarado")
+                    if success:
+                        self.logger.info(f"Emergency playlist generation successful for block {block_h:02d}H.")
+                        playlist = self.get_target_playlist()
+                    else:
+                        self.logger.error(f"PlaylistEngine failed to generate emergency playlist for block {block_h:02d}H.")
+                except Exception as e:
+                    self.logger.error(f"Failed to run PlaylistEngine generator: {e}")
 
             executable = Path(zara_set.get("executable_path", ""))
             if not executable.name:
@@ -329,18 +349,7 @@ class RadioMonitor:
             self.logger.error(f"Error checking ZaraRadio playback status: {e}")
             return False
 
-    def ensure_butt_connected(self):
-        try:
-            windows = Desktop(backend="win32").windows()
-            for w in windows:
-                try:
-                    title = w.window_text()
-                    if "butt " in title.lower() and "connected" not in title.lower():
-                        self.logger.warning(f"BUTT instance '{title}' is IDLE. Forcing Connect (Ctrl+C)...")
-                        w.type_keys('^c', set_foreground=False)
-                except Exception: continue
-        except Exception as e:
-            self.logger.error(f"Error in BUTT reconnect: {e}")
+
 
     def quarantine_file(self, file_path: str, reason: str):
         quarantine_dir = self.settings.get("grade", {}).get("pasta_quarentena", r"D:\RADIO\QUARENTENA_TJ")
@@ -424,19 +433,33 @@ class RadioMonitor:
 
     def run_cycle(self):
         self.logger.info("--- Monitoring Cycle START ---")
+        autopilot_active = self.is_autopilot_active()
         reboot_settings = self.settings.get("reboot_prevention", {})
-        self.ensure_apps_running()
-        self.ensure_butt_connected()
+        
+        if autopilot_active:
+            self.ensure_apps_running()
+            from services.guardian_service import guardian_instance
+            guardian_instance.reconnect_idle_butts()
+        else:
+            self.logger.info("Autopilot inativo. Ignorando autocura de processos e conexões.")
+
         process_status = self.check_processes()
-        if not self.suspended and not self.live_session_active:
-            is_active = self.check_playback_activity()
-            if not is_active and process_status.get("zararadio") == "Running":
-                self.trigger_play_on_zara()
-        self.audio_manager.limit_app_volume("ZaraRadio.exe")
-        self.manage_tasks()
+        
+        if autopilot_active:
+            if not self.suspended and not self.live_session_active:
+                is_active = self.check_playback_activity()
+                if not is_active and process_status.get("zararadio") == "Running":
+                    self.trigger_play_on_zara()
+                    self.log_autopilot_action("PLAYBACK_RECOVERY", "Silêncio nos logs detectado. Comando PLAY (P) enviado ao ZaraRadio.", True)
+            self.audio_manager.limit_app_volume("ZaraRadio.exe")
+            self.manage_tasks()
+            self.reboot_blocker.prevent_sleep()
+            if reboot_settings.get("abort_shutdown_periodically"): 
+                self.reboot_blocker.abort_shutdown()
+        else:
+            self.logger.info("Autopilot inativo. Ignorando controle de volume, tarefas e reboots.")
+
         health = self.check_system_health()
-        self.reboot_blocker.prevent_sleep()
-        if reboot_settings.get("abort_shutdown_periodically"): self.reboot_blocker.abort_shutdown()
         self.logger.info("--- Monitoring Cycle END ---")
 
     def check_and_send_daily_report(self):
@@ -456,6 +479,15 @@ class RadioMonitor:
             if self.email_reporter.send_daily_report(summary, attachment_path=attachment):
                 self.last_report_date = current_date
                 self.daily_events.clear()
+            # Also send via WhatsApp if configured
+            try:
+                payload = {
+                    "time": now.strftime('%H:%M:%S'),
+                    "message": f"Daily report: ZaraRadio {summary['zara_status']}, Butt instances: {summary['butt_count']}, Restarts: {summary['restarts']}"
+                }
+                self.whatsapp_notifier.send_alert("DAILY_LOG", payload)
+            except Exception as e:
+                self.logger.error(f"Failed to send WhatsApp daily log: {e}")
 
     def check_vmix_and_switch(self):
         is_live, title = self.vmix.is_session_live()

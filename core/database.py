@@ -50,6 +50,7 @@ def init_db():
         "valence": "REAL",
         "danceability": "REAL",
         "quarantine_reason": "TEXT",
+        "tema_especial": "TEXT",
     }
     conn = sqlite3.connect(str(DB_PATH))
     cursor = conn.cursor()
@@ -60,6 +61,111 @@ def init_db():
             pass  # Coluna já existe — comportamento esperado
     conn.commit()
     conn.close()
+    
+    # Inicialização da grade padrão na tabela system_configs
+    try:
+        conn = sqlite3.connect(str(DB_PATH))
+        cursor = conn.cursor()
+        
+        # Verifica se já existe a chave weekly_schedule
+        cursor.execute("SELECT id FROM system_configs WHERE key = 'weekly_schedule'")
+        row = cursor.fetchone()
+        if not row:
+            import json
+            # JSON da grade semanal padrão com base nas regras atualizadas do usuário
+            grade_padrao = {
+                "legendas": {
+                    "SPOT": {"tipo": "vinheta", "duracao": "curto", "pasta": "D:\\RADIO\\SPOTS"},
+                    "VH_INSTITUCIONAL": {"tipo": "vinheta", "duracao": "curto", "pasta": "D:\\RADIO\\VINHETAS"},
+                    "BOLETIM": {"tipo": "boletim", "duracao": "1-2 min", "pasta_raiz": "D:\\SERVIDOR\\BOLETINS"},
+                    "PROGRAMAS": {
+                        "GIRO_NAS_COMARCAS": {"duracao_minutos": 10, "pasta": "D:\\SERVIDOR\\PROGRAMAS\\PROGRAMA_40\\GIRONASCOMARCAS"},
+                        "MEMORIA_DA_JUSTICA": {"duracao_minutos": 40, "pasta": "D:\\SERVIDOR\\PROGRAMAS\\PROGRAMA_40\\MEMORIA"},
+                        "LEVEMENTE": {"duracao_minutos": 40, "pasta": "D:\\SERVIDOR\\PROGRAMAS\\PROGRAMA_40\\LEVEMENTE"},
+                        "NOTICIAS_DO_JUDICIARIO": {"duracao_minutos": 5, "pasta": "D:\\SERVIDOR\\DRIVE\\RADIO TJRN CONTEÚDO\\NOT JUDICIARIO (5 MIN)"}
+                    }
+                },
+                "grade_diaria": {
+                    "madrugada_manha": {
+                        "inicio": "00:01",
+                        "fim": "08:30",
+                        "loop": {"intervalo_minutos": 30, "estrutura": ["SPOT", "BOLETIM", "SPOT"]}
+                    },
+                    "noite_madrugada": {
+                        "inicio": "18:00",
+                        "fim": "23:59",
+                        "loop": {"intervalo_minutos": 30, "estrutura": ["SPOT", "BOLETIM", "SPOT"]}
+                    }
+                },
+                "excecoes_diurnas": {
+                    "segunda": {
+                        "09:00": ["SPOT", "BOLETIM", "SPOT", "MUSICA"],
+                        "10:00": ["SPOT", "BOLETIM", "SPOT", "MUSICA"],
+                        "10:45": ["SPOT", "NOTICIAS_DO_JUDICIARIO", "SPOT", "MUSICA"],
+                        "11:30": ["SPOT", "VH_INSTITUCIONAL", "SPOT", "MUSICA"],
+                        "12:00": ["SPOT", "BOLETIM", "SPOT", "MUSICA"],
+                        "16:00": ["VH_INSTITUCIONAL", "MEMORIA_DA_JUSTICA", "MUSICA"],
+                        "17:30": ["NOTICIAS_DO_JUDICIARIO"]
+                    },
+                    "terca": {
+                        "09:00": ["SPOT", "VH_INSTITUCIONAL", "MUSICA"],
+                        "10:00": ["SPOT", "VH_INSTITUCIONAL", "MUSICA"],
+                        "10:45": ["SPOT", "NOTICIAS_DO_JUDICIARIO", "SPOT", "MUSICA"],
+                        "11:30": ["SPOT", "BOLETIM", "SPOT", "MUSICA"],
+                        "12:00": ["SPOT", "BOLETIM", "SPOT", "MUSICA"],
+                        "15:00": ["SPOT", "BOLETIM", "GIRO_NAS_COMARCAS", "MUSICA"],
+                        "17:30": ["NOTICIAS_DO_JUDICIARIO"]
+                    },
+                    "quarta": {
+                        "09:00": ["SPOT", "BOLETIM", "SPOT", "MUSICA"],
+                        "10:00": ["SPOT", "BOLETIM", "SPOT", "MUSICA"],
+                        "10:45": ["SPOT", "NOTICIAS_DO_JUDICIARIO", "SPOT", "MUSICA"],
+                        "11:30": ["SPOT", "BOLETIM", "SPOT", "MUSICA"],
+                        "12:00": ["SPOT", "BOLETIM", "SPOT", "MUSICA"],
+                        "17:30": ["NOTICIAS_DO_JUDICIARIO"]
+                    },
+                    "quinta": {
+                        "09:00": ["SPOT", "VH_INSTITUCIONAL", "LEVEMENTE", "MUSICA"],
+                        "10:00": ["SPOT", "BOLETIM", "SPOT", "MUSICA"],
+                        "10:45": ["SPOT", "NOTICIAS_DO_JUDICIARIO", "SPOT", "MUSICA"],
+                        "11:30": ["SPOT", "BOLETIM", "SPOT", "MUSICA"],
+                        "12:00": ["SPOT", "BOLETIM", "SPOT", "MUSICA"],
+                        "17:30": ["NOTICIAS_DO_JUDICIARIO"]
+                    },
+                    "sexta": {
+                        "09:00": ["SPOT", "VH_INSTITUCIONAL", "MUSICA"],
+                        "10:00": ["SPOT", "BOLETIM", "SPOT", "MUSICA"],
+                        "10:45": ["SPOT", "NOTICIAS_DO_JUDICIARIO", "SPOT", "MUSICA"],
+                        "11:30": ["SPOT", "VH_INSTITUCIONAL", "SPOT", "MUSICA"],
+                        "12:00": ["SPOT", "VH_INSTITUCIONAL", "MUSICA"],
+                        "17:30": ["NOTICIAS_DO_JUDICIARIO"]
+                    }
+                },
+                "final_de_semana": {
+                    "sabado": {
+                        "06:00_15:00": {"loop": {"intervalo_minutos": 30, "estrutura": ["SPOT", "BOLETIM", "SPOT", "MUSICA"]}},
+                        "15:00_18:00": {"loop": {"intervalo_minutos": 30, "estrutura": ["SPOT", "BOLETIM", "SPOT", "MUSICA"]}}
+                    },
+                    "domingo": {
+                        "06:00_15:00": {"loop": {"intervalo_minutos": 30, "estrutura": ["SPOT", "BOLETIM", "SPOT", "MUSICA"]}},
+                        "15:00_18:00": {"loop": {"intervalo_minutos": 30, "estrutura": ["SPOT", "BOLETIM", "SPOT", "MUSICA"]}}
+                    }
+                }
+            }
+            # Insere a nova chave
+            cursor.execute(
+                "INSERT INTO system_configs (key, value) VALUES (?, ?)",
+                ("weekly_schedule", json.dumps(grade_padrao, indent=4))
+            )
+            conn.commit()
+    except Exception as e:
+        import logging
+        logging.getLogger("OmniCore.DB").error(f"Erro ao inicializar grade padrao: {e}")
+    finally:
+        try:
+            conn.close()
+        except:
+            pass
 
 
 

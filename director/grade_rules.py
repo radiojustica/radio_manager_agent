@@ -101,10 +101,147 @@ def estilos_para_mood(mood: str | None = None) -> list[str]:
 
 DIAS_SEMANA = {0: "SEGUNDA", 1: "TERCA", 2: "QUARTA", 3: "QUINTA", 4: "SEXTA", 5: "SABADO", 6: "DOMINGO"}
 
+def carregar_grade_do_banco() -> dict:
+    """Carrega a grade horária semanal da tabela system_configs do SQLite."""
+    import sqlite3
+    from core.database import DB_PATH
+    try:
+        if os.path.exists(DB_PATH):
+            conn = sqlite3.connect(str(DB_PATH))
+            cursor = conn.cursor()
+            cursor.execute("SELECT value FROM system_configs WHERE key = 'weekly_schedule'")
+            row = cursor.fetchone()
+            conn.close()
+            if row:
+                return json.loads(row[0])
+    except Exception as e:
+        logger.error(f"Erro ao carregar grade do banco de dados: {e}")
+    
+    # Fallback da grade padrão se falhar
+    return {
+        "legendas": {
+            "SPOT": {"tipo": "vinheta", "duracao": "curto", "pasta": "D:\\RADIO\\SPOTS"},
+            "VH_INSTITUCIONAL": {"tipo": "vinheta", "duracao": "curto", "pasta": "D:\\RADIO\\VINHETAS"},
+            "BOLETIM": {"tipo": "boletim", "duracao": "1-2 min", "pasta_raiz": "D:\\SERVIDOR\\BOLETINS"},
+            "PROGRAMAS": {
+                "GIRO_NAS_COMARCAS": {"duracao_minutos": 10, "pasta": "D:\\SERVIDOR\\PROGRAMAS\\PROGRAMA_40\\GIRONASCOMARCAS"},
+                "MEMORIA_DA_JUSTICA": {"duracao_minutos": 40, "pasta": "D:\\SERVIDOR\\PROGRAMAS\\PROGRAMA_40\\MEMORIA"},
+                "LEVEMENTE": {"duracao_minutos": 40, "pasta": "D:\\SERVIDOR\\PROGRAMAS\\PROGRAMA_40\\LEVEMENTE"},
+                "NOTICIAS_DO_JUDICIARIO": {"duracao_minutos": 5, "pasta": "D:\\SERVIDOR\\DRIVE\\RADIO TJRN CONTEÚDO\\NOT JUDICIARIO (5 MIN)"}
+            }
+        },
+        "grade_diaria": {
+            "madrugada_manha": {
+                "inicio": "00:01",
+                "fim": "08:30",
+                "loop": {"intervalo_minutos": 30, "estrutura": ["SPOT", "BOLETIM", "SPOT"]}
+            },
+            "noite_madrugada": {
+                "inicio": "18:00",
+                "fim": "23:59",
+                "loop": {"intervalo_minutos": 30, "estrutura": ["SPOT", "BOLETIM", "SPOT"]}
+            }
+        },
+        "excecoes_diurnas": {
+            "segunda": {
+                "09:00": ["SPOT", "BOLETIM", "SPOT", "MUSICA"],
+                "10:00": ["SPOT", "BOLETIM", "SPOT", "MUSICA"],
+                "10:45": ["SPOT", "NOTICIAS_DO_JUDICIARIO", "SPOT", "MUSICA"],
+                "11:30": ["SPOT", "VH_INSTITUCIONAL", "SPOT", "MUSICA"],
+                "12:00": ["SPOT", "BOLETIM", "SPOT", "MUSICA"],
+                "16:00": ["VH_INSTITUCIONAL", "MEMORIA_DA_JUSTICA", "MUSICA"],
+                "17:30": ["NOTICIAS_DO_JUDICIARIO"]
+            },
+            "terca": {
+                "09:00": ["SPOT", "VH_INSTITUCIONAL", "MUSICA"],
+                "10:00": ["SPOT", "VH_INSTITUCIONAL", "MUSICA"],
+                "10:45": ["SPOT", "NOTICIAS_DO_JUDICIARIO", "SPOT", "MUSICA"],
+                "11:30": ["SPOT", "BOLETIM", "SPOT", "MUSICA"],
+                "12:00": ["SPOT", "BOLETIM", "SPOT", "MUSICA"],
+                "15:00": ["SPOT", "BOLETIM", "GIRO_NAS_COMARCAS", "MUSICA"],
+                "17:30": ["NOTICIAS_DO_JUDICIARIO"]
+            },
+            "quarta": {
+                "09:00": ["SPOT", "BOLETIM", "SPOT", "MUSICA"],
+                "10:00": ["SPOT", "BOLETIM", "SPOT", "MUSICA"],
+                "10:45": ["SPOT", "NOTICIAS_DO_JUDICIARIO", "SPOT", "MUSICA"],
+                "11:30": ["SPOT", "BOLETIM", "SPOT", "MUSICA"],
+                "12:00": ["SPOT", "BOLETIM", "SPOT", "MUSICA"],
+                "17:30": ["NOTICIAS_DO_JUDICIARIO"]
+            },
+            "quinta": {
+                "09:00": ["SPOT", "VH_INSTITUCIONAL", "LEVEMENTE", "MUSICA"],
+                "10:00": ["SPOT", "BOLETIM", "SPOT", "MUSICA"],
+                "10:45": ["SPOT", "NOTICIAS_DO_JUDICIARIO", "SPOT", "MUSICA"],
+                "11:30": ["SPOT", "BOLETIM", "SPOT", "MUSICA"],
+                "12:00": ["SPOT", "BOLETIM", "SPOT", "MUSICA"],
+                "17:30": ["NOTICIAS_DO_JUDICIARIO"]
+            },
+            "sexta": {
+                "09:00": ["SPOT", "VH_INSTITUCIONAL", "MUSICA"],
+                "10:00": ["SPOT", "BOLETIM", "SPOT", "MUSICA"],
+                "10:45": ["SPOT", "NOTICIAS_DO_JUDICIARIO", "SPOT", "MUSICA"],
+                "11:30": ["SPOT", "VH_INSTITUCIONAL", "SPOT", "MUSICA"],
+                "12:00": ["SPOT", "VH_INSTITUCIONAL", "MUSICA"],
+                "17:30": ["NOTICIAS_DO_JUDICIARIO"]
+            }
+        },
+        "final_de_semana": {
+            "sabado": {
+                "06:00_15:00": {"loop": {"intervalo_minutos": 30, "estrutura": ["SPOT", "BOLETIM", "SPOT", "MUSICA"]}},
+                "15:00_18:00": {"loop": {"intervalo_minutos": 30, "estrutura": ["SPOT", "BOLETIM", "SPOT", "MUSICA"]}}
+            },
+            "domingo": {
+                "06:00_15:00": {"loop": {"intervalo_minutos": 30, "estrutura": ["SPOT", "BOLETIM", "SPOT", "MUSICA"]}},
+                "15:00_18:00": {"loop": {"intervalo_minutos": 30, "estrutura": ["SPOT", "BOLETIM", "SPOT", "MUSICA"]}}
+            }
+        }
+    }
+
+def obter_boletins_dia(data_execucao=None) -> list[str]:
+    """Retorna a lista de boletins mp3 correspondentes ao dia ou randômico se for fim de semana."""
+    if data_execucao is None:
+        data_execucao = now_local()
+    
+    dia_semana = data_execucao.weekday()  # 0=Segunda, ..., 6=Domingo
+    dias_uteis = ["SEGUNDA", "TERCA", "QUARTA", "QUINTA", "SEXTA"]
+    
+    pasta_raiz = CFG.get("pasta_boletins_raiz", r"D:\SERVIDOR\BOLETINS")
+    
+    if dia_semana < 5:  # Segunda a Sexta
+        dia_nome = dias_uteis[dia_semana]
+        pasta = os.path.join(pasta_raiz, dia_nome)
+        return listar_mp3(pasta)
+    else:  # Sábado e Domingo
+        # Pega boletins randomicamente de todos os dias (Segunda a Sexta)
+        todos = []
+        for dia in dias_uteis:
+            pasta = os.path.join(pasta_raiz, dia)
+            todos.extend(listar_mp3(pasta))
+        return todos
+
+def obter_programa_mais_recente(pasta: str) -> str | None:
+    """Varre recursivamente a pasta e localiza o arquivo .mp3 mais recente."""
+    if not pasta or not os.path.exists(pasta):
+        return None
+    candidatos = []
+    for root, _, files in os.walk(pasta):
+        for f in files:
+            if f.lower().endswith(".mp3") and "?" not in f:
+                caminho = os.path.join(root, f)
+                try:
+                    mtime = os.path.getmtime(caminho)
+                    candidatos.append((caminho, mtime))
+                except Exception:
+                    pass
+    if not candidatos:
+        return None
+    # Ordena pelo tempo de modificação decrescente (mais recente primeiro)
+    candidatos.sort(key=lambda x: x[1], reverse=True)
+    return candidatos[0][0]
+
 def pasta_boletins_hoje() -> str:
-    """Retorna o caminho da pasta de boletins do dia atual (usando timezone local correto)."""
-    # Usa datetime.now() mas com tratamento de timezone para garantir o dia correto
-    # Se o servidor está em Brasil (UTC-3), o dia sempre será o correto
+    """Mantido para compatibilidade, retorna a pasta de hoje."""
     agora = now_local()
     dia_nome = DIAS_SEMANA.get(agora.weekday(), "SEGUNDA")
     return os.path.join(CFG["pasta_boletins_raiz"], dia_nome)
@@ -116,12 +253,13 @@ def listar_mp3(pasta: str) -> list[str]:
         return [os.path.join(pasta, f) for f in os.listdir(pasta) if f.lower().endswith(".mp3") and "?" not in f]
     except Exception: return []
 
-def carregar_assets_apoio() -> dict:
+def carregar_assets_apoio(data_execucao=None) -> dict:
     return {
         "vinhetas": listar_mp3(CFG["pasta_vinhetas"]),
         "spots":    listar_mp3(CFG["pasta_spots"]),
-        "boletins": listar_mp3(pasta_boletins_hoje()),
+        "boletins": obter_boletins_dia(data_execucao),
     }
+
 
 # ===========================================================================
 # GESTOR DE FILA (ESTRATÉGIA ANTI-REPETIÇÃO E DAYPARTING)
@@ -286,37 +424,179 @@ def montar_bloco(
     mood: str | None = None,
 ) -> list[str]:
     """
-    Monta a grade musical aplicando o conceito de PROGRAMAÇÃO PROFISSIONAL:
-    - Curva de Energia: Suave -> Pico -> Suave.
-    - Alternância de Textura: Evita gêneros repetidos em sequência.
-    - Quebra de Ordem Alfabética: Via Fair Shuffle e Sorteio de Conceito.
+    Monta a grade musical baseada no dia da semana e na grade configurada no banco de dados.
+    Aplica conceito de programação profissional, curva de energia, e insere programas nos horários previstos.
     """
     if not acervo: return []
-    if assets is None: assets = carregar_assets_apoio()
+    
+    # Determina a data exata de execução do bloco para saber o dia da semana
+    agora = now_local()
+    if hora_inicio is not None:
+        # Se a hora de início for menor que a hora atual por mais de 4h,
+        # significa que a geração é para o bloco da madrugada do dia seguinte.
+        if hora_inicio < agora.hour - 4:
+            from datetime import timedelta
+            data_bloco = agora + timedelta(days=1)
+        else:
+            data_bloco = agora
+    else:
+        data_bloco = agora
+        hora_inicio = agora.hour
+
+    dias_map = {
+        0: "segunda",
+        1: "terca",
+        2: "quarta",
+        3: "quinta",
+        4: "sexta",
+        5: "sabado",
+        6: "domingo"
+    }
+    dia_nome = dias_map.get(data_bloco.weekday(), "segunda")
+
+    # Carrega a grade ativa do SQLite
+    grade = carregar_grade_do_banco()
+    
+    # Carrega os assets baseados no dia do bloco
+    if assets is None: 
+        assets = carregar_assets_apoio(data_bloco)
 
     gestor = GestorFila(acervo)
     playlist: list[str] = ["#EXTM3U"]
     segundos_acumulados = 0
     contador_musicas = 0
     
-    hora = hora_inicio if hora_inicio is not None else now_local().hour
-    energias_base = obter_regras_energia_por_hora(hora)
+    energias_base = obter_regras_energia_por_hora(hora_inicio)
     n_regional = CFG.get("regional_a_cada_n", 8)
     
+    # Determina a meta de duração do bloco
     alvo = CFG.get("duracao_bloco_segundos", 8000)
     if duracao_alvo_s < 7200: alvo = duracao_alvo_s
 
-    logger.info(f"[GradeRules] Gerando CONCEITO para {hora}H — Mood: {mood} — Meta: {alvo}s")
+    # Mapeia eventos horários agendados
+    minuto_inicio_dia = hora_inicio * 60
+    minuto_fim_dia = minuto_inicio_dia + (alvo // 60)
+    
+    eventos_agendados = []
+    minutos_excecao = set()
+    
+    # Se houver exceções diurnas para o dia atual no banco, nós as lemos primeiro
+    excecoes = {}
+    if dia_nome not in ["sabado", "domingo"]:
+        excecoes = grade.get("excecoes_diurnas", {}).get(dia_nome, {})
+        for hora_str, itens in excecoes.items():
+            try:
+                h, m_val = map(int, hora_str.split(":"))
+                m_abs = h * 60 + m_val
+                if minuto_inicio_dia <= m_abs < minuto_fim_dia:
+                    eventos_agendados.append((m_abs, hora_str, itens))
+                    minutos_excecao.add(m_abs)
+            except Exception as ex:
+                logger.error(f"Erro ao parsear horario de excecao {hora_str}: {ex}")
 
-    while segundos_acumulados < alvo:
-        # LÓGICA DE CONCEITO: Ajusta a energia alvo dinamicamente dentro do bloco de 2h
-        # Progresso do bloco (0.0 a 1.0)
-        progresso = segundos_acumulados / alvo
+    # Adiciona os loops recorrentes de apoio em todo o período do bloco (todos os dias)
+    # 1. Boletins a cada 30 minutos (XX:00 e XX:30)
+    # 2. Spots a cada 30 minutos com 20 minutos de diferença (XX:20 e XX:50)
+    for m in range(minuto_inicio_dia, minuto_fim_dia):
+        # Se aquele minuto já possui uma exceção diurna específica agendada, respeitamos
+        if m in minutos_excecao:
+            continue
+            
+        # Boletim a cada meia hora
+        if m % 30 == 0:
+            eventos_agendados.append((m, f"{m//60:02d}:{(m%60):02d}", ["SPOT", "BOLETIM", "SPOT"]))
+        # Spot a cada meia hora com 20 minutos de diferença para os boletins (minutos terminando em 20 ou 50)
+        elif (m - 20) % 30 == 0:
+            eventos_agendados.append((m, f"{m//60:02d}:{(m%60):02d}", ["SPOT"]))
+            
+    # Ordena eventos agendados cronologicamente
+    eventos_agendados.sort(key=lambda x: x[0])
+    
+    logger.info(f"[GradeRules] Gerando bloco para {dia_nome.upper()} às {hora_inicio:02d}H. Eventos no bloco: {[e[1] for e in eventos_agendados]}")
+
+    # Processa os eventos ordenados na linha do tempo
+    for m_abs, hora_str, sequencia in eventos_agendados:
+        segundos_alvo_evento = (m_abs - minuto_inicio_dia) * 60
         
-        # Curva de Energia (Simulada):
-        # Início (0-30%): Energias mais baixas do range
-        # Meio (30-70%): Energias mais altas do range (Pico)
-        # Fim (70-100%): Energias médias para transição
+        # Preenche com músicas normais até atingir o tempo correspondente ao evento
+        while segundos_acumulados + 120 < segundos_alvo_evento and segundos_acumulados < alvo:
+            progresso = segundos_acumulados / alvo
+            if progresso < 0.3:
+                e_alvo = [min(energias_base), min(energias_base) + 1]
+            elif progresso < 0.7:
+                e_alvo = [max(energias_base) - 1, max(energias_base)]
+            else:
+                e_alvo = energias_base
+
+            tipo = "regional" if contador_musicas > 0 and contador_musicas % n_regional == 0 else "geral"
+            musica = gestor.proxima(
+                tipo=tipo, 
+                energias_alvo=e_alvo, 
+                evitar_estilo=gestor.ultimo_estilo,
+                mood_alvo=mood
+            )
+            
+            if not musica: 
+                break
+
+            playlist.append(musica.caminho)
+            segundos_acumulados += (musica.duracao or 210)
+            contador_musicas += 1
+
+            # Inserções de apoio padrão a cada N faixas
+            if assets.get("vinhetas") and deve_inserir_vinheta(contador_musicas):
+                playlist.append(random.choice(assets["vinhetas"]))
+                segundos_acumulados += CFG.get("duracao_estimada_vinheta_s", 5)
+
+            if assets.get("spots") and deve_inserir_spot(contador_musicas):
+                playlist.append(random.choice(assets["spots"]))
+                segundos_acumulados += CFG.get("duracao_estimada_spot_s", 30)
+
+        # Insere a sequência programada do evento
+        logger.info(f"[GradeRules] Inserindo sequencia de evento agendado ({hora_str}): {sequencia}")
+        for item in sequencia:
+            if item == "MUSICA":
+                continue
+                
+            caminho_item = None
+            duracao_estimada = 0
+            
+            if item == "SPOT":
+                if assets.get("spots"):
+                    caminho_item = random.choice(assets["spots"])
+                    duracao_estimada = CFG.get("duracao_estimada_spot_s", 30)
+            elif item == "VH_INSTITUCIONAL":
+                if assets.get("vinhetas"):
+                    caminho_item = random.choice(assets["vinhetas"])
+                    duracao_estimada = CFG.get("duracao_estimada_vinheta_s", 5)
+            elif item == "BOLETIM":
+                if assets.get("boletins"):
+                    caminho_item = random.choice(assets["boletins"])
+                    duracao_estimada = CFG.get("duracao_estimada_boletim_s", 120)
+            elif item in ["GIRO_NAS_COMARCAS", "MEMORIA_DA_JUSTICA", "LEVEMENTE", "NOTICIAS_DO_JUDICIARIO"]:
+                # Obtém a configuração de pasta do programa na grade
+                prog_cfg = grade.get("legendas", {}).get("PROGRAMAS", {}).get(item, {})
+                pasta_prog = prog_cfg.get("pasta", "")
+                
+                # Adapta dinamicamente a pasta do NJUD para buscar o jornal local sincronizado por dia da semana
+                if item == "NOTICIAS_DO_JUDICIARIO":
+                    pasta_prog = os.path.join(r"D:\SERVIDOR\PROGRAMAS\NOTICIAS_DO_JUDICIARIO", dia_nome.upper())
+                
+                caminho_item = obter_programa_mais_recente(pasta_prog)
+                duracao_estimada = prog_cfg.get("duracao_minutos", 5) * 60
+                
+                if caminho_item:
+                    logger.info(f"[GradeRules] Programa '{item}' injetado com sucesso: {caminho_item}")
+                else:
+                    logger.warning(f"[GradeRules] Nao foi possivel encontrar arquivo em '{pasta_prog}' para '{item}'. Fallback para musica.")
+            
+            if caminho_item:
+                playlist.append(caminho_item)
+                segundos_acumulados += duracao_estimada
+
+    # Se ainda sobrar tempo no bloco, preenche até a meta
+    while segundos_acumulados < alvo:
+        progresso = segundos_acumulados / alvo
         if progresso < 0.3:
             e_alvo = [min(energias_base), min(energias_base) + 1]
         elif progresso < 0.7:
@@ -325,8 +605,6 @@ def montar_bloco(
             e_alvo = energias_base
 
         tipo = "regional" if contador_musicas > 0 and contador_musicas % n_regional == 0 else "geral"
-        
-        # Pede a próxima música passando o conceito de energia e o mood atual
         musica = gestor.proxima(
             tipo=tipo, 
             energias_alvo=e_alvo, 
@@ -334,13 +612,13 @@ def montar_bloco(
             mood_alvo=mood
         )
         
-        if not musica: break
+        if not musica: 
+            break
 
         playlist.append(musica.caminho)
         segundos_acumulados += (musica.duracao or 210)
         contador_musicas += 1
 
-        # Inserções de apoio
         if assets.get("vinhetas") and deve_inserir_vinheta(contador_musicas):
             playlist.append(random.choice(assets["vinhetas"]))
             segundos_acumulados += CFG.get("duracao_estimada_vinheta_s", 5)
@@ -348,10 +626,6 @@ def montar_bloco(
         if assets.get("spots") and deve_inserir_spot(contador_musicas):
             playlist.append(random.choice(assets["spots"]))
             segundos_acumulados += CFG.get("duracao_estimada_spot_s", 30)
-
-        if assets.get("boletins") and deve_inserir_boletim(contador_musicas):
-            playlist.append(random.choice(assets["boletins"]))
-            segundos_acumulados += CFG.get("duracao_estimada_boletim_s", 120)
 
     return playlist
 

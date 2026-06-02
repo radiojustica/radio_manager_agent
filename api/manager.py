@@ -18,8 +18,9 @@ import json
 
 from core.database import engine, Base, SessionLocal
 from core.models import RegraProgramacao
-from routers import acervo, status, config, ai, workers, engine as engine_router, reports
+from routers import acervo, status, config, ai, workers, engine as engine_router, reports, schedule
 from routers.downloader import router as downloader_router
+from routers.autopilot import router as autopilot_router
 
 logger = logging.getLogger("OmniCore.APIManager")
 
@@ -126,6 +127,8 @@ app.include_router(workers.router)
 app.include_router(reports.router)
 app.include_router(engine_router.router)
 app.include_router(downloader_router)
+app.include_router(autopilot_router)
+app.include_router(schedule.router)
 
 if FRONTEND_PATH.exists():
     app.mount("/", StaticFiles(directory=str(FRONTEND_PATH), html=True), name="static")

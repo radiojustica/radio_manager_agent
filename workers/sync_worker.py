@@ -47,7 +47,15 @@ class SyncWorker(WorkerBase):
                             except Exception:
                                 pass
                         else:
-                            violations.append(f"Falha ao normalizar: {file}")
+                            violations.append(f"Falha ao normalizar {file}. Importando sem normalização como fallback.")
+                            try:
+                                import shutil
+                                shutil.copy2(in_p, out_p)
+                                os.remove(in_p)
+                                normalizados += 1
+                            except Exception as fallback_err:
+                                logger.error(f"Falha crítica no fallback de importação do Inbox para {file}: {fallback_err}")
+                                violations.append(f"Erro ao mover arquivo sem normalização: {file} - {fallback_err}")
 
             # 2. Varredura no disco e sincronização com DB
             caminhos_db = {m.caminho for m in db.query(Musica.caminho).all()}

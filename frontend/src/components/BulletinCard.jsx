@@ -45,10 +45,9 @@ export default function BulletinCard() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
         <h3 style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', letterSpacing: '1px' }}>CENTRAL DE BOLETINS</h3>
         <button 
-          className={`btn-action ${syncing ? 'syncing' : ''}`} 
+          className={`btn btn-primary btn-sm ${syncing ? 'syncing' : ''}`} 
           onClick={handleSync} 
           disabled={syncing}
-          style={{ fontSize: '0.65rem', padding: '0.4rem 0.8rem' }}
         >
           {syncing ? '🔄 Sincronizando...' : '📥 Sincronizar Agora'}
         </button>

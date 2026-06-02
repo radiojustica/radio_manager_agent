@@ -14,6 +14,7 @@ if getattr(sys, 'frozen', False):
 
 import logging
 from director.orchestrator import system_orchestrator
+from core.scheduler import start_scheduler
 
 def main():
     # Detecta modo de operação
@@ -23,13 +24,17 @@ def main():
     try:
         if is_headless:
             # Inicializa apenas o backend (Headless)
+            from core.database import init_db
+            init_db()
             system_orchestrator.bootstrap()
             system_orchestrator.start_core()
             system_orchestrator.run_headless()
+            start_scheduler()
         else:
             # Inicializa com interface gráfica (Padrão)
             from core.launcher import run_app
             run_app()
+            start_scheduler()
 
     except KeyboardInterrupt:
         print("\n[Main] Encerrando sistema...")
