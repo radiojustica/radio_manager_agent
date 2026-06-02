@@ -45,6 +45,14 @@ def test_parse_njud_info_invalid():
         "NJUD 01-12.mp3",  # Sem número
         "NJUD 1826.wav",  # Extensão errada
         "MODELO ROTEIRO NJUD.gdoc",  # Extensão errada
+        "NJUD 1881 26-05 LEO.mp3",  # Contém LEO
+        "NJUD 1881 26-05 LIV.mp3",  # Contém LIV
+        "NJUD 1881 26-05 THI.mp3",  # Contém THI
+        "NJUD 1881 26-05 LET.mp3",  # Contém LET
+        "NJUD 1881 26-05 GRAV.mp3",  # Contém GRAV
+        "NJUD 1881 26-05 PTT-2026.mp3",  # Contém PTT-
+        "NJUD 1881 26-05-WA0001.mp3",  # Contém -WA
+        "NJUD 1881 26-05 AUD-2026.mp3",  # Contém AUD-
     ]
     
     for filename in invalid_cases:

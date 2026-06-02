@@ -36,7 +36,7 @@ class NjudSync:
         filename = os.path.basename(filepath)
         
         # Ignora arquivos parciais (OFFs de locução, spots parciais de Notas ou bruto)
-        for skip_word in ["OFF", "LOC", "NOTA", "BRUTO", "PILOTO", "COPIA", "CÓPIA", "ROTEIRO", "APRESENTA"]:
+        for skip_word in ["OFF", "LOC", "NOTA", "NOTAS", "BRUTO", "PILOTO", "COPIA", "CÓPIA", "ROTEIRO", "APRESENTA", "GRAVAÇÃO", "GRAVACAO", "GRAV", "LIV", "LEO", "THI", "LET", "PTT-", "-WA", "AUD-"]:
             if skip_word in filename.upper():
                 return None
                 
