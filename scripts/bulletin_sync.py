@@ -115,9 +115,20 @@ class BulletinSync:
                             info = self.parse_bulletin_info(fname)
                             if info:
                                 target_name = f"BOLETIM_B{info['b_num']}.mp3"
+                                meta_name = f"BOLETIM_B{info['b_num']}.json"
                             else:
                                 target_name = fname
+                                meta_name = f"{fname}.json"
+                                
                             shutil.copy2(f_path, os.path.join(temp_maneuver, target_name))
+                            
+                            if info:
+                                with open(os.path.join(temp_maneuver, meta_name), "w", encoding="utf-8") as f_meta:
+                                    json.dump({
+                                        "filename": fname,
+                                        "date": info["date"].strftime("%d/%m/%Y"),
+                                        "synced_at": datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+                                    }, f_meta, ensure_ascii=False, indent=2)
                         
                         if os.listdir(temp_maneuver):
                             # Limpa destino
@@ -155,13 +166,24 @@ class BulletinSync:
         dates = []
         if not os.path.exists(directory): return []
         for f in os.listdir(directory):
-            if f.lower().endswith(".mp3"):
+            if f.lower().endswith(".json"):
                 try:
-                    mtime = os.path.getmtime(os.path.join(directory, f))
-                    dt = datetime.fromtimestamp(mtime)
-                    dates.append(dt)
+                    with open(os.path.join(directory, f), "r", encoding="utf-8") as f_meta:
+                        meta = json.load(f_meta)
+                        if "date" in meta:
+                            dates.append(datetime.strptime(meta["date"], "%d/%m/%Y"))
                 except:
                     pass
+        # Fallback para mtime se não houver JSONs de data
+        if not dates:
+            for f in os.listdir(directory):
+                if f.lower().endswith(".mp3"):
+                    try:
+                        mtime = os.path.getmtime(os.path.join(directory, f))
+                        dt = datetime.fromtimestamp(mtime)
+                        dates.append(dt)
+                    except:
+                        pass
         return dates
 
     def get_status(self):
@@ -171,17 +193,33 @@ class BulletinSync:
             if not os.path.exists(day_path):
                 status[day] = {"count": 0, "dates": []}
                 continue
-            files = [f for f in os.listdir(day_path) if f.lower().endswith(".mp3")]
+            
+            mp3_files = [f for f in os.listdir(day_path) if f.lower().endswith(".mp3")]
             dates = set()
-            for f in files:
-                filepath = os.path.join(day_path, f)
-                try:
-                    mtime = os.path.getmtime(filepath)
-                    dt = datetime.fromtimestamp(mtime)
-                    dates.add(dt.strftime("%d/%m/%Y"))
-                except:
-                    pass
-            status[day] = {"count": len(files), "dates": sorted(list(dates), reverse=True)}
+            
+            for f in os.listdir(day_path):
+                if f.lower().endswith(".json"):
+                    filepath = os.path.join(day_path, f)
+                    try:
+                        with open(filepath, "r", encoding="utf-8") as f_meta:
+                            meta_data = json.load(f_meta)
+                            if "date" in meta_data:
+                                dates.add(meta_data["date"])
+                    except:
+                        pass
+            
+            # Fallback para mtime se não houver JSON
+            if not dates and mp3_files:
+                for f in mp3_files:
+                    filepath = os.path.join(day_path, f)
+                    try:
+                        mtime = os.path.getmtime(filepath)
+                        dt = datetime.fromtimestamp(mtime)
+                        dates.add(dt.strftime("%d/%m/%Y"))
+                    except:
+                        pass
+                        
+            status[day] = {"count": len(mp3_files), "dates": sorted(list(dates), reverse=True)}
         return status
 
 if __name__ == "__main__":

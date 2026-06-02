@@ -76,16 +76,16 @@ def test_sync_operation(mock_getmtime, mock_remove, mock_listdir, mock_copy, moc
     
     # Simulamos arquivos na pasta do Drive
     # Terça-feira (weekday=1), Quinta-feira (weekday=3)
-    # NJUD 1809 02-02 -> mtime correspondente a uma Terça
-    # NJUD 1812 05-02 -> mtime correspondente a uma Quinta
+    # NJUD 1809 03-02 -> data correspondente a uma Terça
+    # NJUD 1812 05-02 -> data correspondente a uma Quinta
     mock_walk.return_value = [
-        ("mock_src", [], ["NJUD 1809 02-02.mp3", "NJUD 1812 05-02.mp3", "NJUD 1809 02-02 OFF.mp3", "NJUD 1823.mp3"])
+        ("mock_src", [], ["NJUD 1809 03-02.mp3", "NJUD 1812 05-02.mp3", "NJUD 1809 03-02 OFF.mp3", "NJUD 1823.mp3"])
     ]
     
     # Mockando getmtime para retornar datas específicas
     # 2026-02-03 (Terça) e 2026-02-05 (Quinta)
     def side_effect_mtime(path):
-        if "NJUD 1809 02-02.mp3" in path:
+        if "NJUD 1809 03-02.mp3" in path:
             return datetime(2026, 2, 3, 10, 0, 0).timestamp()
         elif "NJUD 1812 05-02.mp3" in path:
             return datetime(2026, 2, 5, 10, 0, 0).timestamp()

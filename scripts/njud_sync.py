@@ -43,15 +43,22 @@ class NjudSync:
         if not filename.lower().endswith(".mp3"):
             return None
             
-        # Padrão finalizado estrito: NJUD nº data (ex: NJUD 1809 02-02.mp3, NJUD 1759 - 03 11.mp3)
+        # Padrão finalizado estrito suportando hífens e underscores
         import re
-        match = re.search(r"njud\s+\d+\s*(?:-\s*)?\d{2}[-_\s]\d{2}", filename.lower())
+        match = re.search(r"njud[-_\s]+\d+[-_\s]+(\d{2})[-_\s](\d{2})(?:[-_\s](\d{4}))?", filename.lower())
         if not match:
             return None
             
+        day_str, month_str, year_str = match.groups()
+            
         try:
             mtime = os.path.getmtime(filepath)
-            dt = datetime.fromtimestamp(mtime)
+            mtime_dt = datetime.fromtimestamp(mtime)
+            
+            # Se não houver ano no nome do arquivo, assume o ano de modificação (mtime)
+            year = int(year_str) if year_str else mtime_dt.year
+            dt = datetime(year, int(month_str), int(day_str))
+            
             return {
                 "date": dt,
                 "filename": filename,
@@ -59,7 +66,7 @@ class NjudSync:
                 "day_name": DAY_MAP[dt.weekday()]
             }
         except Exception as e:
-            logger.debug(f"Falha ao obter mtime para {filename}: {e}")
+            logger.debug(f"Falha ao obter data para {filename}: {e}")
             return None
 
     def sync(self) -> dict:
@@ -102,15 +109,18 @@ class NjudSync:
             for day, info in newest_files_by_day.items():
                 target_dir = os.path.join(self.target_local_dir, day)
                 target_file = os.path.join(target_dir, "JORNAL_NJUD.mp3")
+                meta_file = os.path.join(target_dir, "JORNAL_NJUD.json")
                 
-                # Verifica se o arquivo final já existe no destino
-                if os.path.exists(target_file):
-                    # Se já existe e tem o mesmo tamanho/data de modificação, não precisa copiar
-                    # Mas se o arquivo do Drive for mais novo, atualizamos
-                    local_mtime = os.path.getmtime(target_file)
-                    drive_mtime = os.path.getmtime(info["filepath"])
-                    if drive_mtime <= local_mtime:
-                        continue
+                # Verifica se o arquivo final e o JSON de metadados já existem no destino
+                if os.path.exists(target_file) and os.path.exists(meta_file):
+                    try:
+                        with open(meta_file, "r", encoding="utf-8") as f_meta:
+                            meta_data = json.load(f_meta)
+                            if meta_data.get("filename") == info["filename"]:
+                                # Já está sincronizado com esta exata versão do arquivo do Drive
+                                continue
+                    except:
+                        pass
                 
                 logger.info(f"🔄 Atualizando NJUD {day}: copiando {info['filename']}...")
                 
@@ -121,8 +131,16 @@ class NjudSync:
                     except OSError as oe:
                         logger.warning(f"Não foi possível remover arquivo antigo {f}: {oe}")
                 
-                # Copia o novo arquivo
+                # Copia o novo arquivo e cria o arquivo JSON de metadados
                 shutil.copy2(info["filepath"], target_file)
+                
+                with open(meta_file, "w", encoding="utf-8") as f_meta:
+                    json.dump({
+                        "filename": info["filename"],
+                        "date": info["date"].strftime("%d/%m/%Y"),
+                        "synced_at": datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+                    }, f_meta, ensure_ascii=False, indent=2)
+                    
                 updated_days.append(f"{day} ({info['filename']})")
                 
             msg = f"Sincronia NJUD finalizada. Dias atualizados: {', '.join(updated_days) if updated_days else 'Tudo em dia'}."
@@ -146,15 +164,31 @@ class NjudSync:
             if not os.path.exists(day_path):
                 status[day] = {"count": 0, "dates": []}
                 continue
-            files = [f for f in os.listdir(day_path) if f.lower().endswith(".mp3")]
+            
+            mp3_files = [f for f in os.listdir(day_path) if f.lower().endswith(".mp3")]
             dates = set()
-            for f in files:
-                filepath = os.path.join(day_path, f)
+            
+            # Tenta ler a data real dos metadados
+            meta_file = os.path.join(day_path, "JORNAL_NJUD.json")
+            if os.path.exists(meta_file):
                 try:
-                    mtime = os.path.getmtime(filepath)
-                    dt = datetime.fromtimestamp(mtime)
-                    dates.add(dt.strftime("%d/%m/%Y"))
+                    with open(meta_file, "r", encoding="utf-8") as f_meta:
+                        meta_data = json.load(f_meta)
+                        if "date" in meta_data:
+                            dates.add(meta_data["date"])
                 except:
                     pass
-            status[day] = {"count": len(files), "dates": sorted(list(dates), reverse=True)}
+            
+            # Fallback para mtime se não houver JSON
+            if not dates and mp3_files:
+                for f in mp3_files:
+                    filepath = os.path.join(day_path, f)
+                    try:
+                        mtime = os.path.getmtime(filepath)
+                        dt = datetime.fromtimestamp(mtime)
+                        dates.add(dt.strftime("%d/%m/%Y"))
+                    except:
+                        pass
+                        
+            status[day] = {"count": len(mp3_files), "dates": sorted(list(dates), reverse=True)}
         return status
