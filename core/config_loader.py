@@ -14,7 +14,11 @@ logger = logging.getLogger("OmniCore.ConfigLoader")
 
 # Carrega .env uma única vez na importação do módulo
 def _load_dotenv():
-    env_path = Path(__file__).resolve().parent.parent / ".env"
+    if getattr(sys, "frozen", False):
+        env_path = Path(sys.executable).parent / ".env"
+    else:
+        env_path = Path(__file__).resolve().parent.parent / ".env"
+        
     if not env_path.exists():
         logger.warning(f".env não encontrado em {env_path}. Usando apenas variáveis de ambiente do sistema.")
         return

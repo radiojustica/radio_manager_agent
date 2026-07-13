@@ -35,6 +35,8 @@ class AutopilotService:
     def log_action(db: Session, action_type: str, message: str, success: bool = True) -> AutopilotLog:
         """Registra uma ação de autocura tomada pelo piloto automático."""
         from datetime import UTC
+        # Salva sem tzinfo para compatibilidade com SQLite (DateTime sem timezone)
+        # mas usa UTC como referência — o sufixo 'Z' é adicionado na serialização
         log_entry = AutopilotLog(
             timestamp=datetime.now(UTC).replace(tzinfo=None),
             action_type=action_type,

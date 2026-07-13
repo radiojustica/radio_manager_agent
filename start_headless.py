@@ -36,6 +36,9 @@ def main():
         from api.manager import run_api_server
         from worker_manager import worker_manager_instance
         
+        logger.info("Iniciando Orquestrador de Workers...")
+        worker_manager_instance.start_orchestrator()
+        
         logger.info("Iniciando API em background...")
         api_thread = threading.Thread(target=run_api_server, daemon=True)
         api_thread.start()

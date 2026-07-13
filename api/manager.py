@@ -87,6 +87,16 @@ async def broadcast_event(event: dict):
 async def websocket_endpoint(websocket: WebSocket):
     await manager.connect(websocket)
     try:
+        # Envia a lista inicial de eventos do guardião ao conectar
+        try:
+            from services.guardian_service import guardian_instance
+            initial_events = {
+                "events": guardian_instance.events
+            }
+            await websocket.send_text(json.dumps(initial_events))
+        except Exception as err:
+            logger.error(f"Erro ao enviar eventos iniciais via WebSocket: {err}")
+
         # Loop passivo: apenas mantém a conexão viva e envia heartbeats
         while True:
             # Heartbeat para evitar timeout do browser/proxy

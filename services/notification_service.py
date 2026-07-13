@@ -18,11 +18,32 @@ def _load_whatsapp_config():
             logger.error(f"Erro ao carregar settings.json no NotificationService: {e}")
     return {}
 
-def send_whatsapp_alert(message: str):
+def send_ntfy(message: str, title: str = "OMNI CORE V2"):
+    """Envia uma notificação via ntfy no canal radio_tjrn."""
+    url = "https://ntfy.sh/radio_tjrn"
+    headers = {
+        "Title": title.encode('utf-8'),
+        "Tags": "radio,loudspeaker"
+    }
+    try:
+        response = requests.post(url, data=message.encode('utf-8'), headers=headers, timeout=10)
+        if response.status_code == 200:
+            logger.info("Notificação ntfy enviada com sucesso para radio_tjrn")
+            return True
+        else:
+            logger.error(f"Falha ao enviar ntfy: {response.status_code} - {response.text}")
+    except Exception as e:
+        logger.error(f"Erro ao enviar ntfy: {e}")
+    return False
+
+def send_whatsapp_alert(message: str, title: str = "Alerta de Operação"):
     """
     Envia um alerta de WhatsApp usando o provedor configurado (Evolution ou Z-API).
-    Mantém compatibilidade com a chamada legada.
+    Mantém compatibilidade com a chamada legada, e agora também envia via ntfy.
     """
+    # Envia via ntfy de forma transparente
+    send_ntfy(message, title=title)
+
     lock_file = os.path.join(os.getcwd(), "mute_whatsapp.lock")
     if os.path.exists(lock_file):
         return

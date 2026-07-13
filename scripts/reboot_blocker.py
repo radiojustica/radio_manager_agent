@@ -43,7 +43,7 @@ class RebootBlocker:
         """Attempts to abort an ongoing shutdown command."""
         try:
             # Using shell command to abort any scheduled shutdown
-            subprocess.run(["shutdown", "/a"], capture_output=True, check=False)
+            subprocess.run(["shutdown", "/a"], capture_output=True, check=False, creationflags=subprocess.CREATE_NO_WINDOW)
             self.logger.debug("Attempted to abort any pending shutdown.")
         except Exception as e:
             self.logger.error(f"Error aborting shutdown: {e}")

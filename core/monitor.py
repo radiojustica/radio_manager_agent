@@ -209,7 +209,7 @@ class RadioMonitor:
             reason = "FROZEN (HUNG)" if is_hung else "stopped"
             if is_hung:
                 self.logger.error("ZaraRadio is FROZEN (HUNG). Killing and restarting...")
-                subprocess.run(["taskkill", "/F", "/IM", "ZaraRadio.exe", "/T"], capture_output=True, timeout=10)
+                subprocess.run(["taskkill", "/F", "/IM", "ZaraRadio.exe", "/T"], capture_output=True, timeout=10, creationflags=subprocess.CREATE_NO_WINDOW)
                 self.log_autopilot_action("PROCESS_RESTART", "ZaraRadio congelado. Processo encerrado via taskkill.", True)
                 time.sleep(2)
 
@@ -337,7 +337,18 @@ class RadioMonitor:
             zara_windows = [w for w in desktop.windows() if w.class_name() == "wxWindowClassNR"]
             if not zara_windows:
                 zara_windows = [w for w in desktop.windows() if "ZaraRadio" in w.window_text()]
-            if not zara_windows: return False
+            
+            if not zara_windows:
+                # FALLBACK: Se o processo ZaraRadio.exe está ativo, mas a janela não é visível/acessível (UAC/Admin),
+                # verificamos o arquivo CurrentSong.txt para inferir se ele está reproduzindo de fato.
+                zara_running = any(p.name().lower() == "zararadio.exe" for p in psutil.process_iter(['name']))
+                if zara_running:
+                    log_dir = self.settings.get("apps", {}).get("zararadio", {}).get("log_path", "D:\\RADIO\\LOG ZARARADIO")
+                    current_song = os.path.join(log_dir, "CurrentSong.txt")
+                    if os.path.exists(current_song) and os.path.getsize(current_song) > 0:
+                        return True
+                return False
+                
             for w in zara_windows:
                 title = w.window_text()
                 if any(ind in title for ind in TITLE_INDICATORS): return True
@@ -347,6 +358,16 @@ class RadioMonitor:
             return False
         except Exception as e:
             self.logger.error(f"Error checking ZaraRadio playback status: {e}")
+            # Fallback em caso de erro na varredura do pywinauto
+            try:
+                zara_running = any(p.name().lower() == "zararadio.exe" for p in psutil.process_iter(['name']))
+                if zara_running:
+                    log_dir = self.settings.get("apps", {}).get("zararadio", {}).get("log_path", "D:\\RADIO\\LOG ZARARADIO")
+                    current_song = os.path.join(log_dir, "CurrentSong.txt")
+                    if os.path.exists(current_song) and os.path.getsize(current_song) > 0:
+                        return True
+            except:
+                pass
             return False
 
 
@@ -417,14 +438,16 @@ class RadioMonitor:
             try:
                 check_result = subprocess.run(
                     ["schtasks", "/Query", "/TN", task, "/FO", "LIST"],
-                    capture_output=True, text=True, encoding="cp1252", errors="replace", timeout=15
+                    capture_output=True, text=True, encoding="cp1252", errors="replace", timeout=15,
+                    creationflags=subprocess.CREATE_NO_WINDOW
                 )
                 if check_result.returncode != 0:
                     continue
                 self.logger.warning(f"⚠️  Forbidden task '{task}' found! DELETING...")
                 delete_result = subprocess.run(
                     ["schtasks", "/delete", "/tn", task, "/f"],
-                    capture_output=True, text=True, encoding="cp1252", errors="replace", timeout=15
+                    capture_output=True, text=True, encoding="cp1252", errors="replace", timeout=15,
+                    creationflags=subprocess.CREATE_NO_WINDOW
                 )
                 if delete_result.returncode == 0:
                     self.log_event("TASK_DELETED", f"Scheduled task '{task}' was deleted.")

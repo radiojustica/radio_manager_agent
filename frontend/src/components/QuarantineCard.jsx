@@ -4,6 +4,7 @@ export default function QuarantineCard() {
   const [quarantineList, setQuarantineList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [actioningId, setActioningId] = useState(null);
+  const [selectedIds, setSelectedIds] = useState([]);
 
   const loadQuarantine = async () => {
     setLoading(true);
@@ -65,6 +66,34 @@ export default function QuarantineCard() {
         </span>
       </div>
 
+      {selectedIds.length > 0 && (
+        <button
+          className="btn btn-primary"
+          onClick={async () => {
+            const res = await fetch('/api/acervo/quarantine/release_batch', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ ids: selectedIds })
+            });
+            if (res.ok) {
+              setSelectedIds([]);
+              loadQuarantine();
+            } else {
+              alert('Falha ao liberar músicas selecionadas.');
+            }
+          }}
+          disabled={actioningId !== null}
+          style={{
+            marginTop: '0.5rem',
+            alignSelf: 'flex-start',
+            background: 'rgba(239, 68, 68, 0.1)',
+            color: 'var(--accent-danger)'
+          }}
+        >
+          Liberar selecionados ({selectedIds.length})
+        </button>
+      )}
+
       <div className="quarantine-content" style={{ minHeight: '140px', maxHeight: '300px', overflowY: 'auto' }}>
         {loading && quarantineList.length === 0 ? (
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '140px', fontSize: '0.72rem', color: 'var(--text-muted)' }}>
@@ -89,6 +118,9 @@ export default function QuarantineCard() {
                 alignItems: 'center',
                 gap: '12px'
               }}>
+                <input type="checkbox" checked={selectedIds.includes(song.id)} onChange={() => {
+                  setSelectedIds(prev => prev.includes(song.id) ? prev.filter(id => id !== song.id) : [...prev, song.id]);
+                }} style={{ marginRight: '8px' }} />
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', flex: 1, minWidth: 0 }}>
                   <div style={{ 
                     fontSize: '0.78rem', 

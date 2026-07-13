@@ -112,10 +112,11 @@ class NotificationWorker(WorkerBase):
         metadata = {
             "whatsapp_enabled": enabled,
             "provider": provider,
-            "target": self.notif_config.get("target_number")
+            "target": self.notif_config.get("target_number"),
+            "ntfy_channel": "radio_tjrn"
         }
         
-        score = 1 if enabled else 0
+        score = 2 if enabled else 1
         status = "success"
         
         self.log_action("HEARTBEAT", **metadata)

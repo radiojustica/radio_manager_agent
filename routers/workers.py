@@ -38,6 +38,89 @@ def get_workers_history_descriptive(name: str | None = None, limit: int = 50) ->
         for h in history
     ]
 
+@router.post("/content-agent/run")
+def run_content_agent():
+    """
+    Dispara a sequência completa de produção de conteúdo:
+    1. Geração de IA (ContentGenerationWorker)
+    2. Sincronização de Boletins, NJUD e Giro.
+    """
+    if not worker_manager_instance.get_worker("ContentGenerationWorker"):
+        raise HTTPException(
+            status_code=403,
+            detail="A geração de conteúdo por inteligência artificial foi suspensa por determinação institucional."
+        )
+        
+    results = {}
+    
+    # 1. Geração de IA (Este pode demorar vários minutos)
+    # Por ser síncrono no run_cycle atual, o request vai travar até terminar.
+    # TODO: No futuro, tornar isso assíncrono com feedback por websocket.
+    results["generation"] = worker_manager_instance.run_cycle("ContentGenerationWorker")
+    
+    # 2. Sincronizações (Só faz sentido se a geração teve algum sucesso ou para garantir)
+    results["bulletins"] = worker_manager_instance.run_cycle("BulletinWorker")
+    results["njud"] = worker_manager_instance.run_cycle("NjudWorker")
+    results["giro"] = worker_manager_instance.run_cycle("GiroWorker")
+    
+    return {
+        "success": all(r.get("result", {}).get("status") != "error" for r in results.values()),
+        "details": results
+    }
+
+@router.post("/spider/run")
+def run_spider_manually():
+    """
+    Dispara manualmente o OmniSpider para varredura total do Drive.
+    """
+    return worker_manager_instance.run_cycle("SpiderWorker")
+
+@router.get("/ntfy-listener/status")
+def get_ntfy_listener_status():
+    """Retorna o estado atual do listener ntfy (canal radio_tjrn)."""
+    try:
+        from services.ntfy_listener_service import ntfy_listener_service, NTFY_CHANNEL, COMMAND_MAP
+        running = ntfy_listener_service._running
+        thread_alive = (
+            ntfy_listener_service._thread is not None
+            and ntfy_listener_service._thread.is_alive()
+        )
+        return {
+            "running": running and thread_alive,
+            "thread_alive": thread_alive,
+            "channel": NTFY_CHANNEL,
+            "sse_url": f"https://ntfy.sh/{NTFY_CHANNEL}/sse",
+            "comandos_disponiveis": list(COMMAND_MAP.keys()),
+        }
+    except Exception as e:
+        return {"running": False, "error": str(e)}
+
+@router.post("/ntfy-listener/start")
+def start_ntfy_listener():
+    """
+    Inicia o NtfyListenerService no processo atual (hot-start).
+    Útil quando o sistema já estava rodando antes da feature ser deployada.
+    Operação idempotente: se já estiver rodando, retorna o status sem erro.
+    """
+    try:
+        from services.ntfy_listener_service import ntfy_listener_service, NTFY_CHANNEL, COMMAND_MAP
+        if ntfy_listener_service._running and ntfy_listener_service._thread and ntfy_listener_service._thread.is_alive():
+            return {
+                "started": False,
+                "message": "Listener já estava em execução.",
+                "channel": NTFY_CHANNEL,
+                "comandos_disponiveis": list(COMMAND_MAP.keys()),
+            }
+        ntfy_listener_service.start(worker_manager_instance)
+        return {
+            "started": True,
+            "message": f"NtfyListenerService iniciado com sucesso no canal radio_tjrn.",
+            "channel": NTFY_CHANNEL,
+            "comandos_disponiveis": list(COMMAND_MAP.keys()),
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erro ao iniciar listener ntfy: {e}")
+
 @router.post("/{name}/run")
 def run_worker_manually(name: str):
     """

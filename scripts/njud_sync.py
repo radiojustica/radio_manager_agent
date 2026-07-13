@@ -36,38 +36,48 @@ class NjudSync:
         filename = os.path.basename(filepath)
         
         # Ignora arquivos parciais (OFFs de locução, spots parciais de Notas ou bruto)
-        for skip_word in ["OFF", "LOC", "NOTA", "NOTAS", "BRUTO", "PILOTO", "COPIA", "CÓPIA", "ROTEIRO", "APRESENTA", "GRAVAÇÃO", "GRAVACAO", "GRAV", "LIV", "LEO", "THI", "LET", "PTT-", "-WA", "AUD-"]:
+        for skip_word in ["OFF", "BRUTO", "PILOTO", "COPIA", "CÓPIA", "ROTEIRO", "APRESENTA", "GRAVAÇÃO", "GRAVACAO"]:
             if skip_word in filename.upper():
                 return None
                 
         if not filename.lower().endswith(".mp3"):
             return None
             
-        # Padrão finalizado estrito suportando hífens e underscores
+        # Padrão 1: njud...DD_MM[_YYYY]
         import re
         match = re.search(r"njud[-_\s]+\d+[-_\s]+(\d{2})[-_\s](\d{2})(?:[-_\s](\d{4}))?", filename.lower())
-        if not match:
-            return None
-            
-        day_str, month_str, year_str = match.groups()
-            
-        try:
-            mtime = os.path.getmtime(filepath)
-            mtime_dt = datetime.fromtimestamp(mtime)
-            
-            # Se não houver ano no nome do arquivo, assume o ano de modificação (mtime)
-            year = int(year_str) if year_str else mtime_dt.year
-            dt = datetime(year, int(month_str), int(day_str))
-            
-            return {
-                "date": dt,
-                "filename": filename,
-                "filepath": filepath,
-                "day_name": DAY_MAP[dt.weekday()]
-            }
-        except Exception as e:
-            logger.debug(f"Falha ao obter data para {filename}: {e}")
-            return None
+        if match:
+            day_str, month_str, year_str = match.groups()
+            try:
+                mtime = os.path.getmtime(filepath)
+                mtime_dt = datetime.fromtimestamp(mtime)
+                year = int(year_str) if year_str else mtime_dt.year
+                dt = datetime(year, int(month_str), int(day_str))
+                return {
+                    "date": dt,
+                    "filename": filename,
+                    "filepath": filepath,
+                    "day_name": DAY_MAP[dt.weekday()]
+                }
+            except: pass
+
+        # Padrão 2: NJUD {num} {DD-MM}.mp3
+        match2 = re.search(r"njud\s+\d+\s+(\d{2})-(\d{2})", filename.lower())
+        if match2:
+            day_str, month_str = match2.groups()
+            try:
+                mtime = os.path.getmtime(filepath)
+                mtime_dt = datetime.fromtimestamp(mtime)
+                dt = datetime(mtime_dt.year, int(month_str), int(day_str))
+                return {
+                    "date": dt,
+                    "filename": filename,
+                    "filepath": filepath,
+                    "day_name": DAY_MAP[dt.weekday()]
+                }
+            except: pass
+
+        return None
 
     def sync(self) -> dict:
         """Sincroniza as Notícias do Judiciário (NJUD) do Drive para as pastas locais por dia da semana."""
@@ -126,6 +136,9 @@ class NjudSync:
                 
                 # Limpa destino antes de copiar para garantir apenas 1 arquivo de jornal por dia
                 for f in os.listdir(target_dir):
+                    if f.lower().endswith(('.gdoc', '.docx', '.doc', '.pdf', '.txt', '.xlsx', '.gsheet')):
+                        logger.info(f"Protegendo documento: {f}")
+                        continue
                     try:
                         os.remove(os.path.join(target_dir, f))
                     except OSError as oe:
@@ -183,12 +196,16 @@ class NjudSync:
             if not dates and mp3_files:
                 for f in mp3_files:
                     filepath = os.path.join(day_path, f)
-                    try:
-                        mtime = os.path.getmtime(filepath)
-                        dt = datetime.fromtimestamp(mtime)
-                        dates.add(dt.strftime("%d/%m/%Y"))
-                    except:
-                        pass
+                    info = self.parse_njud_info(filepath)
+                    if info:
+                        dates.add(info["date"].strftime("%d/%m/%Y"))
+                    else:
+                        try:
+                            mtime = os.path.getmtime(filepath)
+                            dt = datetime.fromtimestamp(mtime)
+                            dates.add(dt.strftime("%d/%m/%Y"))
+                        except:
+                            pass
                         
             status[day] = {"count": len(mp3_files), "dates": sorted(list(dates), reverse=True)}
         return status

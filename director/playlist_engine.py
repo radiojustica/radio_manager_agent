@@ -66,23 +66,54 @@ class PlaylistEngine:
             "natal": [12]
         }
         
+        # Palavras-chave por época sazonal que BLOQUEIAM arquivos sem tema_especial definido.
+        # Qualquer arquivo cujo caminho/título contenha essas keywords fora da época é excluído.
+        KEYWORDS_SAZONAIS = {
+            # Natal/Christmas: bloqueado fora de dezembro
+            "natal": [
+                "christmas", "natal", "natalino", "natalina", "noel", "xmas",
+                "jingle", "sleigh", "rudolph", "santa claus", "silent night",
+                "feliz natal", "noite de natal", "especial_natal",
+                "calm-christmas", "christmas-piano", "holiday",
+            ],
+            # Carnaval: bloqueado fora de fevereiro/março
+            "carnaval": [
+                "carnaval", "samba enredo", "bloco", "micareta",
+            ],
+            # Junho: bloqueado fora de junho
+            "junho": [
+                "especial_junho", "sao joao", "festa junina", "quadrilha junina",
+            ],
+        }
+        
         exclusoes_sazonais = []
         for tag, meses_permitidos in mapa_sazonal.items():
             if mes_atual not in meses_permitidos:
-                # Se o mês atual não permite a tag, bloqueamos qualquer música que tenha essa tag explicitamente
+                # Bloqueia pelo campo tema_especial (músicas já categorizadas)
                 exclusoes_sazonais.append(or_(Musica.tema_especial != tag, Musica.tema_especial == None))
                 
-        # Legado: exclusão por caminho para proteger as pastas físicas caso o usuário continue arrastando arquivos
-        if mes_atual != 12:
-            exclusoes_sazonais.append(not_(func.lower(Musica.caminho).contains("especial_natal")))
-        if mes_atual != 6:
-            exclusoes_sazonais.append(not_(func.lower(Musica.caminho).contains("especial_junho")))
+                # Bloqueia por palavras-chave no caminho e título (músicas NÃO categorizadas)
+                # Camada extra que captura arquivos como 'calm-christmas-piano-262888.mp3'
+                if tag in KEYWORDS_SAZONAIS:
+                    for kw in KEYWORDS_SAZONAIS[tag]:
+                        exclusoes_sazonais.append(
+                            not_(func.lower(Musica.caminho).contains(kw.lower()))
+                        )
+                        if Musica.titulo is not None:
+                            exclusoes_sazonais.append(
+                                not_(func.lower(Musica.titulo).contains(kw.lower()))
+                            )
+
+        # Se for junho, estendemos estilos para incluir os estilos juninos do acervo geral
+        estilos_busca = list(estilos)
+        if mes_atual == 6:
+            estilos_busca.extend(["forró", "regional", "xote", "baião", "baiao", "xaxado", "quadrilha"])
 
         candidatas = (
             db.query(Musica)
             .filter(
                 Musica.redflag == False,
-                Musica.estilo.in_(estilos),
+                Musica.estilo.in_(estilos_busca),
                 *exclusoes_sazonais
             )
             .order_by(
@@ -140,12 +171,21 @@ class PlaylistEngine:
     # API pública
     # ------------------------------------------------------------------
 
-    def gerar_playlist_bloco(self, hora_inicio: int, mood: str | None = None) -> bool:
+    def gerar_playlist_bloco(
+        self, 
+        hora_inicio: int, 
+        mood: str | None = None, 
+        estilos_customizados: list[str] | None = None, 
+        is_retry: bool = False,
+        notify: bool = False
+    ) -> bool:
         """Gera o M3U de 2h para um dado bloco horário.
 
         Args:
             hora_inicio: Hora de início do bloco (0, 2, 4, ... 22).
             mood: Mood/Vibe a ser aplicado. Usa o padrão do settings.json se None.
+            estilos_customizados: Lista opcional de estilos musicais personalizada.
+            is_retry: Indica se é uma tentativa de regeneração (evita recursão infinita).
 
         Returns:
             True em sucesso, False em falha.
@@ -155,7 +195,11 @@ class PlaylistEngine:
             mood = weather_service.get_natal_weather_mood()
             logger.info(f"[Engine] Mood automático detectado (Natal/RN): {mood}")
 
-        estilos = GR.estilos_para_mood(mood)
+        if estilos_customizados:
+            estilos = estilos_customizados
+            logger.info(f"[Engine] Usando estilos customizados: {estilos}")
+        else:
+            estilos = GR.estilos_para_mood(mood)
         cfg     = GR.CFG
         duracao = cfg.get("duracao_bloco_segundos", 7200)
 
@@ -176,7 +220,7 @@ class PlaylistEngine:
             if ok:
                 # INTEGRAÇÃO COM O DIRETOR MUSICAL
                 from director.orchestrator import music_director_instance
-                aprovado = music_director_instance.approve_or_redo(caminho_m3u, hora_inicio)
+                aprovado = music_director_instance.approve_or_redo(caminho_m3u, hora_inicio, is_retry)
                 
                 if aprovado:
                     # Atualiza o histórico de reproduções para rotatividade justa (Fair Rotation)
@@ -190,7 +234,8 @@ class PlaylistEngine:
                     # Envia alerta imediato ao WhatsApp (agora corretamente importado ou ignorado)
                     try:
                         from services.notification_service import send_whatsapp_alert
-                        send_whatsapp_alert(f"Bloco {hora_inicio:02d}H gerado e aprovado.")
+                        if notify:
+                            send_whatsapp_alert(f"Bloco {hora_inicio:02d}H gerado e aprovado.")
                     except Exception as e:
                         logger.debug(f"[Engine] Erro ao notificar WhatsApp: {e}")
                         
@@ -224,12 +269,23 @@ class PlaylistEngine:
         sucesso = True
 
         for hora in range(0, 24, 2):
-            ok = self.gerar_playlist_bloco(hora, mood)
+            ok = self.gerar_playlist_bloco(hora, mood, notify=False)
             if not ok:
                 logger.error(f"[Engine] Falha no bloco {hora:02d}H.")
                 sucesso = False
 
         guardian_instance.log_event("SUCCESS", f"Programação 24h finalizada (Mood: {mood})")
+        
+        # Silenciado para centralizar relatos no CommunicationWorker
+        # try:
+        #     from services.notification_service import send_whatsapp_alert
+        #     if sucesso:
+        #         send_whatsapp_alert(f"Programação 24h gerada com sucesso! Resumo: 12 blocos concluídos (Mood: {mood}).")
+        #     else:
+        #         send_whatsapp_alert(f"Programação 24h gerada com alertas. Resumo: Houve falhas em alguns blocos (Mood: {mood}). Verifique os logs.")
+        # except Exception as e:
+        #     logger.debug(f"[Engine] Erro ao notificar resumo via ntfy/whatsapp: {e}")
+
         return sucesso
 
     def gerar_playlist_bloco_llm(self, hora_inicio: int, mood: str | None = None) -> bool:

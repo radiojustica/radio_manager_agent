@@ -84,6 +84,27 @@ class CuradoriaWorker(SubAgentBase):
         finally:
             db.close()
 
+    @tool
+    def normalizar_tags_id3(self, caminho: str | None = None) -> dict:
+        """
+        Normaliza o encoding das tags ID3 (título, artista, álbum) de um arquivo MP3
+        ou de todo o acervo para compatibilidade com ZaraRadio (Windows-1252/cp1252).
+        Se 'caminho' for None, processa todo o acervo de músicas.
+        Corrige mojibake do tipo 'MÃ¡rcia → Márcia' automaticamente.
+        """
+        try:
+            from scripts.fix_id3_encoding import normalizar_id3_arquivo, processar_acervo
+            if caminho:
+                resultado = normalizar_id3_arquivo(caminho, dry_run=False)
+                return resultado
+            else:
+                from director import grade_rules as GR
+                pasta = GR.CFG.get("pasta_musicas", r"D:\RADIO\MUSICAS")
+                resultado = processar_acervo(pasta, dry_run=False)
+                return resultado
+        except Exception as e:
+            return {"status": "erro", "motivo": str(e)}
+
     def run_cycle(self, **kwargs) -> WorkerResult:
         init_db()
         db = SessionLocal()

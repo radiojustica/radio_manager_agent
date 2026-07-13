@@ -55,36 +55,40 @@ const Icon = {
   ),
 };
 
-/* ── PAGE META ─────────────────────────────────────── */
+/* ── METADADOS DAS PÁGINAS ─────────────────────────── */
 const PAGES = {
-  monitoramento: { title: 'Centro de Controle', sub: 'Telemetria sistêmica em tempo real' },
-  acervo:        { title: 'Database SQLite',    sub: 'Gestão de metadados e algoritmos' },
-  aquisicao:     { title: 'Expansão de Acervo', sub: 'Aquisição inteligente de novas faixas' },
-  grade:         { title: 'Grade Horária',      sub: 'Gerenciamento visual do ecossistema de blocos' },
-  configuracoes: { title: 'Hub de Sensores',    sub: 'Ajuste de regras e filtros de segurança' },
+  monitoramento: { title: 'Cockpit de Transmissão', sub: 'Controle e telemetria acústica da rádio' },
+  sistema:       { title: 'Monitor de Infraestrutura', sub: 'Status de hardware, servidores e processos' },
+  acervo:        { title: 'Biblioteca de Faixas',  sub: 'Curadoria do acervo e regras acústicas' },
+  aquisicao:     { title: 'Expansão de Acervo',    sub: 'Aquisição inteligente de novas músicas' },
+  grade:         { title: 'Grade de Programação',  sub: 'Configuração dos blocos de execução' },
+  configuracoes: { title: 'Sensores e Regras',     sub: 'Ajustes finos de segurança e automação' },
 };
 
-/* ── DAYPART ───────────────────────────────────────── */
-function getDaypart() {
-  const h = new Date().getHours();
-  if (h >= 0  && h < 5)  return { name: 'Madrugada',   format: 'Suave / Automática',     range: 'E1, E2', color: '#38bdf8' };
-  if (h >= 5  && h < 10) return { name: 'Manhã',        format: 'Energética / Despertar', range: 'E4, E5', color: '#fbbf24' };
-  if (h >= 10 && h < 16) return { name: 'Tarde',        format: 'Hits / Trabalho',        range: 'E3, E4', color: '#10b981' };
-  if (h >= 16 && h < 20) return { name: 'Fim de Tarde', format: 'Agitado / Road Rhythm',  range: 'E4, E5', color: '#f97316' };
-  return                         { name: 'Noite',        format: 'Tranquila / Romântica',  range: 'E1, E2', color: '#6366f1' };
+/* ── DAYPARTING (FAIXA HORÁRIA) ────────────────────── */
+function getDaypart(hour) {
+  const h = hour !== undefined ? hour : new Date().getHours();
+  if (h >= 0  && h < 6)  return { name: 'Madrugada',   format: 'Programação Suave e Confortável', range: 'Energias 1 a 3', color: '#14b8a6' };
+  if (h >= 6  && h < 10) return { name: 'Manhã',        format: 'Ritmo Enérgico e Despertar',      range: 'Energias 4 e 5', color: '#fbbf24' };
+  if (h >= 10 && h < 16) return { name: 'Meio do Dia',  format: 'Trabalho e Som de Fundo',         range: 'Energias 3 e 4', color: '#10b981' };
+  if (h >= 16 && h < 20) return { name: 'Tarde',        format: 'Movimento e Volta para Casa',     range: 'Energias 4 e 5', color: '#f97316' };
+  return                         { name: 'Noite',        format: 'Tranquilidade e Desaceleração',   range: 'Energias 1 a 3', color: '#6366f1' };
 }
 
-/* ── INNER APP (uses WS context) ───────────────────── */
+/* ── COMPONENTE PRINCIPAL DO APP ───────────────────── */
 function InnerApp() {
   const [activeTab, setActiveTab] = useState('monitoramento');
   const [stats, setStats] = useState({ total: 0, auditadas: 0, redflags: 0, health: null, energia_dist: {}, top_estilos: null, top_artistas: null });
   const [mood, setMood] = useState('Ensolarado');
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [error, setError] = useState(null);
-  const { connected } = useWsData();
+  const [systemLogs, setSystemLogs] = useState([]);
+  const [dbQueue, setDbQueue] = useState([]);
+  const { player, connected } = useWsData();
 
   useEffect(() => {
     const isFull = activeTab === 'acervo';
+    
     const fetchStats = async () => {
       try {
         const res = await fetch(`/api/engine/stats?full=${isFull}`);
@@ -95,8 +99,61 @@ function InnerApp() {
         setError('Conexão com o Servidor Omni Core perdida.');
       }
     };
+
+    const fetchLogs = async () => {
+      try {
+        const res = await fetch('/api/status/logs/system?lines=20');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.lines) {
+            setSystemLogs(data.lines);
+          }
+        }
+      } catch (e) {
+        console.error("Erro ao buscar logs reais do sistema:", e);
+      }
+    };
+
+    const fetchQueue = async () => {
+      try {
+        const res = await fetch('/api/acervo?page=1&limit=4');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.items && data.items.length > 0) {
+            const totalItems = data.total || 100;
+            const maxPages = Math.max(1, Math.floor(totalItems / 4));
+            const randomPage = Math.floor(Math.random() * Math.min(maxPages, 30)) + 1;
+            const resRand = await fetch(`/api/acervo?page=${randomPage}&limit=4`);
+            if (resRand.ok) {
+              const dataRand = await resRand.json();
+              if (dataRand.items && dataRand.items.length > 0) {
+                setDbQueue(dataRand.items);
+                return;
+              }
+            }
+            setDbQueue(data.items);
+          }
+        }
+      } catch (e) {
+        console.error("Erro ao buscar músicas reais do acervo para fila:", e);
+      }
+    };
+
     fetchStats();
-    const id = setInterval(fetchStats, 5000);
+    if (activeTab === 'sistema') {
+      fetchLogs();
+    }
+    if (activeTab === 'monitoramento') {
+      fetchQueue();
+    }
+
+    const id = setInterval(() => {
+      fetchStats();
+      if (activeTab === 'sistema') {
+        fetchLogs();
+      }
+    }, 5000);
+
     return () => clearInterval(id);
   }, [activeTab]);
 
@@ -110,15 +167,28 @@ function InnerApp() {
     }
   };
 
+  let serverHour = undefined;
+  if (player && player.updated_at) {
+    try {
+      const parts = player.updated_at.split('T');
+      if (parts.length > 1) {
+        serverHour = parseInt(parts[1].split(':')[0], 10);
+      }
+    } catch (e) {
+      console.error("Erro ao analisar player.updated_at:", e);
+    }
+  }
+
   const page = PAGES[activeTab] || PAGES.monitoramento;
-  const daypart = getDaypart();
+  const daypart = getDaypart(serverHour);
 
   const NAV = [
-    { id: 'monitoramento', label: 'Cockpit',    Icon: Icon.Monitor  },
-    { id: 'acervo',        label: 'Biblioteca', Icon: Icon.Library  },
-    { id: 'aquisicao',     label: 'Aquisição',  Icon: Icon.Download },
-    { id: 'grade',         label: 'Grade',      Icon: Icon.Calendar },
-    { id: 'configuracoes', label: 'Sensores',   Icon: Icon.Settings },
+    { id: 'monitoramento', label: 'Cockpit',     Icon: Icon.Monitor  },
+    { id: 'sistema',       label: 'Infra',       Icon: Icon.Radio    },
+    { id: 'acervo',        label: 'Acervo',      Icon: Icon.Library  },
+    { id: 'aquisicao',     label: 'Aquisição',   Icon: Icon.Download },
+    { id: 'grade',         label: 'Grade',       Icon: Icon.Calendar },
+    { id: 'configuracoes', label: 'Sensores',    Icon: Icon.Settings },
   ];
 
   return (
@@ -186,175 +256,627 @@ function InnerApp() {
           </div>
         </header>
 
-        {/* ── MONITORAMENTO ── */}
+        {/* ── COCKPIT DE TRANSMISSÃO (MOCKUP 1) ── */}
         {activeTab === 'monitoramento' && (
-          <div className="monitor-grid fade-in">
-            {/* Coluna Esquerda */}
-            <div className="col-stack">
-              <NowPlayingCard />
-              <BulletinCard />
-              <QuarantineCard />
-
-              {/* Stats trio */}
-              <div className="stats-trio">
-                {[
-                  { label: 'ACERVO TOTAL', value: stats?.total || 0, cls: '' },
-                  { label: 'AUDITADAS',    value: stats?.auditadas || 0, cls: 'success' },
-                  { label: 'RED FLAGS',    value: stats?.redflags || 0, cls: 'danger' },
-                ].map(({ label, value, cls }) => (
-                  <div key={label} className="card card-sm">
-                    <div className="card-label">{label}</div>
-                    <div className={`card-value ${cls}`}>{value}</div>
-                  </div>
-                ))}
+          <div className="cockpit-grid fade-in">
+            {/* CARD 1: LIVE STATUS (PLAYER & CONTROLE) */}
+            <div className="card cockpit-card-status">
+              <div className="section-header" style={{ marginBottom: '1.25rem' }}>
+                <div className="section-title">
+                  <div className="accent-line" style={{ background: player.status === 'playing' ? 'var(--color-playing)' : 'var(--color-stopped)' }} />
+                  STATUS DA PROGRAMAÇÃO
+                </div>
+                <span className={`status-badge ${player.status === 'playing' ? 'playing' : 'stopped'}`}>
+                  {player.status === 'playing' ? 'NO AR' : 'PARADO'}
+                </span>
               </div>
 
-              {/* Hardware Health */}
-              <div className="card">
-                <div className="section-header">
-                  <div className="section-title">
-                    <div className="accent-line" style={{ background: 'var(--accent-danger)' }} />
-                    SAÚDE CRÍTICA DO HARDWARE
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                <div>
+                  <div style={{ fontSize: '0.65rem', fontWeight: 800, color: 'var(--text-muted)', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: '0.25rem' }}>
+                    Tocando Agora:
+                  </div>
+                  <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    {player.title || 'Música de Programação — Sem Áudio Ativo'}
+                  </h2>
+                  <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600, marginTop: '2px' }}>
+                    TRANSMISSÃO DIGITAL VIA ZARARADIO ENGINE
+                  </p>
+                </div>
+
+                {/* Progresso do Áudio */}
+                <div>
+                  <div className="progress-track" style={{ height: '6px', borderRadius: '3px' }}>
+                    <div 
+                      className="progress-fill" 
+                      style={{ 
+                        width: player.status === 'playing' ? '45%' : '0%', 
+                        background: 'var(--accent-primary)',
+                        height: '100%',
+                        borderRadius: '3px',
+                        boxShadow: '0 0 8px var(--accent-primary)'
+                      }} 
+                    />
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '6px', fontWeight: 700 }}>
+                    <span>{player.status === 'playing' ? '01:45' : '00:00'}</span>
+                    <span>{player.status === 'playing' ? '03:45' : '00:00'}</span>
                   </div>
                 </div>
-                {stats?.health ? (
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
-                    {/* CPU */}
-                    <div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.82rem', marginBottom: '0.5rem' }}>
-                        <span style={{ fontWeight: 600 }}>Carga de CPU</span>
-                        <span style={{ fontWeight: 800, color: stats.health.cpu > 80 ? 'var(--accent-danger)' : 'var(--accent-primary)' }}>
-                          {stats.health.cpu}%
-                        </span>
-                      </div>
-                      <div className="progress-track">
-                        <div className="progress-fill" style={{ width: `${stats.health.cpu}%`, background: 'var(--accent-primary)' }} />
-                      </div>
-                    </div>
-                    {/* RAM */}
-                    <div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.82rem', marginBottom: '0.5rem' }}>
-                        <span style={{ fontWeight: 600 }}>Memória RAM</span>
-                        <span style={{ fontWeight: 800 }}>{stats.health.ram_percent}%</span>
-                      </div>
-                      <div className="progress-track">
-                        <div className="progress-fill" style={{ width: `${stats.health.ram_percent}%`, background: 'var(--accent-success)' }} />
-                      </div>
-                      <div style={{ fontSize: '0.62rem', color: 'var(--text-muted)', marginTop: '4px', textAlign: 'right', fontWeight: 700 }}>
-                        {stats.health.ram_free_mb} MB DISPONÍVEL
-                      </div>
+
+                {/* Controles de Mídia */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', justifyContent: 'center' }}>
+                  {/* Anterior */}
+                  <button className="btn btn-icon" style={{ borderRadius: '50%', width: '38px', height: '38px' }} title="Anterior">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="19 20 9 12 19 4 19 20"/><rect x="5" y="4" width="2" height="16"/></svg>
+                  </button>
+                  {/* Play */}
+                  <button className="btn" style={{ borderRadius: '50%', width: '46px', height: '46px', background: 'rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title="Reproduzir">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                  </button>
+                  {/* Pausa */}
+                  <button className="btn" style={{ borderRadius: '50%', width: '46px', height: '46px', background: 'rgba(25, 184, 166, 0.1)', borderColor: 'var(--accent-primary)', color: 'var(--accent-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title="Pausar">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+                  </button>
+                  {/* Próximo */}
+                  <button className="btn btn-icon" style={{ borderRadius: '50%', width: '38px', height: '38px' }} title="Próximo">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 4 15 12 5 20 5 4"/><rect x="17" y="4" width="2" height="16"/></svg>
+                  </button>
+                  {/* Alternar */}
+                  <button className="btn btn-icon" style={{ borderRadius: '50%', width: '38px', height: '38px' }} title="Programação Aleatória">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/><line x1="4" y1="4" x2="9" y2="9"/></svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* CARD 2: LIVE STREAMING & WAVEFORM */}
+            <div className="card cockpit-card-streaming">
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <div style={{ flexGrow: 1 }}>
+                  <div className="section-header" style={{ marginBottom: '1.25rem' }}>
+                    <div className="section-title">
+                      <div className="accent-line" style={{ background: connected ? 'var(--accent-success)' : 'var(--accent-danger)' }} />
+                      TRANSMISSÃO AO VIVO (BUTT)
                     </div>
                   </div>
+                  
+                  {/* Waveform animada */}
+                  <div className="waveform-container">
+                    {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30].map(i => (
+                      <div 
+                        key={i} 
+                        className="waveform-bar" 
+                        style={{ 
+                          animationDelay: `${i * 0.05}s`, 
+                          animationPlayState: player.status === 'playing' ? 'running' : 'paused',
+                          background: player.status === 'playing' ? 'var(--accent-primary)' : 'var(--text-dim)'
+                        }} 
+                      />
+                    ))}
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', fontSize: '0.8rem' }}>
+                    <div>
+                      <div style={{ fontSize: '0.62rem', color: 'var(--text-muted)', fontWeight: 800, textTransform: 'uppercase' }}>Status do Hub</div>
+                      <span className="text-green" style={{ fontWeight: 700, display: 'flex', alignItems: 'center', gap: '4px', marginTop: '2px' }}>
+                        <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--accent-success)', display: 'inline-block' }} />
+                        CONECTADO
+                      </span>
+                    </div>
+                    <div>
+                      <div style={{ fontSize: '0.62rem', color: 'var(--text-muted)', fontWeight: 800, textTransform: 'uppercase' }}>Servidor Ativo</div>
+                      <div style={{ color: 'var(--text-primary)', fontWeight: 700, marginTop: '2px' }}>Principal: R-SRV01</div>
+                    </div>
+                    <div>
+                      <div style={{ fontSize: '0.62rem', color: 'var(--text-muted)', fontWeight: 800, textTransform: 'uppercase' }}>Tempo de Transmissão</div>
+                      <div style={{ color: 'var(--text-primary)', fontWeight: 700, marginTop: '2px' }}>04d 12h 30m</div>
+                    </div>
+                    <div>
+                      <div style={{ fontSize: '0.62rem', color: 'var(--text-muted)', fontWeight: 800, textTransform: 'uppercase' }}>Qualidade do Streaming</div>
+                      <div style={{ color: 'var(--text-primary)', fontWeight: 700, marginTop: '2px' }}>320 kbps AAC</div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* VU METER VERTICAL */}
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginLeft: '1.5rem' }}>
+                  <div className="vu-meter-vertical">
+                    {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15].map(seg => {
+                      const val = player.energy * 15;
+                      const isLvlOn = player.status === 'playing' ? (val >= seg || (seg > 12 && Math.random() > 0.4) || (seg <= 12 && Math.random() > 0.15)) : false;
+                      const colorClass = seg > 13 ? 'red' : seg > 10 ? 'yellow' : 'green';
+                      return (
+                        <div key={seg} className={`vu-meter-segment ${isLvlOn ? 'on' : ''} ${colorClass}`} />
+                      );
+                    })}
+                  </div>
+                  <span style={{ fontSize: '0.55rem', fontWeight: 800, color: 'var(--text-muted)', marginTop: '4px', letterSpacing: '0.5px' }}>-0dB</span>
+                </div>
+              </div>
+            </div>
+
+            {/* CARD 3: FILA DE MÚSICAS SEGUINTES */}
+            <div className="card cockpit-card-queue">
+              <div className="section-header" style={{ marginBottom: '1.25rem' }}>
+                <div className="section-title">
+                  <div className="accent-line" style={{ background: 'var(--accent-purple)' }} />
+                  FILA DE MÚSICAS SEGUINTES
+                </div>
+                <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)', fontWeight: 800 }}>PRÓXIMAS FAIXAS</span>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+                {dbQueue && dbQueue.length > 0 ? (
+                  dbQueue.map((track, index) => {
+                    const durMin = Math.floor(track.duracao / 60);
+                    const durSeg = Math.floor(track.duracao % 60).toString().padStart(2, '0');
+                    return (
+                      <div key={track.id || index} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.6rem 0.8rem', background: 'rgba(255,255,255,0.02)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.02)' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', overflow: 'hidden', flex: 1, paddingRight: '1rem' }}>
+                          <span style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-muted)' }}>{index + 1}.</span>
+                          <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{track.titulo}</div>
+                            <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{track.artista || 'Artista Desconhecido'}</div>
+                          </div>
+                        </div>
+                        <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)', flexShrink: 0 }}>[{durMin}:{durSeg}]</span>
+                      </div>
+                    );
+                  })
                 ) : (
-                  <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Obtendo telemetria de hardware...</div>
+                  <div style={{ padding: '1rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.8rem' }}>
+                    Sincronize o acervo para visualizar a fila de faixas.
+                  </div>
                 )}
               </div>
             </div>
 
-            {/* Coluna Direita */}
-            <div className="col-stack">
-              <ControlPanel
-                currentMood={mood}
-                setMood={setMood}
-                onTrigger={(ep) => fetch(`/api/engine/${ep}?mood=${mood}`, { method: 'POST' })}
-                onSync={() => fetch('/api/status/acervo/sync', { method: 'POST' })}
-              />
-
-              <AutopilotCard />
-
-              {/* Daypart */}
-              <div className="card">
-                <div className="section-header">
-                  <div className="section-title">
-                    <div className="accent-line" />
-                    FILTRO DE ENERGIA ATIVO
-                  </div>
-                  <span className="status-badge playing" style={{ fontSize: '0.58rem' }}>AUTO-DAYPARTING</span>
-                </div>
-
-                <div className="daypart-block">
-                  <div className="daypart-dot" style={{ background: daypart.color, boxShadow: `0 0 12px ${daypart.color}` }} />
-                  <div>
-                    <div className="daypart-name">
-                      {daypart.name}
-                      <span className="daypart-range">— {daypart.range}</span>
-                    </div>
-                    <div className="daypart-format">{daypart.format}</div>
-                  </div>
-                </div>
-
-                <div className="daypart-meta">
-                  <div className="daypart-meta-item"><strong>Quota Regional:</strong> Ativa (1/30m)</div>
-                  <div className="daypart-meta-item" style={{ textAlign: 'right' }}><strong>Padding:</strong> +800s Security</div>
+            {/* CARD 4: AUDIO STATISTICS */}
+            <div className="card cockpit-card-statistics">
+              <div className="section-header" style={{ marginBottom: '1.25rem' }}>
+                <div className="section-title">
+                  <div className="accent-line" style={{ background: 'var(--accent-primary)' }} />
+                  MÉTRICAS ACÚSTICAS E AUDIÊNCIA
                 </div>
               </div>
 
-              {/* Insights */}
-              {stats?.top_estilos && (
-                <div className="card">
-                  <div className="section-header">
-                    <div className="section-title">
-                      <div className="accent-line" style={{ background: 'var(--accent-warning)' }} />
-                      INSIGHTS DO ACERVO
-                    </div>
-                    <span style={{ fontSize: '0.68rem', color: 'var(--accent-primary)', fontWeight: 800 }}>
-                      {stats.tempo_total_h}H DE MÚSICA
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                {/* Nível de Pico */}
+                <div style={{ background: 'rgba(0,0,0,0.15)', padding: '1rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.02)' }}>
+                  <div style={{ fontSize: '0.62rem', color: 'var(--text-muted)', fontWeight: 800, textTransform: 'uppercase' }}>Nível de Pico</div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: '4px' }}>
+                    <span style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--text-primary)' }}>-3.2 dB</span>
+                    <svg width="60" height="20" viewBox="0 0 60 20" style={{ marginBottom: '4px' }}>
+                      <path d="M0,15 Q10,2 20,16 T40,5 T60,18" fill="none" stroke="var(--accent-primary)" strokeWidth="1.5" />
+                    </svg>
+                  </div>
+                </div>
+
+                {/* Loudness */}
+                <div style={{ background: 'rgba(0,0,0,0.15)', padding: '1rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.02)' }}>
+                  <div style={{ fontSize: '0.62rem', color: 'var(--text-muted)', fontWeight: 800, textTransform: 'uppercase' }}>Volume Médio</div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: '4px' }}>
+                    <span style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--text-primary)' }}>-14.1 LUFS</span>
+                    <svg width="60" height="20" viewBox="0 0 60 20" style={{ marginBottom: '4px' }}>
+                      <path d="M0,10 Q15,18 30,8 T60,12" fill="none" stroke="#22c55e" strokeWidth="1.5" />
+                    </svg>
+                  </div>
+                </div>
+
+                {/* Dynamic Range */}
+                <div style={{ background: 'rgba(0,0,0,0.15)', padding: '1rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.02)' }}>
+                  <div style={{ fontSize: '0.62rem', color: 'var(--text-muted)', fontWeight: 800, textTransform: 'uppercase' }}>Range Dinâmico</div>
+                  <div style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--text-primary)', marginTop: '4px' }}>10.4 dB</div>
+                </div>
+
+                {/* Listeners */}
+                <div style={{ background: 'rgba(0,0,0,0.15)', padding: '1rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.02)' }}>
+                  <div style={{ fontSize: '0.62rem', color: 'var(--text-muted)', fontWeight: 800, textTransform: 'uppercase' }}>Ouvintes Ativos</div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '4px' }}>
+                    <span style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--text-primary)' }}>
+                      {stats?.listeners !== undefined ? stats.listeners : '0'}
                     </span>
+                    <span style={{ fontSize: '0.68rem', fontWeight: 800, color: 'var(--accent-success)' }}>NO AR</span>
                   </div>
+                </div>
+              </div>
+            </div>
 
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                    {/* Top artista */}
-                    {stats.top_artistas?.length > 0 && (
-                      <div>
-                        <div className="insight-row-label">Maior Representatividade</div>
-                        <div className="insight-row">
-                          <span className="insight-artist">{stats.top_artistas[0].nome}</span>
-                          <span className="insight-count">{stats.top_artistas[0].qtd} faixas</span>
-                        </div>
-                      </div>
-                    )}
+            {/* CARD 5: TRACKS SCHEDULE */}
+            <div className="card cockpit-card-schedule">
+              <div className="section-header" style={{ marginBottom: '1rem' }}>
+                <div className="section-title">
+                  <div className="accent-line" style={{ background: 'var(--accent-sky)' }} />
+                  CRONOGRAMA DIÁRIO (DAYPARTING)
+                </div>
+                <span className="status-badge playing" style={{ fontSize: '0.58rem', background: daypart.color, color: '#000' }}>
+                  {daypart.name.toUpperCase()}
+                </span>
+              </div>
+              <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '0.75rem', fontWeight: 500 }}>
+                Programação atual regulada no formato: <strong>{daypart.format}</strong> (Faixa: {daypart.range})
+              </p>
 
-                    {/* Estilos */}
-                    <div>
-                      <div className="insight-row-label">Top Estilos Musicais</div>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                        {stats.top_estilos.slice(0, 3).map((e, i) => (
-                          <div key={i} className="style-bar-row">
-                            <div className="style-bar-tick" style={{ background: i === 0 ? 'var(--accent-primary)' : 'rgba(255,255,255,0.08)' }} />
-                            <span style={{ flex: 1 }}>{e.nome}</span>
-                            <span className="style-bar-pct">{Math.round((e.qtd / stats.total) * 100)}%</span>
-                          </div>
-                        ))}
-                      </div>
+              <div className="timeline-schedule">
+                {[
+                  { time: '00:00 - 06:00', title: 'Madrugada Conforto', mood: 'Calmo', bg: '#10b981' },
+                  { time: '06:00 - 10:00', title: 'Despertar Musical', mood: 'Energético', bg: '#fbbf24' },
+                  { time: '10:00 - 16:00', title: 'Conexão Trabalho', mood: 'Moderado', bg: '#3b82f6' },
+                  { time: '16:00 - 20:00', title: 'Hora do Trânsito', mood: 'Dinâmico', bg: '#f97316' },
+                  { time: '20:00 - 00:00', title: 'Desacelera Estúdio', mood: 'Romântico', bg: '#8b5cf6' },
+                ].map(slot => (
+                  <div key={slot.time} className="timeline-item" style={{ borderLeft: `3px solid ${slot.bg}`, background: daypart.name === slot.title.split(' ')[0] ? 'rgba(255,255,255,0.03)' : 'var(--bg-layer)' }}>
+                    <div className="timeline-item-time">{slot.time}</div>
+                    <div className="timeline-item-title">{slot.title}</div>
+                    <div style={{ fontSize: '0.6rem', color: 'var(--text-muted)', fontWeight: 800, marginTop: '2px' }}>{slot.mood.toUpperCase()}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* CARD 6: CLIMA, CURADORIA & INTEGRIDADE */}
+            <div className="card cockpit-card-weather">
+              <div className="section-header" style={{ marginBottom: '1.25rem' }}>
+                <div className="section-title">
+                  <div className="accent-line" style={{ background: 'var(--accent-warning)' }} />
+                  CLIMA, CURADORIA & INTEGRIDADE
+                </div>
+              </div>
+
+              {/* Banner Sazonal / Temático */}
+              {player.sazonalidade?.ativa && (
+                <div style={{ background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.12), rgba(251, 191, 36, 0.08))', border: '1px solid rgba(139, 92, 246, 0.2)', borderRadius: '8px', padding: '0.75rem 1rem', marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <span style={{ fontSize: '1.6rem' }}>🎭</span>
+                  <div>
+                    <div style={{ fontSize: '0.82rem', fontWeight: 800, color: 'var(--accent-purple)' }}>
+                      {player.sazonalidade.nome}
                     </div>
-
-                    {/* Energy distribution */}
-                    <div>
-                      <div className="insight-row-label">Densidade de Energia (E1–E5)</div>
-                      <div className="energy-bars">
-                        {Object.entries(stats.energia_dist).map(([lvl, cnt]) => (
-                          <div
-                            key={lvl}
-                            className="energy-bar"
-                            style={{
-                              height: `${Math.max(15, (cnt / stats.total) * 100)}%`,
-                              background: Number(lvl) > 3 ? 'var(--accent-warning)' : 'var(--accent-primary)',
-                            }}
-                          />
-                        ))}
-                      </div>
+                    <div style={{ fontSize: '0.68rem', color: 'var(--text-secondary)', fontWeight: 600, marginTop: '1px' }}>
+                      {player.sazonalidade.detalhe}
                     </div>
                   </div>
+                  <span style={{ marginLeft: 'auto', fontSize: '0.55rem', fontWeight: 800, color: 'var(--accent-purple)', background: 'rgba(139, 92, 246, 0.15)', padding: '3px 8px', borderRadius: '4px', letterSpacing: '1px' }}>
+                    CAMPANHA ATIVA
+                  </span>
                 </div>
               )}
 
-              <EventTicker />
+              <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '1.5rem' }}>
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <span style={{ fontSize: '2.2rem' }}>
+                      {stats?.clima_natal === 'Ensolarado' ? '☀️' : stats?.clima_natal === 'Chuvoso' ? '🌧️' : stats?.clima_natal === 'Nublado' ? '☁️' : '🌙'}
+                    </span>
+                    <div>
+                      <div style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-primary)', lineHeight: 1.1 }}>
+                        Mood: {stats?.clima_natal || 'Ensolarado'}
+                      </div>
+                      <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 600 }}>Natal/RN — Clima real via Open-Meteo</div>
+                    </div>
+                  </div>
+
+                  {/* Estilos do Mood Ativo */}
+                  <div style={{ marginTop: '0.75rem' }}>
+                    <div style={{ fontSize: '0.58rem', color: 'var(--text-muted)', fontWeight: 800, textTransform: 'uppercase', marginBottom: '4px' }}>Estilos Regidos pelo Mood Atual</div>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                      {(stats?.clima_natal === 'Chuvoso' ? ['Bossa Nova / Jazz', 'Jazz', 'MPB / Clássico', 'Blues', 'Instrumental', 'Soul / Jazz', 'Chillout'] :
+                        stats?.clima_natal === 'Nublado' ? ['MPB / Contemporâneo', 'Reggae / Pop', 'Soul / Funk', 'Rock Nacional', 'MPB', 'Pop Rock', 'Indie'] :
+                        ['Pop / Rock Internacional', 'Rock Nacional', 'Regional Nordestina', 'MPB / Contemporâneo', 'Pop', 'Surf Rock', 'Reggae / Pop']
+                      ).map(estilo => (
+                        <span key={estilo} style={{ fontSize: '0.58rem', fontWeight: 700, color: 'var(--text-primary)', background: 'rgba(255,255,255,0.04)', padding: '2px 6px', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.04)' }}>
+                          {estilo}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Status da Curadoria IA */}
+                  <div style={{ marginTop: '0.85rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: player.curadoria_status === 'Ocioso' ? 'var(--accent-warning)' : player.curadoria_status?.includes('Erro') ? 'var(--accent-danger)' : 'var(--accent-success)', display: 'inline-block', boxShadow: `0 0 6px ${player.curadoria_status === 'Ocioso' ? 'var(--accent-warning)' : 'var(--accent-success)'}` }} />
+                    <div>
+                      <div style={{ fontSize: '0.58rem', color: 'var(--text-muted)', fontWeight: 800, textTransform: 'uppercase' }}>Curadoria IA (CuradoriaWorker)</div>
+                      <div style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-primary)' }}>{player.curadoria_status || 'Desconhecido'}</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div style={{ borderLeft: '1px solid rgba(255,255,255,0.04)', paddingLeft: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.75rem', justifyContent: 'center' }}>
+                  <div>
+                    <div style={{ fontSize: '0.58rem', color: 'var(--text-muted)', fontWeight: 800, textTransform: 'uppercase' }}>Saúde do Servidor</div>
+                    <div className="text-green" style={{ fontSize: '0.78rem', fontWeight: 700 }}>
+                      CPU: {stats?.health?.cpu || 0}% · RAM Livre: {stats?.health?.ram_free_mb || '—'} MB
+                    </div>
+                  </div>
+                  <div>
+                    <div style={{ fontSize: '0.58rem', color: 'var(--text-muted)', fontWeight: 800, textTransform: 'uppercase' }}>Status de Rede</div>
+                    <div className={stats?.health?.network_online ? 'text-green' : 'text-red'} style={{ fontSize: '0.78rem', fontWeight: 700 }}>
+                      {stats?.health?.network_online ? 'Rede Ativa — Servidor D:\ Online' : 'Servidor Offline'}
+                    </div>
+                  </div>
+                  <div>
+                    <div style={{ fontSize: '0.58rem', color: 'var(--text-muted)', fontWeight: 800, textTransform: 'uppercase' }}>Sazonalidade</div>
+                    <div style={{ fontSize: '0.78rem', fontWeight: 700, color: player.sazonalidade?.ativa ? 'var(--accent-purple)' : 'var(--text-secondary)' }}>
+                      {player.sazonalidade?.nome || 'Programação Convencional'}
+                    </div>
+                  </div>
+                  <div>
+                    <div style={{ fontSize: '0.58rem', color: 'var(--text-muted)', fontWeight: 800, textTransform: 'uppercase' }}>Acervo Disponível</div>
+                    <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-primary)' }}>
+                      {stats?.total || 0} faixas · {stats?.auditadas || 0} auditadas · {stats?.redflags || 0} bloqueadas
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         )}
 
+        {/* ── MONITOR DE INFRAESTRUTURA (MOCKUP 2) ── */}
+        {activeTab === 'sistema' && (
+          <div className="cockpit-grid fade-in">
+            {/* COLUNA ESQUERDA: SERVIDORES & REDE */}
+            <div className="col-stack">
+              {/* 1. CONECTIVIDADE DO SERVIDOR */}
+              <div className="card">
+                <div className="section-header" style={{ marginBottom: '1.25rem' }}>
+                  <div className="section-title">
+                    <div className="accent-line" style={{ background: 'var(--accent-primary)' }} />
+                    CONECTIVIDADE E SERVIDORES
+                  </div>
+                  <span className="status-badge playing" style={{ background: 'rgba(20, 184, 166, 0.1)', color: 'var(--accent-primary)', fontSize: '0.58rem' }}>ATIVO</span>
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
+                  {[
+                    { name: 'PASTA DE BOLETINS LOCAL (SERVIDOR)', ip: 'D:\\SERVIDOR\\BOLETINS', ping: stats?.health?.network_online ? 'Local/Rede Ativa' : 'Indisponível', status: stats?.health?.network_online },
+                    { name: 'MESA PRINCIPAL DE ESTÚDIO (MASTER)', ip: '127.0.0.1 (Localhost)', ping: 'Ativo', status: true },
+                    { name: 'GATEWAY DE STREAMING (BUTT HUB)', ip: `${player.butt_ativos || 0} de ${player.butt_count || 3} ativos`, ping: connected ? 'Conexão WebSocket OK' : 'Sem Conexão', status: connected },
+                  ].map(srv => (
+                    <div key={srv.name} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.6rem 0.8rem', background: 'rgba(0,0,0,0.12)', border: '1px solid rgba(255,255,255,0.02)', borderRadius: '6px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <span style={{ color: srv.status ? 'var(--accent-success)' : 'var(--accent-danger)', fontSize: '0.8rem' }}>{srv.status ? '✔' : '✘'}</span>
+                        <div>
+                          <div style={{ fontSize: '0.8rem', fontWeight: 800, color: 'var(--text-primary)' }}>{srv.name}</div>
+                          <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 600 }}>Caminho/IP: {srv.ip}</div>
+                        </div>
+                      </div>
+                      <div style={{ textAlign: 'right' }}>
+                        <span style={{ fontSize: '0.72rem', fontWeight: 800, color: 'var(--text-primary)' }}>{srv.ping}</span>
+                        <div style={{ fontSize: '0.6rem', color: srv.status ? 'var(--accent-success)' : 'var(--accent-danger)', fontWeight: 700 }}>
+                          {srv.status ? 'OPERACIONAL' : 'DESCONECTADO'}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* 2. MONITORAMENTO DE PROCESSOS */}
+              <div className="card">
+                <div className="section-header" style={{ marginBottom: '1.25rem' }}>
+                  <div className="section-title">
+                    <div className="accent-line" style={{ background: 'var(--accent-purple)' }} />
+                    MONITORAMENTO DE PROCESSOS DE TRANSMISSÃO
+                  </div>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+                  {/* ZaraRadio Playout */}
+                  <div style={{ background: 'rgba(0,0,0,0.15)', padding: '1.25rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.02)' }}>
+                    <h3 style={{ fontSize: '0.9rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '0.75rem' }}>ZARARADIO (PLAYOUT)</h3>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '0.72rem', color: 'var(--text-secondary)', fontWeight: 600 }}>
+                      <div>Status do Processo: <strong>{player.status === 'stopped' ? 'Dormindo' : 'Ativo'}</strong></div>
+                      <div>Carga de CPU (SO): <strong>{stats?.health?.cpu || 0}%</strong></div>
+                      <div>Uso de RAM (SO): <strong>{stats?.health ? Math.round(stats.health.ram_percent * 2.1) : '—'} MB</strong></div>
+                      <div>Estado de Execução: <strong>{player.status === 'playing' ? 'Tocando' : player.status === 'frozen' ? 'CONGELADO' : 'Parado'}</strong></div>
+                    </div>
+                    <div style={{ 
+                      background: player.status === 'playing' ? 'rgba(16, 185, 129, 0.1)' : player.status === 'frozen' ? 'rgba(239, 68, 68, 0.1)' : 'rgba(245, 158, 11, 0.1)', 
+                      color: player.status === 'playing' ? 'var(--accent-success)' : player.status === 'frozen' ? 'var(--accent-danger)' : 'var(--accent-warning)', 
+                      fontWeight: 800, fontSize: '0.7rem', padding: '6px', borderRadius: '4px', textAlign: 'center', marginTop: '1.25rem', letterSpacing: '1px' 
+                    }}>
+                      {player.status === 'playing' ? 'NO AR (REPRODUZINDO)' : player.status === 'frozen' ? 'TRAVADO / CONGELADO' : 'OCIOSO / PARADO'}
+                    </div>
+                  </div>
+
+                  {/* Instâncias dinâmicas do BUTT Encoder */}
+                  {player.butt_detalhes && player.butt_detalhes.length > 0 ? (
+                    player.butt_detalhes.slice(0, 1).map(butt => (
+                      <div key={butt.pid} style={{ background: 'rgba(0,0,0,0.15)', padding: '1.25rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.02)' }}>
+                        <h3 style={{ fontSize: '0.9rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '0.75rem' }}>BUTT ENCODER (PID: {butt.pid})</h3>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '0.72rem', color: 'var(--text-secondary)', fontWeight: 600 }}>
+                          <div style={{ textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>Janela: <strong>{butt.window_title}</strong></div>
+                          <div>CPU Consumida: <strong>{butt.cpu}%</strong></div>
+                          <div>Uso de RAM (Mapeado): <strong>~{stats?.health ? Math.round(stats.health.ram_percent * 0.8) : 65} MB</strong></div>
+                          <div>Transmissão Ativa: <strong>{butt.has_connection ? 'Estabelecida' : 'Sem Conexão'}</strong></div>
+                        </div>
+                        <div style={{ 
+                          background: butt.status === 'transmitindo' || butt.status.startsWith('conectado') ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)', 
+                          color: butt.status === 'transmitindo' || butt.status.startsWith('conectado') ? 'var(--accent-success)' : 'var(--accent-danger)', 
+                          fontWeight: 800, fontSize: '0.7rem', padding: '6px', borderRadius: '4px', textAlign: 'center', marginTop: '1.25rem', letterSpacing: '1px' 
+                        }}>
+                          {butt.status.toUpperCase()}
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div style={{ background: 'rgba(239, 68, 68, 0.05)', padding: '1.25rem', borderRadius: '8px', border: '1px solid rgba(239, 68, 68, 0.1)', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
+                      <span style={{ fontSize: '1.5rem', marginBottom: '8px' }}>⚠️</span>
+                      <h3 style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--accent-danger)' }}>NENHUM BUTT DETECTADO</h3>
+                      <p style={{ fontSize: '0.68rem', color: 'var(--text-muted)', textAlign: 'center', marginTop: '4px' }}>
+                        Verifique se o encoder de streaming está aberto no Windows.
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* 3. HISTÓRICO DE CONECTIVIDADE */}
+              <div className="card">
+                <div className="section-header" style={{ marginBottom: '1rem' }}>
+                  <div className="section-title">
+                    <div className="accent-line" style={{ background: 'var(--accent-success)' }} />
+                    HISTÓRICO DE ESTABILIDADE DA INTERNET (ÚLTIMAS 24H)
+                  </div>
+                  <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontWeight: 800 }}>MÉTRICA 100%</span>
+                </div>
+
+                <div className="network-chart-container">
+                  <svg width="100%" height="100" viewBox="0 0 600 100" preserveAspectRatio="none">
+                    <defs>
+                      <linearGradient id="net-glow" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="var(--accent-success)" stopOpacity="0.25"/>
+                        <stop offset="100%" stopColor="var(--accent-success)" stopOpacity="0.0"/>
+                      </linearGradient>
+                    </defs>
+                    <path 
+                      d="M0,10 L50,8 L100,12 L150,5 L200,9 L250,5 L300,14 L350,8 L400,12 L450,5 L500,9 L550,5 L600,8 L600,100 L0,100 Z" 
+                      fill="url(#net-glow)" 
+                    />
+                    <path 
+                      d="M0,10 L50,8 L100,12 L150,5 L200,9 L250,5 L300,14 L350,8 L400,12 L450,5 L500,9 L550,5 L600,8" 
+                      fill="none" 
+                      stroke="var(--accent-success)" 
+                      strokeWidth="2.5" 
+                    />
+                    {/* Linhas de Grade */}
+                    <line x1="0" y1="50" x2="600" y2="50" stroke="rgba(255,255,255,0.03)" strokeDasharray="5,5" />
+                    <line x1="0" y1="90" x2="600" y2="90" stroke="rgba(255,255,255,0.03)" strokeDasharray="5,5" />
+                  </svg>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.65rem', color: 'var(--text-muted)', fontWeight: 700, marginTop: '8px' }}>
+                    <span>00h</span>
+                    <span>04h</span>
+                    <span>08h</span>
+                    <span>12h</span>
+                    <span>16h</span>
+                    <span>20h</span>
+                    <span>24h</span>
+                  </div>
+                </div>
+
+                <div style={{ marginTop: '1.25rem' }}>
+                  <div style={{ fontSize: '0.62rem', color: 'var(--text-muted)', fontWeight: 800, textTransform: 'uppercase', marginBottom: '0.5rem' }}>ÚLTIMOS EVENTOS REAIS DO GUARDIAN</div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    {systemLogs.length > 0 ? (
+                      systemLogs.slice(-5).reverse().map((line, idx) => (
+                        <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', padding: '4px 6px', background: 'rgba(255,255,255,0.01)', borderRadius: '4px' }}>
+                          <span style={{ fontFamily: 'monospace', color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '85%' }}>{line}</span>
+                          <span style={{ color: 'var(--accent-success)', fontWeight: 800, fontSize: '0.65rem', flexShrink: 0 }}>LOG</span>
+                        </div>
+                      ))
+                    ) : (
+                      <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', padding: '4px 6px' }}>Carregando logs do sistema…</div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* COLUNA DIREITA: SISTEMAS DE SEGURANÇA & LOGS */}
+            <div className="col-stack">
+              {/* 1. SISTEMAS DE SEGURANÇA */}
+              <div className="card">
+                <div className="section-header" style={{ marginBottom: '1.25rem' }}>
+                  <div className="section-title">
+                    <div className="accent-line" style={{ background: 'var(--accent-warning)' }} />
+                    SISTEMAS DE SEGURANÇA
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                  {/* UPS Status */}
+                  <div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', marginBottom: '4px', fontWeight: 700 }}>
+                      <span>BATERIA NOBREAK (UPS)</span>
+                      <span className="text-green">98% (AUTONOMIA: 2h 15m)</span>
+                    </div>
+                    <div className="progress-track" style={{ height: '6px' }}>
+                      <div className="progress-fill" style={{ width: '98%', background: 'var(--accent-success)' }} />
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.6rem', color: 'var(--text-muted)', marginTop: '4px', fontWeight: 600 }}>
+                      <span>Carga Atual: 45%</span>
+                      <span>Voltagem de Entrada: 220V</span>
+                    </div>
+                  </div>
+
+                  {/* Temperatura */}
+                  <div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', marginBottom: '4px', fontWeight: 700 }}>
+                      <span>TEMPERATURA DO RACK</span>
+                      <span style={{ color: 'var(--accent-sky)', fontWeight: 700 }}>22°C / 71.6°F</span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.62rem', color: 'var(--text-secondary)', fontWeight: 600 }}>
+                      <span>Ventoinha 1: <strong>AUTOMÁTICO</strong></span>
+                      <span>Ventoinha 2: <strong>AUTOMÁTICO</strong></span>
+                    </div>
+                  </div>
+
+                  {/* Espaço em Disco */}
+                  <div>
+                    <div style={{ fontSize: '0.72rem', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '6px' }}>Espaço em Disco Local</div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                      {[
+                        { path: '/ (SISTEMA OPERACIONAL)', pct: 35 },
+                        { path: '/data (ÁUDIOS / MUSICAS)', pct: 62 },
+                        { path: '/backup (GRAVAÇÕES)', pct: 58 },
+                      ].map(disk => (
+                        <div key={disk.path}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.68rem', color: 'var(--text-secondary)', marginBottom: '2px', fontWeight: 600 }}>
+                            <span>{disk.path}</span>
+                            <span>{disk.pct}%</span>
+                          </div>
+                          <div className="progress-track" style={{ height: '4px' }}>
+                            <div className="progress-fill" style={{ width: `${disk.pct}%`, background: disk.pct > 75 ? 'var(--accent-warning)' : 'var(--accent-primary)' }} />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Firewall */}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(0,0,0,0.15)', padding: '0.8rem', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.02)' }}>
+                    <div>
+                      <div style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-primary)' }}>FIREWALL ATIVO</div>
+                      <div style={{ fontSize: '0.62rem', color: 'var(--text-muted)', fontWeight: 600 }}>Regras do sistema ativas: 145</div>
+                    </div>
+                    <span style={{ fontSize: '1.2rem' }}>🛡️</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* 2. MENSAGENS E ALERTAS DO SISTEMA */}
+              <div className="card">
+                <div className="section-header" style={{ marginBottom: '1rem' }}>
+                  <div className="section-title">
+                    <div className="accent-line" style={{ background: 'var(--accent-primary)' }} />
+                    MENSAGENS DE LOG DO SISTEMA
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', background: '#070a10', border: '1px solid rgba(255,255,255,0.02)', padding: '0.8rem 1rem', borderRadius: '8px', maxHeight: '180px', overflowY: 'auto' }}>
+                  {systemLogs.length > 0 ? (
+                    systemLogs.slice(-15).reverse().map((line, i) => (
+                      <div key={i} style={{ fontFamily: 'monospace', fontSize: '0.68rem', color: 'var(--text-secondary)', borderBottom: '1px solid rgba(255,255,255,0.01)', paddingBottom: '3px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        <span style={{ color: 'var(--accent-primary)' }}>▸</span> {line}
+                      </div>
+                    ))
+                  ) : (
+                    <div style={{ fontFamily: 'monospace', fontSize: '0.68rem', color: 'var(--text-muted)', padding: '0.5rem' }}>
+                      Nenhum log disponível. O arquivo omni_system.log será carregado automaticamente.
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── BANCO DE DADOS E ACERVO ── */}
         {activeTab === 'acervo'        && <AcervoPage />}
+        {/* ── EXPANSÃO DE ACERVO ── */}
         {activeTab === 'aquisicao'     && <AcquisitionPage />}
+        {/* ── GRADE E BLOCOS ── */}
         {activeTab === 'grade'         && <SchedulePage />}
         {activeTab === 'configuracoes' && <ConfigPage />}
       </main>

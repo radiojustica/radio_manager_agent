@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 
 export default function BulletinCard() {
-  const [activeTab, setActiveTab] = useState('bulletins'); // 'bulletins' ou 'njud'
+  const [activeTab, setActiveTab] = useState('bulletins'); // 'bulletins', 'njud' ou 'giro'
   const [bulletinStatus, setBulletinStatus] = useState(null);
   const [njudStatus, setNjudStatus] = useState(null);
+  const [giroStatus, setGiroStatus] = useState(null);
   const [syncing, setSyncing] = useState(false);
 
   const fetchBulletinStatus = async () => {
@@ -30,9 +31,22 @@ export default function BulletinCard() {
     }
   };
 
+  const fetchGiroStatus = async () => {
+    try {
+      const res = await fetch('/api/status/giro/status');
+      if (res.ok) {
+        const data = await res.json();
+        setGiroStatus(data);
+      }
+    } catch (e) {
+      console.error("Erro ao buscar status do Giro", e);
+    }
+  };
+
   const fetchAll = () => {
     fetchBulletinStatus();
     fetchNjudStatus();
+    fetchGiroStatus();
   };
 
   useEffect(() => {
@@ -44,21 +58,22 @@ export default function BulletinCard() {
   const handleSync = async () => {
     setSyncing(true);
     try {
-      const endpoint = activeTab === 'bulletins' ? '/api/status/bulletins/sync' : '/api/status/njud/sync';
-      const res = await fetch(endpoint, { method: 'POST' });
+      const res = await fetch('/api/workers/spider/run', { method: 'POST' });
       const data = await res.json();
-      if (data.success) {
+      if (data.result && data.result.status !== 'error') {
         fetchAll();
+      } else {
+        console.error("Falha na sincronização do Spider:", data.result?.violations);
       }
     } catch (e) {
-      console.error("Falha na sincronização manual", e);
+      console.error("Falha no acionamento do Spider", e);
     } finally {
       setSyncing(false);
     }
   };
 
-  const currentStatus = activeTab === 'bulletins' ? bulletinStatus : njudStatus;
-  const currentPath = activeTab === 'bulletins' ? 'D:\\SERVIDOR\\BOLETINS' : 'D:\\SERVIDOR\\PROGRAMAS\\JORNAL';
+  const currentStatus = activeTab === 'bulletins' ? bulletinStatus : (activeTab === 'njud' ? njudStatus : giroStatus);
+  const currentPath = activeTab === 'bulletins' ? 'D:\\SERVIDOR\\BOLETINS' : (activeTab === 'njud' ? 'D:\\SERVIDOR\\PROGRAMAS\\JORNAL' : 'D:\\SERVIDOR\\PROGRAMAS\\PROGRAMA_40\\GIRONASCOMARCAS');
 
   return (
     <div className="premium-card bulletin-central card" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
@@ -77,12 +92,12 @@ export default function BulletinCard() {
             minWidth: '130px'
           }}
         >
-          {syncing ? '🔄 Sincronizando...' : '📥 Sincronizar Agora'}
+          {syncing ? '🔄 Sincronizando...' : '📥 Sincronizar via Spider'}
         </button>
       </div>
 
       {/* Tabs Selector */}
-      <div style={{ display: 'flex', background: 'rgba(255,255,255,0.02)', padding: '4px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
+      <div style={{ display: 'flex', background: 'rgba(255,255,255,0.02)', padding: '4px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)', gap: '4px' }}>
         <button
           onClick={() => setActiveTab('bulletins')}
           className={`btn btn-sm ${activeTab === 'bulletins' ? 'btn-primary' : ''}`}
@@ -95,7 +110,8 @@ export default function BulletinCard() {
             color: activeTab === 'bulletins' ? 'var(--bg-void)' : 'var(--text-secondary)',
             boxShadow: activeTab === 'bulletins' ? 'var(--shadow-sm)' : 'none',
             transition: 'all 0.2s ease',
-            padding: '0.4rem'
+            padding: '0.4rem',
+            fontSize: '0.6rem'
           }}
         >
           Boletins
@@ -112,10 +128,29 @@ export default function BulletinCard() {
             color: activeTab === 'njud' ? 'var(--bg-void)' : 'var(--text-secondary)',
             boxShadow: activeTab === 'njud' ? 'var(--shadow-sm)' : 'none',
             transition: 'all 0.2s ease',
-            padding: '0.4rem'
+            padding: '0.4rem',
+            fontSize: '0.6rem'
           }}
         >
-          Jornais (NJUD)
+          Jornais
+        </button>
+        <button
+          onClick={() => setActiveTab('giro')}
+          className={`btn btn-sm ${activeTab === 'giro' ? 'btn-primary' : ''}`}
+          style={{
+            flex: 1,
+            textTransform: 'uppercase',
+            letterSpacing: '0.5px',
+            background: activeTab === 'giro' ? 'var(--accent-primary)' : 'transparent',
+            border: 'none',
+            color: activeTab === 'giro' ? 'var(--bg-void)' : 'var(--text-secondary)',
+            boxShadow: activeTab === 'giro' ? 'var(--shadow-sm)' : 'none',
+            transition: 'all 0.2s ease',
+            padding: '0.4rem',
+            fontSize: '0.6rem'
+          }}
+        >
+          Giro
         </button>
       </div>
 

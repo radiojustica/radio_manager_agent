@@ -8,7 +8,39 @@ import json
 from datetime import datetime
 from core.time_utils import now_local
 
+# Importa normalizador de ID3 (compatibilidade com ZaraRadio)
+try:
+    from scripts.fix_id3_encoding import normalizar_id3_arquivo as _normalizar_id3
+    _ID3_FIXER_DISPONIVEL = True
+except ImportError:
+    _ID3_FIXER_DISPONIVEL = False
+
 PASTA_QUARENTENA = r"D:\RADIO\QUARENTENA_TJ"
+
+# Pasta raiz padrão do acervo musical (fallback se settings.json não carregar)
+_PASTA_MUSICAS_PADRAO = r"D:\RADIO\MUSICAS"
+
+
+def _get_pasta_musicas() -> str:
+    """Retorna a pasta de músicas configurada (lê settings.json ou usa o padrão)."""
+    try:
+        from core.config_loader import get_settings
+        return get_settings().get("grade", {}).get("pasta_musicas", _PASTA_MUSICAS_PADRAO)
+    except Exception:
+        return _PASTA_MUSICAS_PADRAO
+
+
+def _arquivo_em_pasta_musicas(caminho: str) -> bool:
+    """
+    Verifica se o arquivo pertence à pasta de músicas autorizada.
+    PROTEÇÃO DE SEGURANÇA: impede que arquivos fora do acervo sejam
+    movidos acidentalmente para a quarentena.
+    """
+    norm_caminho = os.path.normpath(os.path.abspath(caminho))
+    norm_pasta = os.path.normpath(os.path.abspath(_get_pasta_musicas()))
+    # Aceita também arquivos já na quarentena (para evitar falha em reprocessamento)
+    norm_quarentena = os.path.normpath(os.path.abspath(PASTA_QUARENTENA))
+    return norm_caminho.startswith(norm_pasta + os.sep) or norm_caminho.startswith(norm_quarentena + os.sep)
 
 def remover_acentos(texto):
     """Remove acentos e caracteres especiais de uma string."""
@@ -109,12 +141,38 @@ def registrar_log_quarentena(arquivo, motivo):
         print(f"Erro ao escrever log de quarentena: {e}")
 
 def processar_arquivo(id_musica, caminho):
-    """Verifica quarentena por badwords, corrupção e métricas avançadas (Librosa)."""
+    """Verifica quarentena por badwords, corrupção e métricas avançadas (Librosa).
+    Inclui normalização automática de tags ID3 para compatibilidade com ZaraRadio.
+    """
     from mutagen import File
     import librosa
     nome_arq = os.path.basename(caminho)
     duracao = 210 # fallback
     
+    # 0. NORMALIZAÇÃO DE TAGS ID3 (ENCODING PARA cp1252/Latin-1)
+    # Garante compatibilidade com ZaraRadio que exibe em Windows-1252
+    if _ID3_FIXER_DISPONIVEL and os.path.exists(caminho):
+        try:
+            resultado_id3 = _normalizar_id3(caminho, dry_run=False)
+            if resultado_id3.get("status") == "alterado":
+                import logging
+                logging.getLogger("OmniCore.CuradoriaService").info(
+                    f"[ID3] Tags normalizadas para cp1252 em: {nome_arq}"
+                )
+        except Exception as e:
+            import logging
+            logging.getLogger("OmniCore.CuradoriaService").warning(
+                f"[ID3] Falha na normalização de tags em '{nome_arq}': {e}"
+            )
+    
+    # VERIFICAÇÃO DE SEGURANÇA: arquivo deve estar na pasta de músicas autorizada
+    if not _arquivo_em_pasta_musicas(caminho):
+        import logging as _log
+        _log.getLogger("OmniCore.CuradoriaService").error(
+            f"[SEGURANÇA] Tentativa de mover arquivo fora da pasta de músicas bloqueada: {caminho}"
+        )
+        return {"id": id_musica, "status": "ERROR", "motivo": "Arquivo fora da pasta de músicas autorizada — operação bloqueada.", "energia": 3, "duracao": duracao, "bpm": 0, "valence": 0.5, "danceability": 0.5}
+
     # 1. VERIFICAÇÃO DE INTEGRIDADE (ARQUIVO CORROMPIDO)
     try:
         audio = File(caminho)

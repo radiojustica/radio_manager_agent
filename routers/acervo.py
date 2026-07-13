@@ -336,6 +336,8 @@ def listar_quarentena(db: Session = Depends(get_db)):
 def liberar_quarentena(musica_id: int, db: Session = Depends(get_db)):
     """
     Remove uma música da quarentena, movendo o arquivo físico de volta e limpando o flag.
+    Se já existir um arquivo com o mesmo nome no destino, o arquivo liberado recebe
+    o sufixo '_liberado' para evitar sobrescrever o arquivo existente.
     """
     musica = db.query(Musica).filter(Musica.id == musica_id).first()
     if not musica:
@@ -357,8 +359,11 @@ def liberar_quarentena(musica_id: int, db: Session = Depends(get_db)):
         
         if os.path.normpath(caminho_orig) != os.path.normpath(caminho_dest):
             try:
+                # Se já existe arquivo no destino, renomeia o liberado com sufixo
+                # para não sobrescrever o arquivo existente
                 if os.path.exists(caminho_dest):
-                    os.remove(caminho_dest)
+                    stem, ext = os.path.splitext(caminho_dest)
+                    caminho_dest = f"{stem}_liberado{ext}"
                 shutil.move(caminho_orig, caminho_dest)
                 musica.caminho = caminho_dest
             except Exception as e:
@@ -373,3 +378,40 @@ def liberar_quarentena(musica_id: int, db: Session = Depends(get_db)):
 
 
 
+
+@router.post("/quarantine/release_batch")
+def liberar_quarentena_batch(ids: List[int], db: Session = Depends(get_db)):
+    """
+    Remove múltiplas músicas da quarentena de uma vez.
+    Se já existir arquivo com o mesmo nome no destino, o liberado recebe sufixo '_liberado'.
+    """
+    musicas = db.query(Musica).filter(Musica.id.in_(ids), Musica.redflag == True).all()
+    if not musicas:
+        raise HTTPException(status_code=404, detail="Nenhuma música encontrada")
+    PASTA_MUSICAS = r"D:\RADIO\MUSICAS"
+    for musica in musicas:
+        caminho_orig = musica.caminho
+        if os.path.exists(caminho_orig):
+            if musica.tema_especial and musica.tema_especial.strip().lower() == "junho":
+                dest_dir = os.path.join(PASTA_MUSICAS, "ESPECIAL_JUNHO")
+            else:
+                dest_dir = os.path.join(PASTA_MUSICAS, "NACIONAL")
+            os.makedirs(dest_dir, exist_ok=True)
+            filename = os.path.basename(caminho_orig)
+            caminho_dest = os.path.join(dest_dir, filename)
+            if os.path.normpath(caminho_orig) != os.path.normpath(caminho_dest):
+                try:
+                    # Se já existe arquivo no destino, renomeia o liberado com sufixo
+                    # para não sobrescrever o arquivo existente
+                    if os.path.exists(caminho_dest):
+                        stem, ext = os.path.splitext(caminho_dest)
+                        caminho_dest = f"{stem}_liberado{ext}"
+                    shutil.move(caminho_orig, caminho_dest)
+                    musica.caminho = caminho_dest
+                except Exception as e:
+                    raise HTTPException(status_code=500, detail=f"Erro ao mover arquivo de volta: {e}")
+        musica.redflag = False
+        musica.quarantine_reason = None
+        musica.auditado_acustica = True
+    db.commit()
+    return {"status": "success", "processados": len(musicas)}

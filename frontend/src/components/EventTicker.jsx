@@ -9,6 +9,7 @@ const EVENT_ICONS = {
   LIVE_START:   '🎙️',
   LIVE_END:     '📴',
   TASK_DELETED: '🗑️',
+  WORKER:       '⚙️',
 };
 
 function getIcon(type) {

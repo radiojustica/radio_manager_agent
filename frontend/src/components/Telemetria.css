@@ -286,3 +286,4 @@
 .event-item.QUARANTINE { border-color: rgba(239,68,68,0.12); }
 .event-item.WARNING  { border-color: rgba(245,158,11,0.12); }
 .event-item.LIVE_START, .event-item.LIVE_END { border-color: rgba(139,92,246,0.12); }
+.event-item.WORKER   { border-color: rgba(16,185,129,0.12); }

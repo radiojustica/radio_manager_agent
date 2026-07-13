@@ -28,7 +28,8 @@ def get_autopilot_status(db: Session = Depends(get_db)):
         for l in recent_logs:
             logs_formatted.append({
                 "id": l.id,
-                "timestamp": l.timestamp.isoformat() if l.timestamp else None,
+                # Sufixo 'Z' informa ao browser que é UTC → toLocaleTimeString converte p/ horário local
+                "timestamp": (l.timestamp.isoformat() + "Z") if l.timestamp else None,
                 "action_type": l.action_type,
                 "message": l.message,
                 "success": l.success

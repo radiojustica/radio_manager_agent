@@ -21,7 +21,7 @@ class TelegramNotifier:
         return bool(self.whatsapp_webhook) and self.whatsapp_webhook not in _PLACEHOLDER_VALUES
 
     def send_message(self, message: str) -> bool:
-        """Envia mensagens via Telegram e/ou WhatsApp Webhook."""
+        """Envia mensagens via Telegram, WhatsApp Webhook e ntfy."""
         success = False
         
         # 1. Telegram
@@ -43,6 +43,19 @@ class TelegramNotifier:
                 if res.status_code in [200, 201]: success = True
             except Exception as e:
                 self.logger.error(f"Erro WhatsApp Webhook: {e}")
+
+        # 3. ntfy (Canal radio_tjrn)
+        try:
+            url_ntfy = "https://ntfy.sh/radio_tjrn"
+            headers_ntfy = {
+                "Title": "Radio Guardian Alert".encode('utf-8'),
+                "Tags": "radio,warning"
+            }
+            res_ntfy = requests.post(url_ntfy, data=message.encode('utf-8'), headers=headers_ntfy, timeout=10)
+            if res_ntfy.status_code == 200:
+                success = True
+        except Exception as e:
+            self.logger.error(f"Erro ntfy: {e}")
 
         return success
 

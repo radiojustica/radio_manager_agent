@@ -12,6 +12,12 @@ from pathlib import Path
 if getattr(sys, 'frozen', False):
     os.chdir(Path(sys.executable).resolve().parent)
 
+# Previne crashes de bibliotecas (como uvicorn) que tentam escrever no stdout/stderr quando rodando via pythonw
+if sys.stdout is None:
+    sys.stdout = open(os.devnull, "w")
+if sys.stderr is None:
+    sys.stderr = open(os.devnull, "w")
+
 import logging
 from director.orchestrator import system_orchestrator
 from core.scheduler import start_scheduler

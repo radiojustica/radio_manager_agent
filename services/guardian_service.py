@@ -47,6 +47,26 @@ class GuardianService(RadioMonitor):
         if len(self.events_list) > 100:
             self.events_list.pop()
 
+        # Broadcast via WebSocket
+        try:
+            from api.manager import broadcast_event
+            import asyncio
+            
+            event_data = {
+                "events": self.events_list
+            }
+            
+            try:
+                loop = asyncio.get_event_loop()
+                if loop.is_running():
+                    asyncio.run_coroutine_threadsafe(broadcast_event(event_data), loop)
+                else:
+                    loop.run_until_complete(broadcast_event(event_data))
+            except RuntimeError:
+                asyncio.run(broadcast_event(event_data))
+        except Exception:
+            pass
+
     @property
     def events(self):
         """Web-compatible property for accessing history."""
@@ -67,7 +87,7 @@ class GuardianService(RadioMonitor):
         """
         self.log_event("SYSTEM", "Acionando reinicialização programada do ZaraRadio.")
         try:
-            subprocess.run(["taskkill", "/F", "/IM", "ZaraRadio.exe", "/T"], capture_output=True, timeout=5)
+            subprocess.run(["taskkill", "/F", "/IM", "ZaraRadio.exe", "/T"], capture_output=True, timeout=5, creationflags=subprocess.CREATE_NO_WINDOW)
             time.sleep(2)
         except Exception as e:
             self.log_event("WARNING", f"taskkill falhou: {e}")
@@ -173,7 +193,8 @@ class GuardianService(RadioMonitor):
             try:
                 result = subprocess.run(
                     ["schtasks", "/Change", "/TN", task_uri, "/Disable"],
-                    capture_output=True, text=True, encoding="cp1252", errors="replace", timeout=15
+                    capture_output=True, text=True, encoding="cp1252", errors="replace", timeout=15,
+                    creationflags=subprocess.CREATE_NO_WINDOW
                 )
 
                 if result.returncode == 0:

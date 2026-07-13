@@ -15,6 +15,7 @@ class ApiWorker(WorkerBase):
         self.port = self.config.get("port", 8001)
         self.api_thread = None
         self._server_started = False
+        self._ntfy_listener_started = False  # garante que só inicia uma vez
 
     def _is_port_open(self) -> bool:
         """Verifica se a porta da API está aberta."""
@@ -39,6 +40,27 @@ class ApiWorker(WorkerBase):
         except Exception as e:
             self.log_error(e, "SERVER_START_FAILED")
             self._server_started = False
+
+    def _ensure_ntfy_listener(self):
+        """
+        Garante que o NtfyListenerService esteja rodando.
+        Chamado uma única vez após a API estar no ar.
+        Permite hot-start do listener sem reiniciar o Omni Core.
+        """
+        if self._ntfy_listener_started:
+            return
+        try:
+            from services.ntfy_listener_service import ntfy_listener_service
+            from worker_manager import worker_manager_instance
+            if ntfy_listener_service._running and ntfy_listener_service._thread and ntfy_listener_service._thread.is_alive():
+                self._ntfy_listener_started = True
+                return
+            ntfy_listener_service.start(worker_manager_instance)
+            self._ntfy_listener_started = True
+            self.log_action("NTFY_LISTENER_HOT_STARTED")
+            logger.info("[ApiWorker] NtfyListenerService iniciado via hot-start.")
+        except Exception as e:
+            logger.error(f"[ApiWorker] Falha ao iniciar NtfyListenerService: {e}")
 
     def run_cycle(self, **kwargs) -> WorkerResult:
         violations = []
@@ -66,7 +88,8 @@ class ApiWorker(WorkerBase):
             else:
                 self.log_action("PORT_CLOSED_BUT_THREAD_ALIVE", level="warning")
         else:
-            # Se a porta está aberta, podemos assumir sucesso por enquanto
+            # Servidor respondendo: garante que o listener ntfy está ativo
+            self._ensure_ntfy_listener()
             self.log_action("HEALTH_CHECK_OK", port=self.port)
 
         status = "success" if not violations else "error"

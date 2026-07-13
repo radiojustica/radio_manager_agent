@@ -15,12 +15,14 @@ import win32gui
 import win32process
 from scripts.bulletin_sync import BulletinSync
 from scripts.njud_sync import NjudSync
+from scripts.giro_sync import GiroSync
 from services.acervo_sync import sync_acervo
 
 router = APIRouter(prefix="/api/status", tags=["Telemetria"])
 
 bulletin_syncer = BulletinSync()
 njud_syncer = NjudSync()
+giro_syncer = GiroSync()
 
 CACHE_STATUS = {"timestamp": 0, "payload": None}
 CACHE_BUTT = {"timestamp": 0, "payload": None}
@@ -113,22 +115,38 @@ def verificar_zara_status():
     from services.guardian_service import guardian_instance
     import ctypes
     
+    # 1. Verifica se o processo do ZaraRadio está ativo no sistema operacional
+    zara_process_running = False
+    try:
+        import psutil
+        for proc in psutil.process_iter(['name']):
+            try:
+                if proc.name() and proc.name().lower() == "zararadio.exe":
+                    zara_process_running = True
+                    break
+            except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+                continue
+    except Exception:
+        pass
+
     status = "stopped"
     zara_win = guardian_instance.find_zara_window()
     is_playing = guardian_instance.is_zara_playing()
     
-    if not zara_win:
-        import psutil
-        for proc in psutil.process_iter(['name']):
-            if proc.info['name'] and proc.info['name'].lower() == "zararadio.exe":
+    if zara_process_running:
+        if zara_win:
+            IsHungAppWindow = ctypes.windll.user32.IsHungAppWindow
+            if bool(IsHungAppWindow(zara_win.handle)):
+                status = "frozen"
+            else:
                 status = "playing" if is_playing else "stopped"
-                break
-    else:
-        IsHungAppWindow = ctypes.windll.user32.IsHungAppWindow
-        if bool(IsHungAppWindow(zara_win.handle)):
-            status = "frozen"
         else:
-            status = "playing" if is_playing else "stopped"
+            # Processo rodando mas janela invisível/inacessível.
+            # Se is_playing foi detectado (via fallback do arquivo), é "playing", senão consideramos "playing" (como fallback seguro)
+            # para evitar que o dashboard diga que o Zara não está executando.
+            status = "playing" if is_playing else "playing"
+    else:
+        status = "stopped"
             
     CACHE_ZARA_WINDOW["status"] = status
     CACHE_ZARA_WINDOW["timestamp"] = agora
@@ -151,13 +169,26 @@ def get_now_playing(db: Session = Depends(get_db)):
         nowplaying_path = get_nowplaying_path()
         if os.path.exists(nowplaying_path):
             try:
-                # ZaraRadio geralmente usa codificação cp1252 (Windows)
-                with open(nowplaying_path, 'r', encoding='cp1252', errors='replace') as f:
-                    content = f.read().strip()
-                    if content: 
-                        title = content
-                    else:
-                        title = "Tocando ao vivo (CurrentSong.txt vazio)"
+                # ZaraRadio pode gravar em UTF-8 (com ou sem BOM) ou cp1252 dependendo da versão.
+                # Tentamos na ordem mais provável para evitar mojibake.
+                content = None
+                for enc in ("utf-8-sig", "utf-8", "cp1252"):
+                    try:
+                        with open(nowplaying_path, "r", encoding=enc) as f:
+                            raw = f.read().strip()
+                        # Teste heurístico: se o texto decodificado contiver sequências
+                        # típicas de mojibake (ã, â, etc.) e o encoding for cp1252,
+                        # descartamos e usamos a próxima opção.
+                        if enc == "cp1252" and any(c in raw for c in ("Ã", "â€")):
+                            continue
+                        content = raw
+                        break
+                    except (UnicodeDecodeError, LookupError):
+                        continue
+                if content:
+                    title = content
+                else:
+                    title = "Tocando ao vivo (CurrentSong.txt vazio)"
             except Exception as e:
                 import logging
                 logging.getLogger("OmniCore.Status").error(f"Erro ao ler CurrentSong.txt: {e}")
@@ -182,6 +213,59 @@ def get_now_playing(db: Session = Depends(get_db)):
         except Exception as e:
             logger.warning(f"Erro ao ler status do worker: {e}")
 
+    # 6. Identificação de Campanha Sazonal ativa
+    dt_local = now_local()
+    mes_atual = dt_local.month
+    dia_atual = dt_local.day
+    dia_mes = (mes_atual, dia_atual)
+    
+    DIAS_TEMATICOS = {
+        (3, 22): {"nome": "Dia Nacional do Clarone", "detalhe": "Homenagem ao mestre Pixinguinha.", "tipo": "clarone"},
+        (4, 23): {"nome": "Dia Nacional do Choro", "detalhe": "Programação especial dedicada ao Choro.", "tipo": "choro"},
+        (4, 30): {"nome": "Dia Internacional do Jazz", "detalhe": "Foco especial em clássicos do Jazz.", "tipo": "jazz"},
+        (5, 24): {"nome": "Dia do Tecladista", "detalhe": "Destaque instrumental para Tecladistas.", "tipo": "tecladista"},
+        (5, 25): {"nome": "Dia de Respeito ao Reggae", "detalhe": "Programação com destaque ao Reggae.", "tipo": "reggae"},
+        (6, 14): {"nome": "Dia de Marisa Monte", "detalhe": "Especial dedicado à obra de Marisa Monte.", "tipo": "marisa_monte"},
+        (7, 13): {"nome": "Dia Mundial do Rock / Cantor", "detalhe": "Programação especial: cota de 60% de Rock.", "tipo": "rock"},
+        (8, 11): {"nome": "Dia Mundial do Hip-Hop", "detalhe": "Destaque especial para o Hip-Hop.", "tipo": "hiphop"},
+        (8, 22): {"nome": "Dia do Folclore / Samba Brasil", "detalhe": "Programação conectada às tradições e Samba.", "tipo": "folclore"},
+        (10, 17): {"nome": "Dia Nacional da MPB", "detalhe": "Dia da Música Popular Brasileira.", "tipo": "mpb"},
+        (11, 22): {"nome": "Dia do Músico", "detalhe": "Homenagem a todos os músicos e instrumentistas.", "tipo": "musico"},
+        (12, 2): {"nome": "Dia Nacional do Samba", "detalhe": "Especial de Samba (Tradição local em Rocas).", "tipo": "samba"},
+        (12, 11): {"nome": "Dia do Tango", "detalhe": "Destaque especial para grandes tangos.", "tipo": "tango"},
+        (12, 13): {"nome": "Dia Nacional do Forró", "detalhe": "Homenagem ao nascimento de Luiz Gonzaga.", "tipo": "forro"},
+    }
+    
+    sazonalidade = {
+        "ativa": False,
+        "nome": "Programação Convencional",
+        "detalhe": "Sem campanhas temáticas ativas no momento.",
+        "tipo": "normal"
+    }
+    
+    if dia_mes in DIAS_TEMATICOS:
+        tema = DIAS_TEMATICOS[dia_mes]
+        sazonalidade = {
+            "ativa": True,
+            "nome": tema["nome"],
+            "detalhe": tema["detalhe"],
+            "tipo": tema["tipo"]
+        }
+    elif mes_atual == 6:
+        sazonalidade = {
+            "ativa": True,
+            "nome": "Especial Mês Junino",
+            "detalhe": "Cotas de Forró, Xote e Baião ativas na grade.",
+            "tipo": "junina"
+        }
+    elif mes_atual == 12:
+        sazonalidade = {
+            "ativa": True,
+            "nome": "Especial de Natal",
+            "detalhe": "Músicas natalinas inseridas na programação.",
+            "tipo": "natal"
+        }
+
     payload = {
         "title": title, 
         "status": status, 
@@ -190,6 +274,7 @@ def get_now_playing(db: Session = Depends(get_db)):
         "butt_ativos": butt_ativos,
         "butt_detalhes": butt_instances,
         "curadoria_status": curadoria_status,
+        "sazonalidade": sazonalidade,
         "updated_at": now_local().isoformat()
     }
     CACHE_STATUS["payload"] = payload
@@ -296,6 +381,39 @@ def sync_njud(db: Session = Depends(get_db)):
     else:
         msg = f"Falha na sincronização manual do NJUD (Jornais): {res.get('error', 'Erro desconhecido')}"
         autopilot_service.log_action(db, "SYNC_NJUD", msg, success=False)
+    return res
+
+@router.get("/giro/status")
+@router.get("/giro/status/")
+def get_giro_status():
+    """Retorna o status do Giro nas Comarcas local."""
+    # Como o GiroSync não tem get_status() pronto, simulamos um simples
+    target_file = os.path.join(giro_syncer.target_local_dir, "GIRO_ATUAL.mp3")
+    meta_file = os.path.join(giro_syncer.target_local_dir, "GIRO_ATUAL.json")
+    
+    if os.path.exists(target_file):
+        info = {"count": 1, "dates": ["Arquivo Presente"]}
+        if os.path.exists(meta_file):
+            try:
+                with open(meta_file, "r", encoding="utf-8") as f:
+                    meta = json.load(f)
+                    info["dates"] = [meta.get("date", "Data desconhecida")]
+            except: pass
+        return {"GIRO": info}
+    return {"GIRO": {"count": 0, "dates": []}}
+
+@router.post("/giro/sync")
+@router.post("/giro/sync/")
+def sync_giro(db: Session = Depends(get_db)):
+    """Dispara a sincronização manual do Giro nas Comarcas via GDrive."""
+    res = giro_syncer.sync()
+    from services.autopilot_service import autopilot_service
+    if res.get("success", False):
+        msg = f"Sincronização manual do Giro concluída. {res.get('updated', 0)} atualizações."
+        autopilot_service.log_action(db, "SYNC_GIRO", msg, success=True)
+    else:
+        msg = f"Falha na sincronização manual do Giro: {res.get('error', 'Erro desconhecido')}"
+        autopilot_service.log_action(db, "SYNC_GIRO", msg, success=False)
     return res
 
 @router.get("/logs/system")

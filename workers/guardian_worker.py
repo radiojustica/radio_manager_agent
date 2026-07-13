@@ -102,19 +102,23 @@ class GuardianWorker(WorkerBase):
                 score -= 15
                 
                 if autopilot_active:
-                    # Se estamos em silêncio contínuo por mais de 30 segundos (ou seja, o Play de 10s falhou)
-                    if silence_duration > (self.silence_limit_seconds + 20) and zara_running:
-                        msg_action = f"🔇 Silêncio contínuo por {int(silence_duration)}s. Forçando reinicialização do ZaraRadio."
-                        autopilot_service.log_action(db, "SILENCE_RECOVERY", msg_action)
-                        send_whatsapp_alert(f"🚨 Autopilot: {msg_action}")
-                        guardian_instance.restart_zara()
-                        self.last_audio_peak = time.time() + 45 # Dá 45s para o player carregar
-                    else:
-                        msg_action = f"🔇 Silêncio detectado por {int(silence_duration)}s. Retomando reprodução via comando PLAY (P)."
-                        autopilot_service.log_action(db, "SILENCE_RECOVERY", msg_action)
-                        send_whatsapp_alert(f"🚨 Autopilot: {msg_action}")
-                        guardian_instance.trigger_play_on_zara()
-                        self.last_audio_peak = time.time() + 20 # Checa novamente em 20s
+                    # DESATIVADO EMERGENCIALMENTE DURANTE TRANSMISSÕES AO VIVO
+                    # O watchdog estava reiniciando o Zara erroneamente por "silêncio" quando o áudio 
+                    # estava apenas baixo (ducking) durante a transmissão do Pleno via NDI.
+                    
+                    # if silence_duration > (self.silence_limit_seconds + 20) and zara_running:
+                    #     msg_action = f"🔇 Silêncio contínuo por {int(silence_duration)}s. Forçando reinicialização do ZaraRadio."
+                    #     autopilot_service.log_action(db, "SILENCE_RECOVERY", msg_action)
+                    #     send_whatsapp_alert(f"🚨 Autopilot: {msg_action}")
+                    #     guardian_instance.restart_zara()
+                    #     self.last_audio_peak = time.time() + 45 # Dá 45s para o player carregar
+                    # else:
+                    #     msg_action = f"🔇 Silêncio detectado por {int(silence_duration)}s. Retomando reprodução via comando PLAY (P)."
+                    #     autopilot_service.log_action(db, "SILENCE_RECOVERY", msg_action)
+                    #     send_whatsapp_alert(f"🚨 Autopilot: {msg_action}")
+                    #     guardian_instance.trigger_play_on_zara()
+                    #     self.last_audio_peak = time.time() + 20 # Checa novamente em 20s
+                    logger.info(f"🚨 Autopilot ativo, mas a autocura por silêncio ({int(silence_duration)}s) foi DESATIVADA para proteger transmissões ao vivo.")
                 else:
                     logger.info(f"Autopilot inativo. Ignorando autocura para silêncio de {int(silence_duration)}s.")
 
@@ -125,7 +129,7 @@ class GuardianWorker(WorkerBase):
                 score -= 10
                 if autopilot_active:
                     autopilot_service.log_action(db, "PROCESS_RESTART", "Autopilot detectou ZaraRadio parado. Inicializando...")
-                    send_whatsapp_alert(msg + " Autopilot reiniciando player.")
+                    send_whatsapp_alert(msg + " Autopilot reiniciando player.", title="🚨 Alerta: Player ZaraRadio Parou")
                 else:
                     logger.info("Autopilot inativo. Ignorando reinício automático do ZaraRadio.")
                 
@@ -137,7 +141,7 @@ class GuardianWorker(WorkerBase):
                 score -= 5
                 if autopilot_active:
                     autopilot_service.log_action(db, "BUTT_RECONNECT", f"BUTT com {butt_count}/3 instâncias ativas. Tentando estabilizar...")
-                    send_whatsapp_alert(msg + " Autopilot tentando restabelecer conexões.")
+                    send_whatsapp_alert(msg + " Autopilot tentando restabelecer conexões.", title="🚨 Alerta: Encoders BUTT Instáveis")
                 else:
                     logger.info("Autopilot inativo. Ignorando estabilização automática do BUTT.")
 

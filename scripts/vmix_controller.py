@@ -1,5 +1,5 @@
 import requests
-import defusedxml.ElementTree as ET
+import xml.etree.ElementTree as ET
 import logging
 from typing import Tuple, Optional
 

@@ -49,7 +49,7 @@ function ActionButton({ label, onClick, disabled, loadingLabel, variant = '' }) 
   );
 }
 
-export default function ControlPanel({ onTrigger, onSync, currentMood, setMood }) {
+export default function ControlPanel({ onTrigger, onSync, onActivateAgent, onActivateSpider, currentMood, setMood }) {
   return (
     <div className="card">
       <div className="section-header" style={{ marginBottom: '1.5rem' }}>
@@ -92,10 +92,25 @@ export default function ControlPanel({ onTrigger, onSync, currentMood, setMood }
           />
         </div>
 
+        {/*
+        <ActionButton
+          label="🤖 Ativar Agente (IA)"
+          loadingLabel="Ativando..."
+          variant="btn-primary"
+          onClick={onActivateAgent}
+        />
+        */}
+
+        <ActionButton
+          label="🕷️ Ativar Spider"
+          loadingLabel="Escaneando..."
+          variant="btn-primary"
+          onClick={onActivateSpider}
+        />
+
         <ActionButton
           label="🔄 Sincronizar Acervo"
           loadingLabel="Sincronizando..."
-          variant="btn-primary"
           onClick={onSync}
         />
       </div>

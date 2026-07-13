@@ -10,6 +10,7 @@ import logging
 from director.profile import PROFILE
 from director.auditor import ProgrammingAuditor
 from services.guardian_service import guardian_instance
+from core.compliance_validator import compliance_validator_instance
 
 logger = logging.getLogger("OmniCore.Director")
 
@@ -18,11 +19,11 @@ class MusicDirector:
         self.auditor = ProgrammingAuditor()
         self.profile = PROFILE
 
-    def approve_or_redo(self, m3u_path: str, hour: int) -> bool:
+    def approve_or_redo(self, m3u_path: str, hour: int, is_retry: bool = False) -> bool:
         """Audita um arquivo M3U recém-gerado. Se reprovar, tenta gerar novamente."""
         logger.info(f"[Director] Auditando bloco {hour:02d}H em {os.path.basename(m3u_path)}...")
         
-        violations = self.auditor.audit_file(m3u_path)
+        violations = compliance_validator_instance.validate_playlist(m3u_path, hour)
         
         if not violations:
             logger.info(f"[Director] Bloco {hour:02d}H aprovado com sucesso.")
@@ -31,7 +32,7 @@ class MusicDirector:
         # Se chegou aqui, há violações
         logger.warning(f"[Director] Bloco {hour:02d}H reprovado! Detecatadas {len(violations)} violações.")
         
-        if self.profile["policy"]["auto_redo_on_violation"]:
+        if not is_retry and self.profile["policy"]["auto_redo_on_violation"]:
             return self._handle_regeneration(m3u_path, hour)
         
         return False
@@ -45,9 +46,9 @@ class MusicDirector:
             
             # Remove o histórico recente para o motor não travar nas mesmas músicas
             # e forçar um novo sorteio dentro da janela de prioridade
-            playlist_engine_instance.gerar_playlist_bloco(hour)
+            playlist_engine_instance.gerar_playlist_bloco(hour, is_retry=True)
             
-            new_violations = self.auditor.audit_file(m3u_path)
+            new_violations = compliance_validator_instance.validate_playlist(m3u_path, hour)
             if not new_violations:
                 logger.info(f"[Director] Sucesso! Bloco {hour:02d}H estabilizado na tentativa {attempt}.")
                 guardian_instance.log_event("DIRECTOR", f"Bloco {hour:02d}H regenerado e aprovado.")

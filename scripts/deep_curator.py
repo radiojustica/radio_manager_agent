@@ -11,6 +11,20 @@ DB_PATH = r"D:\RADIO\radio_omni.db"
 QUARENTENA_DIR = r"D:\RADIO\QUARENTENA_TJ"
 MUSICAS_DIR = r"D:\RADIO\MUSICAS"
 
+
+def _arquivo_em_pasta_musicas(caminho: str) -> bool:
+    """
+    Verifica se o arquivo pertence à pasta de músicas (MUSICAS_DIR) ou quarentena.
+    PROTEÇÃO DE SEGURANÇA: impede que arquivos fora do acervo sejam movidos acidentalmente.
+    """
+    norm_caminho = os.path.normpath(os.path.abspath(caminho))
+    norm_musicas = os.path.normpath(os.path.abspath(MUSICAS_DIR))
+    norm_quarentena = os.path.normpath(os.path.abspath(QUARENTENA_DIR))
+    return (
+        norm_caminho.startswith(norm_musicas + os.sep)
+        or norm_caminho.startswith(norm_quarentena + os.sep)
+    )
+
 def sanitize_filename(name):
     """Remove caracteres invalidos para nomes de arquivos no Windows."""
     if not name:
@@ -170,6 +184,12 @@ def apply_decisions():
             
         print(f"\nAplicando decisao para [{song_id}]: {artista_corr} - {titulo_corr} ({status})")
         
+        # VERIFICAÇÃO DE SEGURANÇA: arquivo deve estar na pasta de músicas autorizada
+        if not _arquivo_em_pasta_musicas(caminho_orig):
+            print(f"[SEGURANÇA] Operação bloqueada: arquivo '{caminho_orig}' está fora da pasta de músicas autorizada ({MUSICAS_DIR}). Pulando.")
+            error_count += 1
+            continue
+
         # 1. Verifica se arquivo original existe
         if not os.path.exists(caminm_orig := caminho_orig):
             # Se for erro de arquivo que nao existe, mas o status for APROVADO/REPROVADO, 

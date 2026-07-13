@@ -29,7 +29,7 @@ def _carregar_config() -> dict:
         "pasta_boletins_raiz":      r"D:\SERVIDOR\BOLETINS",
         "pasta_quarentena":         r"D:\RADIO\QUARENTENA_TJ",
         "mood_padrao":              "Ensolarado",
-        "duracao_bloco_segundos":   8000,  # Aumentado para 8000s (Segurança contra silêncio)
+        "duracao_bloco_segundos":   7600,  # Aumentado para 7600s (Segurança contra silêncio)
         "min_bloco_extra_segundos": 1800,
         "vinheta_a_cada_n":         1,
         "spot_a_cada_n":            4,
@@ -42,19 +42,14 @@ def _carregar_config() -> dict:
         "duracao_estimada_spot_s":    30,
         "duracao_estimada_boletim_s": 120,
     }
-    candidates = [
-        os.path.join(os.path.dirname(os.path.abspath(__file__)), "config", "settings.json"),
-        os.path.join(os.getcwd(), "config", "settings.json"),
-    ]
-    for path in candidates:
-        if os.path.exists(path):
-            try:
-                with open(path, "r", encoding="utf-8") as f:
-                    data = json.load(f)
-                cfg = {**defaults, **data.get("grade", {})}
-                return cfg
-            except Exception as e:
-                logger.error(f"Erro ao ler settings.json em {path}: {e}")
+    try:
+        from core.config_loader import get_settings
+        data = get_settings()
+        if data:
+            cfg = {**defaults, **data.get("grade", {})}
+            return cfg
+    except Exception as e:
+        logger.error(f"Erro ao ler settings.json pelo config_loader: {e}")
     return defaults
 
 CFG = _carregar_config()
@@ -260,21 +255,135 @@ def carregar_assets_apoio(data_execucao=None) -> dict:
         "boletins": obter_boletins_dia(data_execucao),
     }
 
+# ===========================================================================
+# DATAS TEMÁTICAS ANUAIS - REGRA DE GERAÇÃO
+# ===========================================================================
+
+DIAS_TEMATICOS = {
+    (3, 22): "clarone",
+    (4, 23): "choro",
+    (4, 30): "jazz",
+    (5, 24): "tecladista",
+    (5, 25): "reggae",
+    (6, 14): "marisa_monte",
+    (7, 13): "rock",
+    (8, 11): "hiphop",
+    (8, 22): "folclore",
+    (10, 17): "mpb",
+    (11, 22): "musico",
+    (12, 2): "samba",
+    (12, 11): "tango",
+    (12, 13): "forro",
+}
+
+def pertence_ao_tema(musica, tema) -> bool:
+    if not tema:
+        return False
+    estilo_lower = (musica.estilo or "").lower()
+    caminho_upper = (musica.caminho or "").upper()
+    artista_lower = (musica.artista or "").lower()
+    
+    if tema == "clarone":
+        return any(x in estilo_lower for x in ["clarone", "pixinguinha", "choro"]) or "PIXINGUINHA" in caminho_upper
+    elif tema == "choro":
+        return any(x in estilo_lower for x in ["choro", "chorinho", "pixinguinha"])
+    elif tema == "jazz":
+        return any(x in estilo_lower for x in ["jazz", "blues"])
+    elif tema == "tecladista":
+        return any(x in estilo_lower for x in ["teclado", "tecladista", "piano", "keyboard", "synth", "sintetizador"])
+    elif tema == "reggae":
+        return "reggae" in estilo_lower
+    elif tema == "marisa_monte":
+        return "marisa monte" in artista_lower or "MARISA MONTE" in caminho_upper
+    elif tema == "rock":
+        return any(x in estilo_lower for x in ["rock", "metal"])
+    elif tema == "hiphop":
+        return any(x in estilo_lower for x in ["hip-hop", "hip hop", "rap"])
+    elif tema == "folclore":
+        return any(x in estilo_lower for x in ["folclore", "samba de coco", "coco de roda", "regional"]) or any(x in caminho_upper for x in ["FOLCLORE", "SAMBA DE COCO", "COCO DE RODA"])
+    elif tema == "mpb":
+        return any(x in estilo_lower for x in ["mpb", "bossa", "musica popular brasileira"])
+    elif tema == "musico":
+        return any(x in estilo_lower for x in ["instrumental", "virtuoso", "solo", "bossa", "choro", "jazz"]) or "INSTRUMENTAL" in caminho_upper
+    elif tema == "samba":
+        return any(x in estilo_lower for x in ["samba", "pagode"]) or any(x in caminho_upper for x in ["ROCAS", "SAMBA"])
+    elif tema == "tango":
+        return any(x in estilo_lower for x in ["tango", "astor piazzolla", "gardel", "latino"])
+    elif tema == "forro":
+        ESTILOS_FORRO = ["forró", "forro", "luiz gonzaga", "baião", "baiao", "xote", "xaxado"]
+        return any(x in estilo_lower for x in ESTILOS_FORRO) or any(x.upper() in caminho_upper for x in ESTILOS_FORRO)
+    return False
+
 
 # ===========================================================================
 # GESTOR DE FILA (ESTRATÉGIA ANTI-REPETIÇÃO E DAYPARTING)
 # ===========================================================================
 
-HISTORICO_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "logs", "engine_history.json")
+from core.database import DATA_DIR
+HISTORICO_PATH = os.path.join(DATA_DIR, "logs", "engine_history.json")
 
 class GestorFila:
-    def __init__(self, acervo: list):
+    def __init__(self, acervo: list, data_bloco=None):
         self.pool_geral = []
         self.pool_regional = []
+        self.pool_junino = []
+        self.pool_rock = []
+        self.pool_tema = []
+        self.total_entregues = 0
+        self.rock_entregues = 0
+        self.tema_entregues = 0
+        self.tema_ativo = None
+        
+        # Determina o mês da playlist com base na data do bloco a ser gerado
+        if data_bloco is not None:
+            if hasattr(data_bloco, "month"):
+                self.mes_atual = data_bloco.month
+                self.dia_atual = data_bloco.day
+            else:
+                try:
+                    from datetime import datetime
+                    dt = datetime.strptime(str(data_bloco)[:10], "%Y-%m-%d")
+                    self.mes_atual = dt.month
+                    self.dia_atual = dt.day
+                except:
+                    self.mes_atual = now_local().month
+                    self.dia_atual = now_local().day
+        else:
+            self.mes_atual = now_local().month
+            self.dia_atual = now_local().day
+            
+        dia_mes = (self.mes_atual, self.dia_atual)
+        if dia_mes in DIAS_TEMATICOS:
+            self.tema_ativo = DIAS_TEMATICOS[dia_mes]
+        
+        ESTILOS_JUNINOS = ["forró", "forro", "xote", "baião", "baiao", "xaxado", "quadrilha"]
         
         for musica in acervo:
             if "?" in musica.caminho: continue
-            if r"REGIONAL" in musica.caminho.upper():
+            
+            path_upper = musica.caminho.upper()
+            estilo_lower = (musica.estilo or "").lower()
+            tema_lower = (getattr(musica, "tema_especial", None) or "").lower()
+            
+            # Identificação dinâmica de músicas juninas por pasta, tag ou varredura de estilo
+            eh_junina = (
+                "ESPECIAL_JUNHO" in path_upper 
+                or tema_lower == "junho"
+                or any(e in estilo_lower for e in ESTILOS_JUNINOS)
+                or any(e.upper() in path_upper for e in ESTILOS_JUNINOS)
+            )
+            
+            # Adiciona ao pool do rock separadamente para o Dia Mundial do Rock
+            if "rock" in estilo_lower or "metal" in estilo_lower:
+                self.pool_rock.append(musica)
+                
+            # Adiciona ao pool de tema ativo se corresponder
+            if self.tema_ativo and pertence_ao_tema(musica, self.tema_ativo):
+                self.pool_tema.append(musica)
+            
+            if eh_junina and self.mes_atual == 6:
+                self.pool_junino.append(musica)
+            elif r"REGIONAL" in path_upper:
                 self.pool_regional.append(musica)
             else:
                 self.pool_geral.append(musica)
@@ -283,6 +392,9 @@ class GestorFila:
         # nós embaralhamos as músicas que têm o mesmo peso (mesma quantidade de execuções).
         self.pool_geral = self._shuffle_by_priority(self.pool_geral)
         self.pool_regional = self._shuffle_by_priority(self.pool_regional)
+        self.pool_junino = self._shuffle_by_priority(self.pool_junino)
+        self.pool_rock = self._shuffle_by_priority(self.pool_rock)
+        self.pool_tema = self._shuffle_by_priority(self.pool_tema)
         
         self.max_art = CFG.get("max_historico_artistas", 30)
         self.max_mus = CFG.get("max_historico_musicas", 80)
@@ -302,6 +414,15 @@ class GestorFila:
             pass
         return [], []
 
+    def _salvar_historico(self):
+        """Salva o histórico persistente no disco."""
+        try:
+            os.makedirs(os.path.dirname(HISTORICO_PATH), exist_ok=True)
+            with open(HISTORICO_PATH, "w", encoding="utf-8") as f:
+                json.dump({"artistas": self.historico_artistas, "musicas": self.historico_musicas}, f, ensure_ascii=False, indent=2)
+        except Exception as e:
+            logger.error(f"[GestorFila] Erro ao salvar historico de fila: {e}")
+
     def _atualizar_historico(self, artista, caminho):
         """Adiciona ao histórico e salva no disco."""
         art = clean_artist_name(artista, caminho)
@@ -317,24 +438,16 @@ class GestorFila:
         if len(self.historico_musicas) > self.max_mus:
             self.historico_musicas.pop(0)
             
-        try:
-            os.makedirs(os.path.dirname(HISTORICO_PATH), exist_ok=True)
-            with open(HISTORICO_PATH, "w", encoding="utf-8") as f:
-                json.dump({
-                    "artistas": self.historico_artistas,
-                    "musicas": self.historico_musicas,
-                    "updated_at": now_local().isoformat()
-                }, f, indent=4)
-        except Exception:
-            pass
+        self._salvar_historico()
 
-    def _shuffle_by_priority(self, lista):
+    def _shuffle_by_priority(self, list_musicas):
         """Embaralha itens que possuem o mesmo nível de prioridade (vezes_tocada)."""
-        if not lista: return []
+        if not list_musicas: return []
         # Agrupa por vezes_tocada
         buckets = {}
-        for m in lista:
-            buckets.setdefault(m.vezes_tocada, []).append(m)
+        for m in list_musicas:
+            v = getattr(m, "vezes_tocada", 0) or 0
+            buckets.setdefault(v, []).append(m)
         
         resultado = []
         # Ordena as chaves (vezes_tocada) e embaralha cada balde individualmente
@@ -345,10 +458,31 @@ class GestorFila:
         return resultado
 
     def proxima(self, tipo="geral", energias_alvo=None, evitar_estilo=None, mood_alvo=None):
-        pool = self.pool_regional if tipo == "regional" and self.pool_regional else self.pool_geral
+        if tipo == "junino" and self.pool_junino:
+            pool = self.pool_junino
+        elif tipo == "regional" and self.pool_regional:
+            pool = self.pool_regional
+        elif tipo == "rock" and self.pool_rock:
+            pool = self.pool_rock
+        elif tipo == "tema" and self.pool_tema:
+            pool = self.pool_tema
+        else:
+            pool = self.pool_geral
+            
         if not pool:
-            pool = self.pool_geral if tipo == "regional" else self.pool_regional
-            if not pool: return None
+            # Fallback em cascata se o pool escolhido estiver vazio
+            if self.pool_junino:
+                pool = self.pool_junino
+            elif self.pool_regional:
+                pool = self.pool_regional
+            elif self.pool_tema:
+                pool = self.pool_tema
+            elif self.pool_rock:
+                pool = self.pool_rock
+            else:
+                pool = self.pool_geral
+
+        if not pool: return None
 
         # Estilos preferidos para o mood atual
         estilos_preferidos = estilos_para_mood(mood_alvo) if mood_alvo else []
@@ -383,9 +517,26 @@ class GestorFila:
             top_selection = candidatas[:5]
             score, idx_original, m = random.choice(top_selection)
             
+            # Incrementa contadores de entrega
+            self.total_entregues = getattr(self, "total_entregues", 0) + 1
+            estilo_lower = (m.estilo or "").lower()
+            if "rock" in estilo_lower or "metal" in estilo_lower:
+                self.rock_entregues = getattr(self, "rock_entregues", 0) + 1
+            if self.tema_ativo and pertence_ao_tema(m, self.tema_ativo):
+                self.tema_entregues = getattr(self, "tema_entregues", 0) + 1
+            
             self._atualizar_historico(m.artista, m.caminho)
             self.ultimo_estilo = m.estilo
-            return pool.pop(idx_original)
+            
+            # Remove fisicamente de todos os pools para consistência de bloco único
+            item_retornado = pool.pop(idx_original)
+            for p in [self.pool_geral, self.pool_regional, self.pool_junino, self.pool_rock, self.pool_tema]:
+                try:
+                    if item_retornado in p:
+                        p.remove(item_retornado)
+                except ValueError:
+                    pass
+            return item_retornado
 
         # Fallback de segurança: pega a primeira da fila (respeitando apenas repetição)
         for i, m in enumerate(pool):
@@ -411,6 +562,37 @@ def deve_inserir_spot(contador_musicas: int) -> bool:
 def deve_inserir_boletim(contador_musicas: int) -> bool:
     n = CFG.get("boletim_a_cada_n", 8)
     return contador_musicas % n == 0 and n > 0
+
+# ===========================================================================
+# CLASSIFICAÇÃO DE ARQUIVOS
+# ===========================================================================
+
+def obter_tipo_faixa(path: str) -> str:
+    """Classifica o tipo da faixa baseado no caminho e nome do arquivo."""
+    path_upper = path.upper()
+    if r"D:\RADIO\MUSICAS" in path_upper:
+        # Proteção contra carimbos/vinhetas soltos na pasta de músicas
+        if "CARIMBO" in path_upper or "VHT" in path_upper or "VINHETA" in path_upper:
+            return "VINHETA"
+        return "MUSICA"
+    elif r"D:\RADIO\VINHETAS" in path_upper or "VHT" in path_upper or "VINHETA" in path_upper:
+        return "VINHETA"
+    elif r"D:\RADIO\SPOTS" in path_upper or "SPOT" in path_upper:
+        return "SPOT"
+    elif r"D:\SERVIDOR\BOLETINS" in path_upper or "BOLETIM" in path_upper:
+        return "BOLETIM"
+    elif r"D:\SERVIDOR\PROGRAMAS" in path_upper:
+        return "PROGRAMA"
+        
+    # Fallback pelo nome do arquivo
+    nome = os.path.basename(path_upper)
+    if "VHT" in nome or "VINHETA" in nome or "CARIMBO" in nome:
+        return "VINHETA"
+    if "SPOT" in nome:
+        return "SPOT"
+    if "BOLETIM" in nome:
+        return "BOLETIM"
+    return "MUSICA"
 
 # ===========================================================================
 # MONTAGEM DE BLOCO (ESTRATÉGIA DAYPARTING + QUOTAS)
@@ -461,21 +643,50 @@ def montar_bloco(
     if assets is None: 
         assets = carregar_assets_apoio(data_bloco)
 
-    gestor = GestorFila(acervo)
+    gestor = GestorFila(acervo, data_bloco=data_bloco)
     playlist: list[str] = ["#EXTM3U"]
     segundos_acumulados = 0
     contador_musicas = 0
     
+    # Guard para controlar inserções consecutivas de assets (vinhetas, spots, boletins)
+    def adicionar_a_playlist(caminho: str, duracao: int) -> bool:
+        nonlocal segundos_acumulados
+        if not caminho:
+            return False
+        
+        tipo_atual = obter_tipo_faixa(caminho)
+        
+        # Se for asset de apoio (VINHETA, SPOT, BOLETIM), evita vizinhança direta
+        if tipo_atual in ["VINHETA", "SPOT", "BOLETIM"]:
+            # Procura o último elemento real na playlist
+            ultimo_tipo = None
+            for p in reversed(playlist):
+                if p.startswith("#"):
+                    continue
+                ultimo_tipo = obter_tipo_faixa(p)
+                break
+            
+            if tipo_atual == ultimo_tipo:
+                logger.warning(
+                    f"[GradeRules] Evitando inserção consecutiva de {tipo_atual}: "
+                    f"'{os.path.basename(playlist[-1]) if playlist else ''}' -> '{os.path.basename(caminho)}'"
+                )
+                return False
+                
+        playlist.append(caminho)
+        segundos_acumulados += duracao
+        return True
+
     energias_base = obter_regras_energia_por_hora(hora_inicio)
     n_regional = CFG.get("regional_a_cada_n", 8)
     
     # Determina a meta de duração do bloco
-    alvo = CFG.get("duracao_bloco_segundos", 8000)
-    if duracao_alvo_s < 7200: alvo = duracao_alvo_s
+    # duracao_alvo_s é sempre o valor correto passado pelo engine (padrão: 7200s = 2h)
+    alvo = duracao_alvo_s if duracao_alvo_s > 0 else CFG.get("duracao_bloco_segundos", 7200)
 
     # Mapeia eventos horários agendados
     minuto_inicio_dia = hora_inicio * 60
-    minuto_fim_dia = minuto_inicio_dia + (alvo // 60)
+    minuto_fim_dia = minuto_inicio_dia + 120
     
     eventos_agendados = []
     minutos_excecao = set()
@@ -519,7 +730,8 @@ def montar_bloco(
         segundos_alvo_evento = (m_abs - minuto_inicio_dia) * 60
         
         # Preenche com músicas normais até atingir o tempo correspondente ao evento
-        while segundos_acumulados + 120 < segundos_alvo_evento and segundos_acumulados < alvo:
+        # Buffer de 60s: para de adicionar só se a próxima música (min. 60s) causaria estouro
+        while segundos_acumulados + 60 < segundos_alvo_evento and segundos_acumulados < alvo:
             progresso = segundos_acumulados / alvo
             if progresso < 0.3:
                 e_alvo = [min(energias_base), min(energias_base) + 1]
@@ -528,7 +740,36 @@ def montar_bloco(
             else:
                 e_alvo = energias_base
 
-            tipo = "regional" if contador_musicas > 0 and contador_musicas % n_regional == 0 else "geral"
+            # Lógica Sazonal:
+            mes_atual = data_bloco.month
+            dia_atual = data_bloco.day
+            dia_mes = (mes_atual, dia_atual)
+            
+            if mes_atual == 6:
+                if hora_inicio in [12, 16]:
+                    tipo = "junino"
+                elif hora_inicio in [8, 10, 14]:
+                    if contador_musicas > 0 and contador_musicas % 3 == 0:
+                        tipo = "junino"
+                    else:
+                        tipo = "regional" if contador_musicas > 0 and contador_musicas % n_regional == 0 else "geral"
+                else:
+                    tipo = "regional" if contador_musicas > 0 and contador_musicas % n_regional == 0 else "geral"
+            elif dia_mes in DIAS_TEMATICOS:
+                tema = DIAS_TEMATICOS[dia_mes]
+                total_entregues = getattr(gestor, "total_entregues", 0)
+                tema_entregues = getattr(gestor, "tema_entregues", 0)
+                
+                # Cota padrão de 50% para temas gerais, e 60% especificamente para rock (13/07)
+                cota_alvo = 0.60 if tema == "rock" else 0.50
+                
+                if total_entregues == 0 or (tema_entregues / total_entregues) < cota_alvo:
+                    tipo = "tema"
+                else:
+                    tipo = "regional" if contador_musicas > 0 and contador_musicas % n_regional == 0 else "geral"
+            else:
+                tipo = "regional" if contador_musicas > 0 and contador_musicas % n_regional == 0 else "geral"
+
             musica = gestor.proxima(
                 tipo=tipo, 
                 energias_alvo=e_alvo, 
@@ -539,18 +780,17 @@ def montar_bloco(
             if not musica: 
                 break
 
-            playlist.append(musica.caminho)
-            segundos_acumulados += (musica.duracao or 210)
-            contador_musicas += 1
+            if adicionar_a_playlist(musica.caminho, musica.duracao or 210):
+                contador_musicas += 1
 
             # Inserções de apoio padrão a cada N faixas
             if assets.get("vinhetas") and deve_inserir_vinheta(contador_musicas):
-                playlist.append(random.choice(assets["vinhetas"]))
-                segundos_acumulados += CFG.get("duracao_estimada_vinheta_s", 5)
+                caminho_vht = random.choice(assets["vinhetas"])
+                adicionar_a_playlist(caminho_vht, CFG.get("duracao_estimada_vinheta_s", 5))
 
             if assets.get("spots") and deve_inserir_spot(contador_musicas):
-                playlist.append(random.choice(assets["spots"]))
-                segundos_acumulados += CFG.get("duracao_estimada_spot_s", 30)
+                caminho_spot = random.choice(assets["spots"])
+                adicionar_a_playlist(caminho_spot, CFG.get("duracao_estimada_spot_s", 30))
 
         # Insere a sequência programada do evento
         logger.info(f"[GradeRules] Inserindo sequencia de evento agendado ({hora_str}): {sequencia}")
@@ -591,8 +831,7 @@ def montar_bloco(
                     logger.warning(f"[GradeRules] Nao foi possivel encontrar arquivo em '{pasta_prog}' para '{item}'. Fallback para musica.")
             
             if caminho_item:
-                playlist.append(caminho_item)
-                segundos_acumulados += duracao_estimada
+                adicionar_a_playlist(caminho_item, duracao_estimada)
 
     # Se ainda sobrar tempo no bloco, preenche até a meta
     while segundos_acumulados < alvo:
@@ -604,7 +843,34 @@ def montar_bloco(
         else:
             e_alvo = energias_base
 
-        tipo = "regional" if contador_musicas > 0 and contador_musicas % n_regional == 0 else "geral"
+        # Lógica Sazonal:
+        mes_atual = data_bloco.month
+        dia_atual = data_bloco.day
+        dia_mes = (mes_atual, dia_atual)
+        
+        if mes_atual == 6:
+            if hora_inicio in [12, 16]:
+                tipo = "junino"
+            elif hora_inicio in [8, 10, 14]:
+                if contador_musicas > 0 and contador_musicas % 3 == 0:
+                    tipo = "junino"
+                else:
+                    tipo = "regional" if contador_musicas > 0 and contador_musicas % n_regional == 0 else "geral"
+            else:
+                tipo = "regional" if contador_musicas > 0 and contador_musicas % n_regional == 0 else "geral"
+        elif dia_mes in DIAS_TEMATICOS:
+            tema = DIAS_TEMATICOS[dia_mes]
+            total_entregues = getattr(gestor, "total_entregues", 0)
+            tema_entregues = getattr(gestor, "tema_entregues", 0)
+            
+            cota_alvo = 0.60 if tema == "rock" else 0.50
+            if total_entregues == 0 or (tema_entregues / total_entregues) < cota_alvo:
+                tipo = "tema"
+            else:
+                tipo = "regional" if contador_musicas > 0 and contador_musicas % n_regional == 0 else "geral"
+        else:
+            tipo = "regional" if contador_musicas > 0 and contador_musicas % n_regional == 0 else "geral"
+
         musica = gestor.proxima(
             tipo=tipo, 
             energias_alvo=e_alvo, 
@@ -615,17 +881,16 @@ def montar_bloco(
         if not musica: 
             break
 
-        playlist.append(musica.caminho)
-        segundos_acumulados += (musica.duracao or 210)
-        contador_musicas += 1
+        if adicionar_a_playlist(musica.caminho, musica.duracao or 210):
+            contador_musicas += 1
 
         if assets.get("vinhetas") and deve_inserir_vinheta(contador_musicas):
-            playlist.append(random.choice(assets["vinhetas"]))
-            segundos_acumulados += CFG.get("duracao_estimada_vinheta_s", 5)
+            caminho_vht = random.choice(assets["vinhetas"])
+            adicionar_a_playlist(caminho_vht, CFG.get("duracao_estimada_vinheta_s", 5))
 
         if assets.get("spots") and deve_inserir_spot(contador_musicas):
-            playlist.append(random.choice(assets["spots"]))
-            segundos_acumulados += CFG.get("duracao_estimada_spot_s", 30)
+            caminho_spot = random.choice(assets["spots"])
+            adicionar_a_playlist(caminho_spot, CFG.get("duracao_estimada_spot_s", 30))
 
     return playlist
 

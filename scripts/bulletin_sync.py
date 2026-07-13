@@ -39,11 +39,12 @@ class BulletinSync:
     def parse_bulletin_info(self, filename):
         """Identifica data e número do boletim. Ignora arquivos de edição."""
         # Logs detalhados para arquivos ignorados por palavras-chave
-        for skip_word in ["OFF", "LOC", "NOTA", "NOTAS", "BRUTO", "PILOTO", "COPIA", "CÓPIA", "ROTEIRO", "APRESENTA", "GRAVAÇÃO", "GRAVACAO", "GRAV", "LIV", "LEO", "THI", "LET", "PTT-", "-WA", "AUD-"]:
+        for skip_word in ["OFF", "BRUTO", "PILOTO", "COPIA", "CÓPIA", "ROTEIRO", "APRESENTA", "GRAVAÇÃO", "GRAVACAO", "PTT-", "-WA", "AUD-", "_LEO", "_LIV", "_THI", "_LET", "_GRAV"]:
             if skip_word in filename.upper():
                 logger.debug(f"Arquivo ignorado (palavra-chave '{skip_word}'): {filename}")
                 return None
-                
+        
+        # Padrão 1: DD_MM_YYYY_B{num} ou BOLETIM_RADIO_TJRN_DD_MM_YYYY_B{num}
         match = re.search(r"(\d{2})_(\d{2})_(\d{4})_B(\d+)", filename)
         if match:
             day, month, year, b_num = match.groups()
@@ -59,6 +60,25 @@ class BulletinSync:
                 logger.debug(f"Falha ao processar data no arquivo {filename}: {e}")
                 return None
         
+        # Padrão 2: YYYY_MM_DD - CONTEUDO
+        match_new = re.search(r"(\d{4})_(\d{2})_(\d{2})", filename)
+        if match_new:
+            year, month, day = match_new.groups()
+            # Tenta encontrar um número de boletim B{n}
+            b_match = re.search(r"_B(\d+)", filename)
+            b_num = int(b_match.group(1)) if b_match else 1
+            try:
+                dt = datetime(int(year), int(month), int(day))
+                return {
+                    "date": dt,
+                    "b_num": b_num,
+                    "filename": filename,
+                    "day_name": DAY_MAP[dt.weekday()]
+                }
+            except Exception as e:
+                logger.debug(f"Falha ao processar data (padrão YYYY_MM_DD) no arquivo {filename}: {e}")
+                return None
+
         logger.debug(f"Arquivo ignorado (padrão de nome não coincide): {filename}")
         return None
 
@@ -68,6 +88,13 @@ class BulletinSync:
         
         if not os.path.exists(self.source_drive_dir):
             return {"success": False, "error": f"Pasta de origem não encontrada: {self.source_drive_dir}"}
+
+        # VALIDAÇÃO DE SEGURANÇA: destino deve estar dentro de D:\SERVIDOR
+        _RAIZ_SERVIDOR = r"D:\SERVIDOR"
+        norm_target = os.path.normpath(os.path.abspath(self.target_local_dir))
+        norm_servidor = os.path.normpath(os.path.abspath(_RAIZ_SERVIDOR))
+        if not norm_target.startswith(norm_servidor + os.sep) and norm_target != norm_servidor:
+            return {"success": False, "error": f"[SEGURANÇA] Pasta destino fora de {_RAIZ_SERVIDOR}: {self.target_local_dir}"}
 
         try:
             # 1. Mapear arquivos no Drive de forma recursiva
@@ -93,6 +120,9 @@ class BulletinSync:
             
             # 2. Substituição Atômica no Servidor
             updated_days = []
+            # Somente .mp3 e .json são elegíveis para substituição
+            _EXTS_SUBSTITUIVEIS = ('.mp3', '.json')
+
             for day, data in drive_files_by_day.items():
                 if day not in ["SEGUNDA", "TERCA", "QUARTA", "QUINTA", "SEXTA"]: continue
                 
@@ -104,7 +134,7 @@ class BulletinSync:
                 if not local_dates or data['date'] > max(local_dates):
                     logger.info(f"🔄 Atualizando {day}: Drive={data['date'].strftime('%d/%m/%Y')} | Local={max_local.strftime('%d/%m/%Y') if max_local else 'Vazio'}")
                     
-                    # Pasta temporária
+                    # Pasta temporária para montar novos arquivos
                     temp_maneuver = os.path.join(os.environ.get("TEMP", "C:\\TEMP"), f"omni_sync_{day}")
                     try:
                         if os.path.exists(temp_maneuver): shutil.rmtree(temp_maneuver)
@@ -131,17 +161,39 @@ class BulletinSync:
                                     }, f_meta, ensure_ascii=False, indent=2)
                         
                         if os.listdir(temp_maneuver):
-                            # Limpa destino
-                            for f in os.listdir(target_dir):
-                                try: os.remove(os.path.join(target_dir, f))
+                            # STAGING ATÔMICO: mover arquivos antigos para backup antes de substituir
+                            backup_dir = os.path.join(target_dir, "_backup_anterior")
+                            old_files = [
+                                f for f in os.listdir(target_dir)
+                                if os.path.isfile(os.path.join(target_dir, f))
+                                and f.lower().endswith(_EXTS_SUBSTITUIVEIS)
+                                and not f.startswith("_backup")
+                            ]
+                            os.makedirs(backup_dir, exist_ok=True)
+                            backed_up = []
+                            for fname in old_files:
+                                try:
+                                    shutil.move(os.path.join(target_dir, fname), os.path.join(backup_dir, fname))
+                                    backed_up.append(fname)
                                 except OSError as oe:
-                                    logger.debug(f"Não foi possível remover {f}: {oe}")
-                            
-                            # Move arquivos
-                            for f in os.listdir(temp_maneuver):
-                                shutil.move(os.path.join(temp_maneuver, f), os.path.join(target_dir, f))
-                            
-                            updated_days.append(f"{day} ({data['date'].strftime('%d/%m')})")
+                                    logger.debug(f"Não foi possível mover {fname} para backup: {oe}")
+
+                            try:
+                                # Move novos arquivos para o destino final
+                                for f in os.listdir(temp_maneuver):
+                                    shutil.move(os.path.join(temp_maneuver, f), os.path.join(target_dir, f))
+                                # Sucesso: remove o backup
+                                shutil.rmtree(backup_dir, ignore_errors=True)
+                                updated_days.append(f"{day} ({data['date'].strftime('%d/%m')})")
+                            except Exception as move_err:
+                                # Falha na cópia: restaurar arquivos do backup
+                                logger.error(f"Falha ao mover novos arquivos para {day}. Restaurando backup: {move_err}")
+                                for fname in backed_up:
+                                    try:
+                                        shutil.move(os.path.join(backup_dir, fname), os.path.join(target_dir, fname))
+                                    except Exception as restore_err:
+                                        logger.error(f"Falha ao restaurar {fname}: {restore_err}")
+                                shutil.rmtree(backup_dir, ignore_errors=True)
                     finally:
                         # Garantir limpeza da pasta temporária
                         if os.path.exists(temp_maneuver):
@@ -211,13 +263,17 @@ class BulletinSync:
             # Fallback para mtime se não houver JSON
             if not dates and mp3_files:
                 for f in mp3_files:
-                    filepath = os.path.join(day_path, f)
-                    try:
-                        mtime = os.path.getmtime(filepath)
-                        dt = datetime.fromtimestamp(mtime)
-                        dates.add(dt.strftime("%d/%m/%Y"))
-                    except:
-                        pass
+                    info = self.parse_bulletin_info(f)
+                    if info:
+                        dates.add(info["date"].strftime("%d/%m/%Y"))
+                    else:
+                        filepath = os.path.join(day_path, f)
+                        try:
+                            mtime = os.path.getmtime(filepath)
+                            dt = datetime.fromtimestamp(mtime)
+                            dates.add(dt.strftime("%d/%m/%Y"))
+                        except:
+                            pass
                         
             status[day] = {"count": len(mp3_files), "dates": sorted(list(dates), reverse=True)}
         return status

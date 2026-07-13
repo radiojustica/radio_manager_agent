@@ -15,6 +15,49 @@ logging.basicConfig(
 )
 logger = logging.getLogger("OmniCore.Build")
 
+def build_frontend():
+    """
+    Executa a compilação do frontend React/Vite usando 'npm run build' na pasta 'frontend'.
+    """
+    logger.info("Iniciando compilação do frontend React (Vite)...")
+    frontend_dir = Path(__file__).resolve().parent / "frontend"
+    
+    # Verifica se package.json existe no frontend
+    if not (frontend_dir / "package.json").exists():
+        logger.warning("Diretório do frontend ou 'package.json' não encontrado. Pulando build do frontend.")
+        return True
+        
+    try:
+        # Primeiro, executa npm install se node_modules não existir
+        if not (frontend_dir / "node_modules").exists():
+            logger.info("Pasta 'node_modules' não encontrada no frontend. Executando 'npm install'...")
+            subprocess.run(["npm", "install"], cwd=str(frontend_dir), shell=True, check=True)
+            logger.info("✓ Dependências do frontend instaladas com sucesso.")
+
+        # Executa o build
+        logger.info("Executando 'npm run build' no frontend...")
+        subprocess.run(["npm", "run", "build"], cwd=str(frontend_dir), shell=True, check=True)
+        logger.info("✅ Frontend compilado com sucesso!")
+        return True
+    except subprocess.CalledProcessError as e:
+        logger.error(f"❌ Erro ao compilar o frontend: {e}")
+        # Se a pasta 'dist' já existe de builds anteriores, podemos emitir um aviso e prosseguir
+        dist_dir = frontend_dir / "dist"
+        if dist_dir.exists():
+            logger.warning("⚠️ Usando o build do frontend existente em 'frontend/dist' (anterior).")
+            return True
+        return False
+    except FileNotFoundError:
+        logger.error("❌ Node.js/npm não está instalado ou não foi encontrado no PATH do sistema!")
+        dist_dir = frontend_dir / "dist"
+        if dist_dir.exists():
+            logger.warning("⚠️ Usando o build do frontend existente em 'frontend/dist' (anterior).")
+            return True
+        return False
+    except Exception as e:
+        logger.error(f"🚨 Erro inesperado durante o build do frontend: {e}")
+        return False
+
 def build():
     """
     Constrói o executável do Omni Core V2 usando PyInstaller.
@@ -22,6 +65,11 @@ def build():
     """
     logger.info("Iniciando processo de build do Omni Core V2...")
     
+    # Compila o frontend primeiro para garantir que os arquivos estáticos estejam atualizados
+    if not build_frontend():
+        logger.error("Falha crítica na compilação do frontend e nenhum build anterior foi encontrado. Abortando build.")
+        return False
+        
     # Caminho do ponto de entrada
     entry_point = "main.py"
     if not os.path.exists(entry_point):
@@ -36,7 +84,7 @@ def build():
         sys.executable, "-m", "PyInstaller",
         "--noconfirm",
         "--onefile",
-        "--console", # Mantemos console para debug por enquanto
+        "--noconsole", # Oculta a janela de terminal do console no executável de produção
         "--name", "omni_core",
         "--clean",
         "--add-data", "config;config",
@@ -54,6 +102,8 @@ def build():
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             text=True,
+            encoding="utf-8",
+            errors="replace",
             bufsize=1,
             universal_newlines=True
         )
@@ -69,6 +119,29 @@ def build():
 
         if process.returncode == 0:
             logger.info("✅ Build concluído com sucesso!")
+            
+            # Pós-build: copia as configurações necessárias para rodar o executável
+            try:
+                import shutil
+                dist_dir = Path(__file__).resolve().parent / "dist"
+                src_env = Path(__file__).resolve().parent / ".env"
+                src_config = Path(__file__).resolve().parent / "config"
+                
+                if src_env.exists():
+                    shutil.copy(src_env, dist_dir / ".env")
+                    logger.info("✓ Copiado .env para a pasta dist/ de forma bem-sucedida")
+                    
+                if src_config.exists():
+                    dist_config = dist_dir / "config"
+                    dist_config.mkdir(parents=True, exist_ok=True)
+                    for f_name in ["settings.json", "settings.example.json"]:
+                        src_f = src_config / f_name
+                        if src_f.exists():
+                            shutil.copy(src_f, dist_config / f_name)
+                            logger.info(f"✓ Copiado config/{f_name} para dist/config/ de forma bem-sucedida")
+            except Exception as ce:
+                logger.warning(f"⚠️ Erro ao copiar configurações pós-build para dist/: {ce}")
+                
             return True
         else:
             logger.error(f"❌ PyInstaller encerrou com código de erro: {process.returncode}")

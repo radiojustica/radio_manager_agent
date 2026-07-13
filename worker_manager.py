@@ -45,6 +45,14 @@ try:
     from workers.api_worker import ApiWorker
     logger.info("Importando NotificationWorker...")
     from workers.notification_worker import NotificationWorker
+    logger.info("Importando CommunicationWorker...")
+    from workers.communication_worker import CommunicationWorker
+    logger.info("Importando GiroWorker...")
+    from workers.giro_worker import GiroWorker
+    logger.info("Importando ContentGenerationWorker...")
+    from workers.content_generation_worker import ContentGenerationWorker
+    logger.info("Importando SpiderWorker...")
+    from workers.spider_worker import SpiderWorker
 except Exception as e:
     logger.error(f"ERRO FATAL DURANTE IMPORTAÇÃO DE WORKERS: {e}")
     import traceback
@@ -73,20 +81,21 @@ class WorkerManager:
             "ButtReconnect": {"interval_minutes": 2},
             "UpdateWorker": {"interval_hours": 1},  # Verifica atualizações a cada 1 hora
             "BulletinWorker": {"interval_minutes": 30},
-            "ApiWorker": {"interval_seconds": 30}
+            "ApiWorker": {"interval_seconds": 30},
+            "GiroWorker": {"sync_day_of_week": "sun", "sync_hour": 5, "sync_minute": 0},
+            "ContentGenerationWorker": {"daily_hour": 6, "daily_minute": 0}
         }
         
-        config_path = Path(__file__).resolve().parent / "config" / "settings.json"
-        if config_path.exists():
-            try:
-                with open(config_path, "r", encoding="utf-8") as f:
-                    data = json.load(f)
+        try:
+            from core.config_loader import get_settings
+            data = get_settings()
+            if data:
                 merged = {**defaults, **data.get("workers", {})}
                 if "ButtReconnect" in data.get("workers", {}) and "ButtWorker" not in merged:
                     merged["ButtWorker"] = data["workers"]["ButtReconnect"]
                 return merged
-            except Exception as e:
-                logger.error(f"Erro ao carregar settings.json: {e}")
+        except Exception as e:
+            logger.error(f"Erro ao carregar configurações dos workers pelo config_loader: {e}")
         
         return defaults
 
@@ -108,6 +117,22 @@ class WorkerManager:
                 "result": result.to_dict(),
                 "health": worker.health(),
             }
+
+            # Registrar evento de worker no guardião para exibição no histórico
+            try:
+                status_text = result.status.upper() if getattr(result, "status", None) else "DESCONHECIDO"
+                score_text = f" (Score: {result.score})" if hasattr(result, "score") else ""
+                if getattr(result, "status", None) == "error":
+                    msg = f"Falha no Worker [{name}]: {', '.join(result.violations) if result.violations else 'Erro desconhecido'}"
+                    guardian_instance.log_event("WARNING", msg)
+                elif getattr(result, "status", None) == "circuit_breaker_open":
+                    msg = f"Worker [{name}] bloqueado (Circuit Breaker aberto)"
+                    guardian_instance.log_event("WARNING", msg)
+                else:
+                    msg = f"Worker [{name}] executou com sucesso (Status: {status_text}){score_text}"
+                    guardian_instance.log_event("WORKER", msg)
+            except Exception as le:
+                logger.error(f"Erro ao registrar log de evento do worker: {le}")
 
             # Notifica via WebSocket sobre a conclusão do ciclo
             try:
@@ -139,6 +164,10 @@ class WorkerManager:
             return response_data
         except Exception as e:
             logger.error(f"Erro crítico no orquestrador para o worker {name}: {e}")
+            try:
+                guardian_instance.log_event("WARNING", f"Erro crítico no Worker [{name}]: {str(e)}")
+            except Exception:
+                pass
             # Registro persistente de falha crítica no RewardStore
             try:
                 self.reward_store.record(
@@ -169,6 +198,13 @@ class WorkerManager:
             return
 
         logger.info("Iniciando Orquestrador de Workers (Fase 3)...")
+
+        # Desabilita as tarefas de reboot/manutenção indesejadas imediatamente no startup
+        try:
+            logger.info("[Startup] Desativando tarefas de reboot indesejadas via guardian_instance...")
+            guardian_instance.disable_weekly_reboot_task()
+        except Exception as e:
+            logger.error(f"[Startup] Erro ao desativar tarefas de reboot no startup: {e}")
 
         # 1. GuardianWorker (Watchdog e Alta Frequência)
         guardian_cfg = self.config.get("GuardianWorker", {})
@@ -270,15 +306,17 @@ class WorkerManager:
             replace_existing=True
         )
 
-        # 9. DailyReportWorker (Relatório Gerencial às 18:00)
-        self.scheduler.add_job(
-            lambda: self.run_cycle("DailyReportWorker"),
-            trigger=CronTrigger(hour=18, minute=0),
-            id='worker_daily_report',
-            replace_existing=True,
-            misfire_grace_time=3600
-        )
+        # 9. DailyReportWorker (Relatório Gerencial às 18:00) - Comentado para evitar duplicidade com o CommunicationWorker
+        # self.scheduler.add_job(
+        #     lambda: self.run_cycle("DailyReportWorker"),
+        #     trigger=CronTrigger(hour=18, minute=0),
+        #     id='worker_daily_report',
+        #     replace_existing=True,
+        #     misfire_grace_time=3600
+        # )
 
+        # --- INÍCIO: DESATIVADO POR ORDEM DO USUÁRIO (SEM IA ATÉ SEGUNDA ORDEM) ---
+        """
         # 10. BulletinWorker (Sincronização de Boletins 3x ao dia)
         for idx, (h, m) in enumerate([(11, 30), (15, 30), (20, 30)]):
             self.scheduler.add_job(
@@ -298,6 +336,35 @@ class WorkerManager:
                 replace_existing=True,
                 misfire_grace_time=3600
             )
+
+        # 10c. GiroWorker (Sincronização do Giro das Comarcas - Semanal)
+        giro_cfg = self.config.get("GiroWorker", {})
+        self.scheduler.add_job(
+            lambda: self.run_cycle("GiroWorker"),
+            trigger=CronTrigger(
+                day_of_week=giro_cfg.get("sync_day_of_week", "sun"),
+                hour=giro_cfg.get("sync_hour", 5),
+                minute=giro_cfg.get("sync_minute", 0)
+            ),
+            id='worker_giro_sync',
+            replace_existing=True,
+            misfire_grace_time=3600
+        )
+
+        # 10d. ContentGenerationWorker (Geração de IA - Diário)
+        content_cfg = self.config.get("ContentGenerationWorker", {})
+        self.scheduler.add_job(
+            lambda: self.run_cycle("ContentGenerationWorker"),
+            trigger=CronTrigger(
+                hour=content_cfg.get("daily_hour", 6),
+                minute=content_cfg.get("daily_minute", 0)
+            ),
+            id='worker_content_generation',
+            replace_existing=True,
+            misfire_grace_time=3600
+        )
+        """
+        # --- FIM: DESATIVADO POR ORDEM DO USUÁRIO ---
 
         # 11. DownloaderWorker (Aquisição Proativa às 01:00)
         downloader_cfg = self.config.get("DownloaderWorker", {})
@@ -330,6 +397,15 @@ class WorkerManager:
             replace_existing=True
         )
 
+        # 13b. CommunicationWorker (Resumos Consolidados 2x ao dia: 08:00 e 20:00)
+        self.scheduler.add_job(
+            lambda: self.run_cycle("CommunicationWorker"),
+            trigger=CronTrigger(hour="8,20", minute=0),
+            id='worker_communication_summary',
+            replace_existing=True,
+            misfire_grace_time=3600
+        )
+
         # 14. Playlist Maintenance (Garantir que blocos existam e estejam atualizados)
         try:
             from director.playlist_engine import playlist_engine_instance
@@ -351,6 +427,50 @@ class WorkerManager:
 
         self.scheduler.start()
         logger.info("Orquestrador iniciado com sucesso dinamicamente.")
+
+        # Inicia o listener de comandos ntfy (mesmo canal radio_tjrn)
+        try:
+            from services.ntfy_listener_service import ntfy_listener_service
+            ntfy_listener_service.start(self)
+            logger.info("✓ NtfyListenerService iniciado no canal radio_tjrn.")
+        except Exception as ntfy_err:
+            logger.error(f"[NtfyListener] Falha ao iniciar o listener ntfy: {ntfy_err}")
+
+
+        # Inscrição do Pub/Sub para validação assíncrona de playlists geradas
+        try:
+            from services.pubsub_service import pubsub_service_instance
+            from core.compliance_validator import compliance_validator_instance
+            
+            def processar_bloco_gerado(msg: dict):
+                logger.info(f"[Orquestrador/PubSub] Recebido evento de bloco gerado: {msg}")
+                hora_inicio = msg.get("hora_inicio")
+                caminho_m3u = msg.get("caminho_m3u")
+                mood = msg.get("mood", "Desconhecido")
+                
+                if hora_inicio is not None and caminho_m3u:
+                    # Executa validação regulatória rígida (Camada 1)
+                    violations = compliance_validator_instance.validate_playlist(caminho_m3u, hora_inicio)
+                    status = "success" if not violations else "failed"
+                    
+                    # Publica resultado no canal auditoria:resultado
+                    try:
+                        pubsub_service_instance.publish("auditoria:resultado", {
+                            "hora_inicio": hora_inicio,
+                            "caminho_m3u": caminho_m3u,
+                            "mood": mood,
+                            "status": status,
+                            "violations": violations,
+                            "timestamp": datetime.now().isoformat()
+                        })
+                        logger.info(f"[Orquestrador/PubSub] Resultado publicado em auditoria:resultado para bloco {hora_inicio:02d}H: {status}")
+                    except Exception as pe:
+                        logger.error(f"[Orquestrador/PubSub] Erro ao publicar resultado em auditoria:resultado: {pe}")
+            
+            pubsub_service_instance.subscribe("auditoria:bloco_gerado", processar_bloco_gerado)
+            logger.info("✓ Orquestrador subscrito no canal auditoria:bloco_gerado com sucesso.")
+        except Exception as e:
+            logger.error(f"[Orquestrador/PubSub] Erro crítico ao se inscrever no canal de PubSub: {e}")
 
     def stop_orchestrator(self):
         """Para o agendamento de workers."""
@@ -382,16 +502,34 @@ def create_default_manager() -> WorkerManager:
     manager.register_worker(UpdateWorker(reward_store=manager.reward_store))
     logger.info("Registrando DailyReportWorker...")
     manager.register_worker(DailyReportWorker(reward_store=manager.reward_store))
-    logger.info("Registrando BulletinWorker...")
-    manager.register_worker(BulletinWorker(reward_store=manager.reward_store))
-    logger.info("Registrando NjudWorker...")
-    manager.register_worker(NjudWorker(reward_store=manager.reward_store))
+    enable_ai = manager.config.get("enable_ai_workers", False)
+    if enable_ai:
+        logger.info("Registrando BulletinWorker...")
+        manager.register_worker(BulletinWorker(reward_store=manager.reward_store))
+        logger.info("Registrando NjudWorker...")
+        manager.register_worker(NjudWorker(reward_store=manager.reward_store))
+    else:
+        logger.info("BulletinWorker e NjudWorker desativados (IA suspensa).")
+        
     logger.info("Registrando ReportWorker...")
     manager.register_worker(ReportWorker(reward_store=manager.reward_store))
     logger.info("Registrando ApiWorker...")
     manager.register_worker(ApiWorker(reward_store=manager.reward_store))
     logger.info("Registrando NotificationWorker...")
     manager.register_worker(NotificationWorker(reward_store=manager.reward_store))
+    logger.info("Registrando CommunicationWorker...")
+    manager.register_worker(CommunicationWorker(reward_store=manager.reward_store))
+    
+    if enable_ai:
+        logger.info("Registrando GiroWorker...")
+        manager.register_worker(GiroWorker(reward_store=manager.reward_store))
+        logger.info("Registrando ContentGenerationWorker...")
+        manager.register_worker(ContentGenerationWorker(reward_store=manager.reward_store))
+    else:
+        logger.info("GiroWorker e ContentGenerationWorker desativados (IA suspensa).")
+        
+    logger.info("Registrando SpiderWorker...")
+    manager.register_worker(SpiderWorker(reward_store=manager.reward_store))
     logger.info("Todos os workers registrados.")
     return manager
 

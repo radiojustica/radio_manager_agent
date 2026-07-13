@@ -24,6 +24,7 @@ def test_audio_quality_metrics():
     # Mockar analisar_acustica_completa para retornar baixa qualidade
     import services.curadoria_worker as cw
     original_analise = cw.analisar_acustica_completa
+    original_path_check = cw._arquivo_em_pasta_musicas
     cw.analisar_acustica_completa = lambda x: {
         "energia": 1, 
         "bpm": 120, 
@@ -31,6 +32,10 @@ def test_audio_quality_metrics():
         "danceability": 0.5, 
         "flatness": 0.6
     }
+    # Em testes, o caminho é fake — desabilitar a guarda de segurança de pasta
+    # para que o teste continue validando a lógica de quarentena acústica.
+    # Em produção, _arquivo_em_pasta_musicas sempre validará caminhos reais.
+    cw._arquivo_em_pasta_musicas = lambda x: True
     
     try:
         # Mockar shutil.move para não mover arquivos reais
@@ -54,6 +59,7 @@ def test_audio_quality_metrics():
         shutil.move = original_move
     finally:
         cw.analisar_acustica_completa = original_analise
+        cw._arquivo_em_pasta_musicas = original_path_check
         db.delete(m_fake)
         db.commit()
         db.close()
