@@ -39,20 +39,35 @@ NTFY_POST_URL = "https://ntfy.sh/" + NTFY_CHANNEL
 RECONNECT_DELAY = 15
 
 # ---------------------------------------------------------------------------
-# Mapa de comandos -> workers
-# Chaves devem ser unicas e nunca aparecer em mensagens automaticas.
-# Ao adicionar novos comandos, certifique-se de que a frase nao existe
-# em nenhuma mensagem gerada por send_ntfy() ou send_whatsapp_alert().
+# Mapa de comandos -> workers ou funções customizadas
 # ---------------------------------------------------------------------------
 
 COMMAND_MAP = {
     "gerar playlist":     ("PlaylistWorker",      {}),
+    "gerar playlists":    ("PlaylistWorker",      {}),
+    "playlists de hoje":  ("PlaylistWorker",      {}),
+    "gerar 24h":          ("PlaylistWorker",      {}),
     "ativar spider":      ("SpiderWorker",         {}),
     "sincronizar acervo": ("SyncWorker",           {}),
     "checar saude":       ("GuardianWorker",       {}),
     "baixar musicas":     ("DownloaderWorker",     {}),
     "relatorio diario":   ("DailyReportWorker",    {}),
 }
+
+# Comandos diretos de consulta ou ações customizadas (executados sem worker manager)
+CUSTOM_COMMANDS = (
+    "ver estado da transmissão",
+    "ver estado da transmissao",
+    "estado da transmissao",
+    "estado da transmissão",
+    "status",
+    "no ar",
+    "sincronizar boletins",
+    "ajuda",
+    "comandos",
+    "help",
+)
+
 
 # Padroes anti-loop: substrings que identificam mensagens automaticas do sistema.
 # O listener descarta qualquer mensagem que contenha uma dessas strings,
@@ -210,7 +225,14 @@ class NtfyListenerService:
                 )
                 return
 
-        # ── Tenta casar com um comando registrado ────────────────────────────
+        # ── Tenta casar com comandos customizados de consulta ────────────────
+        for cmd in CUSTOM_COMMANDS:
+            if cmd in msg_lower:
+                logger.info("[NtfyListener] Comando customizado '%s' detectado", cmd)
+                self._tratar_comando_customizado(cmd)
+                return
+
+        # ── Tenta casar com um comando de worker registrado ─────────────────
         comando_encontrado = None
         for frase, (worker_name, kwargs_extra) in COMMAND_MAP.items():
             if frase in msg_lower:
@@ -228,6 +250,70 @@ class NtfyListenerService:
             frase, worker_name,
         )
         self._executar_worker(worker_name, kwargs_extra)
+
+    def _tratar_comando_customizado(self, cmd: str):
+        """Trata comandos que não dependem diretamente de um Worker."""
+        if any(w in cmd for w in ("estado", "status", "no ar")):
+            self._responder_status_transmissao()
+        elif any(w in cmd for w in ("ajuda", "comandos", "help")):
+            self._responder_ajuda()
+        elif "boletins" in cmd:
+            self._sincronizar_boletins_custom()
+
+    def _responder_status_transmissao(self):
+        try:
+            from routers.status import get_now_playing
+            from core.database import SessionLocal
+            db = SessionLocal()
+            try:
+                data = get_now_playing(db)
+            finally:
+                db.close()
+
+            title = data.get("title", "Desconhecido")
+            status_zara = data.get("status", "desconhecido").upper()
+            butt_ativos = data.get("butt_ativos", 0)
+            butt_total = data.get("butt_count", 0)
+            sazonalidade = data.get("sazonalidade", {}).get("nome", "Convencional")
+
+            msg = (
+                f"📻 OMNI CORE - ESTADO DA TRANSMISSÃO\n"
+                f"🎵 Tocando: {title}\n"
+                f"📡 ZaraRadio: {status_zara}\n"
+                f"🎙️ Encoders BUTT: {butt_ativos}/{butt_total} ativos\n"
+                f"🎭 Campanha: {sazonalidade}"
+            )
+            self._publicar(msg, title="Status do Ar")
+        except Exception as e:
+            logger.error(f"[NtfyListener] Erro ao buscar status: {e}")
+            self._publicar(f"[ERRO] Falha ao consultar status: {e}", title="Erro Status")
+
+    def _responder_ajuda(self):
+        msg = (
+            "📋 COMANDOS DISPONÍVEIS (Canal radio_tjrn):\n\n"
+            "• 'ver estado da transmissão' ou 'status'\n"
+            "• 'gerar playlist' ou 'playlists de hoje'\n"
+            "• 'sincronizar acervo'\n"
+            "• 'sincronizar boletins'\n"
+            "• 'baixar musicas'\n"
+            "• 'checar saude'\n"
+            "• 'relatorio diario'\n"
+            "• 'ajuda'"
+        )
+        self._publicar(msg, title="Comandos da Rádio")
+
+    def _sincronizar_boletins_custom(self):
+        try:
+            from scripts.bulletin_sync import BulletinSync
+            syncer = BulletinSync()
+            res = syncer.sync()
+            ok = res.get("success", False)
+            upd = res.get("updated", 0)
+            flag = "[OK]" if ok else "[ERRO]"
+            self._publicar(f"{flag} Sincronização de Boletins: {upd} arquivos atualizados.", title="Boletins TJRN")
+        except Exception as e:
+            self._publicar(f"[ERRO] Falha na sync de boletins: {e}", title="Boletins TJRN")
+
 
     # ------------------------------------------------------------------
     # Execucao do worker

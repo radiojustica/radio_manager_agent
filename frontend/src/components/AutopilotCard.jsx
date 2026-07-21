@@ -80,7 +80,15 @@ export default function AutopilotCard() {
         </span>
       </div>
 
+      {error && (
+        <div style={{ padding: '0.5rem 0.75rem', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.2)', color: 'var(--accent-danger)', borderRadius: '6px', fontSize: '0.72rem', marginBottom: '0.75rem' }}>
+          ⚠️ {error}
+        </div>
+      )}
+
       <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+
+
         {/* Toggle Button */}
         <button
           onClick={handleToggle}

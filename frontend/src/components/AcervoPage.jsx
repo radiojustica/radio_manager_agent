@@ -158,11 +158,13 @@ const AcervoPage = () => {
         if (selectedIds.size === 0) return;
         setLoading(true);
         try {
-            const ids = Array.from(selectedIds);
-            // Processa um por um para não sobrecarregar o Ollama se necessário, 
-            // mas o endpoint de batch já existe. Vamos usar o batch com limite do set.
-            await fetch(`/api/ai/enrich-batch?limit=${ids.length}`, { method: 'POST' });
-            alert(`Processamento de ${ids.length} faixas iniciado via Ollama.`);
+            const idsList = Array.from(selectedIds);
+            await fetch('/api/ai/enrich-batch', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ids: idsList, limit: idsList.length })
+            });
+            alert(`Processamento de ${idsList.length} faixas iniciado via Ollama!`);
             carregarAcervo(pagination.page);
         } catch (err) {
             alert('Erro no processamento em lote da IA.');
@@ -171,6 +173,7 @@ const AcervoPage = () => {
             setSelectedIds(new Set());
         }
     };
+
 
     const renderEnergiaBar = (energia) => {
         const percent = (energia / 5) * 100;

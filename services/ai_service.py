@@ -39,16 +39,21 @@ class AICurator:
             logger.error(f"Erro ao chamar Ollama: {e}")
             return f"No ar agora, {musica.titulo} com {musica.artista}."
 
-    def enrich_acervo_batch(self, db: Session, limit: int = 5):
-        """Enriquece o banco de dados com insights da IA para faixas que ainda não possuem."""
+    def enrich_acervo_batch(self, db: Session, limit: int = 5, ids: Optional[list[int]] = None):
+        """Enriquece o banco de dados com insights da IA para faixas especificadas ou pendentes."""
+        query = db.query(Musica)
+        if ids:
+            query = query.filter(Musica.id.in_(ids))
+        else:
+            query = query.filter(Musica.ai_insight == None)
+            
         pendentes = (
-            db.query(Musica)
-            .filter(Musica.ai_insight == None)
-            .filter(Musica.estilo != "vinheta")
+            query.filter(Musica.estilo != "vinheta")
             .filter(Musica.estilo != "spot")
             .limit(limit)
             .all()
         )
+
         
         count = 0
         for musica in pendentes:

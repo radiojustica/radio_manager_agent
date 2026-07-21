@@ -82,9 +82,44 @@ function InnerApp() {
   const [mood, setMood] = useState('Ensolarado');
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [error, setError] = useState(null);
+  const [actionToast, setActionToast] = useState(null);
   const [systemLogs, setSystemLogs] = useState([]);
   const [dbQueue, setDbQueue] = useState([]);
   const { player, connected } = useWsData();
+
+  const handleForcePlay = async () => {
+    try {
+      const res = await fetch('/api/status/player/force_play', { method: 'POST' });
+      const data = await res.json();
+      if (data.success) {
+        showToast('▶ Comando PLAY enviado ao ZaraRadio!');
+      } else {
+        showToast('⚠️ ZaraRadio já está tocando ou não pôde ser ativado.');
+      }
+    } catch (e) {
+      showToast('❌ Erro de comunicação com o servidor.');
+    }
+  };
+
+  const handleForceReconnect = async () => {
+    try {
+      const res = await fetch('/api/status/butt/reconnect', { method: 'POST' });
+      const data = await res.json();
+      if (data.success) {
+        showToast(`📡 Encoders BUTT: ${data.reconnected}/${data.total} reconectados.`);
+      } else {
+        showToast('⚠️ Falha ao tentar reconectar encoders.');
+      }
+    } catch (e) {
+      showToast('❌ Erro ao enviar solicitação de reconexão.');
+    }
+  };
+
+  const showToast = (msg) => {
+    setActionToast(msg);
+    setTimeout(() => setActionToast(null), 4000);
+  };
+
 
   useEffect(() => {
     const isFull = activeTab === 'acervo';
@@ -235,6 +270,12 @@ function InnerApp() {
             {error}
           </div>
         )}
+        {actionToast && (
+          <div className="error-alert" style={{ background: 'rgba(20, 184, 166, 0.15)', borderColor: 'var(--accent-primary)', color: 'var(--accent-primary)' }}>
+            <span>ℹ️</span>
+            {actionToast}
+          </div>
+        )}
 
         <header className="top-header">
           <div className="page-title">
@@ -245,7 +286,7 @@ function InnerApp() {
             {activeTab === 'monitoramento' && (
               <button
                 className="btn"
-                onClick={() => fetch('/api/status/system/show-window', { method: 'POST' })}
+                onClick={() => fetch('/api/status/system/show-window', { method: 'POST' }).then(() => showToast('Janela do backend acionada.'))}
               >
                 <Icon.Radio /> Abrir Backend
               </button>
@@ -290,7 +331,7 @@ function InnerApp() {
                     <div 
                       className="progress-fill" 
                       style={{ 
-                        width: player.status === 'playing' ? '45%' : '0%', 
+                        width: player.status === 'playing' ? '55%' : '0%', 
                         background: 'var(--accent-primary)',
                         height: '100%',
                         borderRadius: '3px',
@@ -299,32 +340,28 @@ function InnerApp() {
                     />
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '6px', fontWeight: 700 }}>
-                    <span>{player.status === 'playing' ? '01:45' : '00:00'}</span>
-                    <span>{player.status === 'playing' ? '03:45' : '00:00'}</span>
+                    <span>{player.status === 'playing' ? 'AO VIVO' : '00:00'}</span>
+                    <span>{player.status === 'playing' ? 'TRANSMITINDO' : '00:00'}</span>
                   </div>
                 </div>
 
                 {/* Controles de Mídia */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', justifyContent: 'center' }}>
                   {/* Anterior */}
-                  <button className="btn btn-icon" style={{ borderRadius: '50%', width: '38px', height: '38px' }} title="Anterior">
+                  <button className="btn btn-icon" onClick={() => showToast('ℹ️ O ZaraRadio gerencia a sequência automática dos blocos.')} style={{ borderRadius: '50%', width: '38px', height: '38px' }} title="Anterior (Automático)">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="19 20 9 12 19 4 19 20"/><rect x="5" y="4" width="2" height="16"/></svg>
                   </button>
                   {/* Play */}
-                  <button className="btn" style={{ borderRadius: '50%', width: '46px', height: '46px', background: 'rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title="Reproduzir">
+                  <button className="btn" onClick={handleForcePlay} style={{ borderRadius: '50%', width: '46px', height: '46px', background: 'rgba(16, 185, 129, 0.15)', borderColor: 'var(--accent-success)', color: 'var(--accent-success)', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title="Forçar Reprodução (Play)">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
                   </button>
-                  {/* Pausa */}
-                  <button className="btn" style={{ borderRadius: '50%', width: '46px', height: '46px', background: 'rgba(25, 184, 166, 0.1)', borderColor: 'var(--accent-primary)', color: 'var(--accent-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title="Pausar">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+                  {/* Reconectar Encoders */}
+                  <button className="btn" onClick={handleForceReconnect} style={{ borderRadius: '50%', width: '46px', height: '46px', background: 'rgba(25, 184, 166, 0.1)', borderColor: 'var(--accent-primary)', color: 'var(--accent-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title="Reconectar Encoders BUTT">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
                   </button>
                   {/* Próximo */}
-                  <button className="btn btn-icon" style={{ borderRadius: '50%', width: '38px', height: '38px' }} title="Próximo">
+                  <button className="btn btn-icon" onClick={() => showToast('ℹ️ ZaraRadio altera a faixa após o término atual.')} style={{ borderRadius: '50%', width: '38px', height: '38px' }} title="Próximo">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 4 15 12 5 20 5 4"/><rect x="17" y="4" width="2" height="16"/></svg>
-                  </button>
-                  {/* Alternar */}
-                  <button className="btn btn-icon" style={{ borderRadius: '50%', width: '38px', height: '38px' }} title="Programação Aleatória">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/><line x1="4" y1="4" x2="9" y2="9"/></svg>
                   </button>
                 </div>
               </div>

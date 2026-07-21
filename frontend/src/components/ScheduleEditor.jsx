@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import './ConfigPage.css'; // Reutilizando estilos existentes
 
 export default function ScheduleEditor() {
@@ -9,6 +9,18 @@ export default function ScheduleEditor() {
     { bloco: 'Noite', energia_alvo: 3 },
   ]);
   const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    fetch('/api/config/schedule')
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data) && data.length > 0) {
+          setRules(data);
+        }
+      })
+      .catch(console.error);
+  }, []);
+
 
   const handleLevelChange = (bloco, level) => {
     setRules(rules.map(r => r.bloco === bloco ? { ...r, energia_alvo: level } : r));

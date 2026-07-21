@@ -23,12 +23,40 @@ async def get_badwords():
     with open(badwords_path, "r", encoding="utf-8") as f:
         return json.load(f)
 
-@router.post("/badwords")
-async def save_badwords(words: list):
-    badwords_path = "config/badwords.json"
-    with open(badwords_path, "w", encoding="utf-8") as f:
-        json.dump(words, f, indent=4)
-    return {"status": "success"}
+from pydantic import BaseModel
+from core.models import RegraProgramacao
+
+class RuleSchema(BaseModel):
+    bloco: str
+    energia_alvo: int
+
+@router.post("/schedule")
+async def save_schedule_rules(rules: list[RuleSchema], db: Session = Depends(get_db)):
+    try:
+        for rule in rules:
+            db_rule = db.query(RegraProgramacao).filter(RegraProgramacao.bloco == rule.bloco).first()
+            if db_rule:
+                db_rule.energia_alvo = rule.energia_alvo
+            else:
+                db.add(RegraProgramacao(bloco=rule.bloco, energia_alvo=rule.energia_alvo))
+        db.commit()
+        return {"status": "success", "message": "Regras salvas com sucesso"}
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/schedule")
+async def get_schedule_rules(db: Session = Depends(get_db)):
+    rules = db.query(RegraProgramacao).all()
+    if not rules:
+        return [
+            {"bloco": "Madrugada", "energia_alvo": 2},
+            {"bloco": "Manhã", "energia_alvo": 4},
+            {"bloco": "Tarde", "energia_alvo": 5},
+            {"bloco": "Noite", "energia_alvo": 3},
+        ]
+    return [{"bloco": r.bloco, "energia_alvo": r.energia_alvo} for r in rules]
+
 
 @router.get("/grade")
 async def get_grade():
