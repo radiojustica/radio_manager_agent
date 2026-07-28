@@ -8,6 +8,7 @@ import shutil
 import win32gui
 from collections import deque
 from datetime import datetime
+from typing import Optional
 from core.time_utils import now_local
 from pathlib import Path
 import psutil

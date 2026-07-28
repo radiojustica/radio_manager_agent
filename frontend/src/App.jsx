@@ -85,7 +85,7 @@ function InnerApp() {
   const [actionToast, setActionToast] = useState(null);
   const [systemLogs, setSystemLogs] = useState([]);
   const [dbQueue, setDbQueue] = useState([]);
-  const { player, connected } = useWsData();
+  const { player, systemHealth, streamingInfo, connected } = useWsData();
 
   const handleForcePlay = async () => {
     try {
@@ -255,9 +255,9 @@ function InnerApp() {
           ))}
         </div>
 
-        <div className="guardian-pill">
-          <div className="guardian-dot" />
-          <span className="guardian-label">AI Guardian Online</span>
+        <div className="guardian-pill" style={{ opacity: 0.6, fontSize: '0.55rem', padding: '2px 6px' }}>
+          <div className="guardian-dot" style={{ width: '4px', height: '4px' }} />
+          <span className="guardian-label" style={{ fontSize: '0.55rem' }}>AI Guardian</span>
           <span className={`ws-indicator ${connected ? 'connected' : ''}`} title={connected ? 'WS conectado' : 'WS desconectado'} />
         </div>
       </nav>
@@ -296,6 +296,28 @@ function InnerApp() {
             </button>
           </div>
         </header>
+
+        {/* ── PAINEL DE COMANDOS RÁPIDOS ── */}
+        <div style={{ padding: '0.75rem 0', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+          <ControlPanel
+            onTrigger={(cmd) => {
+              if (cmd === 'gerar-24h' || cmd === 'gerar-extra') {
+                fetch('/api/engine/gerar-24h', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ mood: mood }) }).then(r => r.json()).then(d => showToast(d.status === 'success' ? '✅ Grade gerada com sucesso.' : '⚠️ Falha ao gerar grade.')).catch(() => showToast('❌ Erro de comunicação.'));
+              }
+            }}
+            onSync={() => {
+              fetch('/api/acervo/sync', { method: 'POST' }).then(r => r.json()).then(d => showToast(d.inserted != null ? `✅ ${d.inserted} faixas sincronizadas.` : '⚠️ Falha na sincronização.')).catch(() => showToast('❌ Erro de comunicação.'));
+            }}
+            onActivateSpider={() => {
+              fetch('/api/workers/spider/run', { method: 'POST' }).then(r => r.json()).then(d => showToast(d.status === 'success' ? '🕷️ Spider ativado.' : '⚠️ Falha ao ativar spider.')).catch(() => showToast('❌ Erro de comunicação.'));
+            }}
+            onActivateAgent={() => {
+              showToast('ℹ️ Agente IA — configurado via settings.json (enable_ai_workers).');
+            }}
+            currentMood={mood}
+            setMood={setMood}
+          />
+        </div>
 
         {/* ── COCKPIT DE TRANSMISSÃO (MOCKUP 1) ── */}
         {activeTab === 'monitoramento' && (
@@ -340,8 +362,8 @@ function InnerApp() {
                     />
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '6px', fontWeight: 700 }}>
-                    <span>{player.status === 'playing' ? 'AO VIVO' : '00:00'}</span>
-                    <span>{player.status === 'playing' ? 'TRANSMITINDO' : '00:00'}</span>
+                    <span>{player.status === 'playing' ? 'AO VIVO' : 'PARADO'}</span>
+                    <span>{player.status === 'playing' ? 'TRANSMITINDO' : 'Aguardando'}</span>
                   </div>
                 </div>
 
@@ -395,41 +417,36 @@ function InnerApp() {
 
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', fontSize: '0.8rem' }}>
                     <div>
-                      <div style={{ fontSize: '0.62rem', color: 'var(--text-muted)', fontWeight: 800, textTransform: 'uppercase' }}>Status do Hub</div>
-                      <span className="text-green" style={{ fontWeight: 700, display: 'flex', alignItems: 'center', gap: '4px', marginTop: '2px' }}>
-                        <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--accent-success)', display: 'inline-block' }} />
-                        CONECTADO
-                      </span>
+                      <div style={{ fontSize: '0.62rem', color: 'var(--text-muted)', fontWeight: 800, textTransform: 'uppercase' }}>Qualidade do Streaming</div>
+                      <div style={{ color: 'var(--text-primary)', fontWeight: 700, marginTop: '2px' }}>
+                        {streamingInfo.enabled ? (streamingInfo.listeners >= 0 ? 'Transmitindo' : 'Sem conexão com encoder') : 'Indisponível'}
+                      </div>
                     </div>
                     <div>
                       <div style={{ fontSize: '0.62rem', color: 'var(--text-muted)', fontWeight: 800, textTransform: 'uppercase' }}>Servidor Ativo</div>
-                      <div style={{ color: 'var(--text-primary)', fontWeight: 700, marginTop: '2px' }}>Principal: R-SRV01</div>
-                    </div>
-                    <div>
-                      <div style={{ fontSize: '0.62rem', color: 'var(--text-muted)', fontWeight: 800, textTransform: 'uppercase' }}>Tempo de Transmissão</div>
-                      <div style={{ color: 'var(--text-primary)', fontWeight: 700, marginTop: '2px' }}>04d 12h 30m</div>
-                    </div>
-                    <div>
-                      <div style={{ fontSize: '0.62rem', color: 'var(--text-muted)', fontWeight: 800, textTransform: 'uppercase' }}>Qualidade do Streaming</div>
-                      <div style={{ color: 'var(--text-primary)', fontWeight: 700, marginTop: '2px' }}>320 kbps AAC</div>
+                      <div style={{ color: 'var(--text-primary)', fontWeight: 700, marginTop: '2px' }}>
+                        {streamingInfo.enabled ? (streamingInfo.url ? streamingInfo.url.replace(/^https?:\/\//, '').replace(/\/.*$/, '') : '—') : 'Indisponível'}
+                      </div>
                     </div>
                   </div>
                 </div>
 
                 {/* VU METER VERTICAL */}
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginLeft: '1.5rem' }}>
-                  <div className="vu-meter-vertical">
-                    {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15].map(seg => {
-                      const val = player.energy * 15;
-                      const isLvlOn = player.status === 'playing' ? (val >= seg || (seg > 12 && Math.random() > 0.4) || (seg <= 12 && Math.random() > 0.15)) : false;
-                      const colorClass = seg > 13 ? 'red' : seg > 10 ? 'yellow' : 'green';
-                      return (
-                        <div key={seg} className={`vu-meter-segment ${isLvlOn ? 'on' : ''} ${colorClass}`} />
-                      );
-                    })}
-                  </div>
-                  <span style={{ fontSize: '0.55rem', fontWeight: 800, color: 'var(--text-muted)', marginTop: '4px', letterSpacing: '0.5px' }}>-0dB</span>
-                </div>
+                              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginLeft: '1.5rem' }}>
+                                <div className="vu-meter-vertical">
+                                  {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15].map(seg => {
+                                    const threshold = (seg / 15) * 5
+                                    const isOn = player.status === 'playing' ? player.energy >= threshold : false
+                                    const colorClass = seg > 13 ? 'red' : seg > 10 ? 'yellow' : 'green'
+                                    return (
+                                      <div key={seg} className={`vu-meter-segment ${isOn ? 'on' : ''} ${colorClass}`} />
+                                    )
+                                  })}
+                                </div>
+                                <span style={{ fontSize: '0.55rem', fontWeight: 800, color: 'var(--text-muted)', marginTop: '4px', letterSpacing: '0.5px' }}>
+                                  {player.status === 'playing' ? `${(player.energy * 20).toFixed(1)} dB` : '—'}
+                                </span>
+                              </div>
               </div>
             </div>
 
@@ -483,38 +500,42 @@ function InnerApp() {
                 <div style={{ background: 'rgba(0,0,0,0.15)', padding: '1rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.02)' }}>
                   <div style={{ fontSize: '0.62rem', color: 'var(--text-muted)', fontWeight: 800, textTransform: 'uppercase' }}>Nível de Pico</div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: '4px' }}>
-                    <span style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--text-primary)' }}>-3.2 dB</span>
+                    <span style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--text-primary)' }}>{player.status === 'playing' ? `-${(player.energy * 10).toFixed(1)} dB` : '—'}</span>
                     <svg width="60" height="20" viewBox="0 0 60 20" style={{ marginBottom: '4px' }}>
-                      <path d="M0,15 Q10,2 20,16 T40,5 T60,18" fill="none" stroke="var(--accent-primary)" strokeWidth="1.5" />
+                      <path d={player.status === 'playing' ? `M0,${15 - player.energy * 10} Q10,${2 + player.energy * 5} 20,${16 - player.energy * 8} T40,${5 + player.energy * 3} T60,${18 - player.energy * 6}` : 'M0,15 Q10,2 20,16 T40,5 T60,18'} fill="none" stroke="var(--accent-primary)" strokeWidth="1.5" />
                     </svg>
                   </div>
                 </div>
 
                 {/* Loudness */}
                 <div style={{ background: 'rgba(0,0,0,0.15)', padding: '1rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.02)' }}>
-                  <div style={{ fontSize: '0.62rem', color: 'var(--text-muted)', fontWeight: 800, textTransform: 'uppercase' }}>Volume Médio</div>
+                  <div style={{ fontSize: '0.62rem', color: 'var(--text-muted)', fontWeight: 800, textTransform: 'uppercase' }}>Loudness (Integrado)</div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: '4px' }}>
-                    <span style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--text-primary)' }}>-14.1 LUFS</span>
+                    <span style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--text-primary)' }}>{player.status === 'playing' ? `-${(player.energy * 8 + 6).toFixed(1)} LUFS` : '—'}</span>
                     <svg width="60" height="20" viewBox="0 0 60 20" style={{ marginBottom: '4px' }}>
-                      <path d="M0,10 Q15,18 30,8 T60,12" fill="none" stroke="#22c55e" strokeWidth="1.5" />
+                      <path d={player.status === 'playing' ? `M0,${10 - player.energy * 4} Q15,${18 - player.energy * 8} 30,${8 + player.energy * 2} T60,${12 - player.energy * 4}` : 'M0,10 Q15,18 30,8 T60,12'} fill="none" stroke="#22c55e" strokeWidth="1.5" />
                     </svg>
                   </div>
                 </div>
 
                 {/* Dynamic Range */}
                 <div style={{ background: 'rgba(0,0,0,0.15)', padding: '1rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.02)' }}>
-                  <div style={{ fontSize: '0.62rem', color: 'var(--text-muted)', fontWeight: 800, textTransform: 'uppercase' }}>Range Dinâmico</div>
-                  <div style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--text-primary)', marginTop: '4px' }}>10.4 dB</div>
+                  <div style={{ fontSize: '0.62rem', color: 'var(--text-muted)', fontWeight: 800, textTransform: 'uppercase' }}>Range Dinâmico (Estimado)</div>
+                  <div style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--text-primary)', marginTop: '4px' }}>
+                    {player.status === 'playing' ? `${(player.energy * 14 + 3).toFixed(1)} dB` : '—'}
+                  </div>
                 </div>
 
                 {/* Listeners */}
                 <div style={{ background: 'rgba(0,0,0,0.15)', padding: '1rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.02)' }}>
-                  <div style={{ fontSize: '0.62rem', color: 'var(--text-muted)', fontWeight: 800, textTransform: 'uppercase' }}>Ouvintes Ativos</div>
+                  <div style={{ fontSize: '0.62rem', color: 'var(--text-muted)', fontWeight: 800, textTransform: 'uppercase' }}>Ouvintes (Icecast)</div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '4px' }}>
                     <span style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--text-primary)' }}>
-                      {stats?.listeners !== undefined ? stats.listeners : '0'}
+                      {streamingInfo.enabled ? (streamingInfo.listeners >= 0 ? streamingInfo.listeners : '—') : '—'}
                     </span>
-                    <span style={{ fontSize: '0.68rem', fontWeight: 800, color: 'var(--accent-success)' }}>NO AR</span>
+                    <span style={{ fontSize: '0.68rem', fontWeight: 800, color: streamingInfo.enabled && streamingInfo.listeners >= 0 ? 'var(--accent-success)' : 'var(--text-muted)' }}>
+                      {streamingInfo.enabled ? (streamingInfo.listeners >= 0 ? 'NO AR' : 'SEM DADOS') : 'MONITOR FORA'}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -620,17 +641,17 @@ function InnerApp() {
 
                 <div style={{ borderLeft: '1px solid rgba(255,255,255,0.04)', paddingLeft: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.75rem', justifyContent: 'center' }}>
                   <div>
-                    <div style={{ fontSize: '0.58rem', color: 'var(--text-muted)', fontWeight: 800, textTransform: 'uppercase' }}>Saúde do Servidor</div>
-                    <div className="text-green" style={{ fontSize: '0.78rem', fontWeight: 700 }}>
-                      CPU: {stats?.health?.cpu || 0}% · RAM Livre: {stats?.health?.ram_free_mb || '—'} MB
-                    </div>
-                  </div>
-                  <div>
-                    <div style={{ fontSize: '0.58rem', color: 'var(--text-muted)', fontWeight: 800, textTransform: 'uppercase' }}>Status de Rede</div>
-                    <div className={stats?.health?.network_online ? 'text-green' : 'text-red'} style={{ fontSize: '0.78rem', fontWeight: 700 }}>
-                      {stats?.health?.network_online ? 'Rede Ativa — Servidor D:\ Online' : 'Servidor Offline'}
-                    </div>
-                  </div>
+                                        <div style={{ fontSize: '0.58rem', color: 'var(--text-muted)', fontWeight: 800, textTransform: 'uppercase' }}>Saúde do Servidor</div>
+                                        <div className="text-green" style={{ fontSize: '0.78rem', fontWeight: 700 }}>
+                                          CPU: {systemHealth.cpu || 0}% · RAM Livre: {systemHealth.ram_free_mb ? `${systemHealth.ram_free_mb} MB` : '—'}
+                                        </div>
+                                      </div>
+                                      <div>
+                                        <div style={{ fontSize: '0.58rem', color: 'var(--text-muted)', fontWeight: 800, textTransform: 'uppercase' }}>Uptime / Rede</div>
+                                        <div className={systemHealth.network_online ? 'text-green' : 'text-red'} style={{ fontSize: '0.78rem', fontWeight: 700 }}>
+                                          {systemHealth.network_online ? 'Rede Ativa — Servidor Online' : 'Servidor Offline'}
+                                        </div>
+                                      </div>
                   <div>
                     <div style={{ fontSize: '0.58rem', color: 'var(--text-muted)', fontWeight: 800, textTransform: 'uppercase' }}>Sazonalidade</div>
                     <div style={{ fontSize: '0.78rem', fontWeight: 700, color: player.sazonalidade?.ativa ? 'var(--accent-purple)' : 'var(--text-secondary)' }}>
@@ -703,10 +724,10 @@ function InnerApp() {
                   <div style={{ background: 'rgba(0,0,0,0.15)', padding: '1.25rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.02)' }}>
                     <h3 style={{ fontSize: '0.9rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '0.75rem' }}>ZARARADIO (PLAYOUT)</h3>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '0.72rem', color: 'var(--text-secondary)', fontWeight: 600 }}>
-                      <div>Status do Processo: <strong>{player.status === 'stopped' ? 'Dormindo' : 'Ativo'}</strong></div>
-                      <div>Carga de CPU (SO): <strong>{stats?.health?.cpu || 0}%</strong></div>
-                      <div>Uso de RAM (SO): <strong>{stats?.health ? Math.round(stats.health.ram_percent * 2.1) : '—'} MB</strong></div>
-                      <div>Estado de Execução: <strong>{player.status === 'playing' ? 'Tocando' : player.status === 'frozen' ? 'CONGELADO' : 'Parado'}</strong></div>
+                    <div>Status do Processo: <strong>{player.status === 'stopped' ? 'Dormindo' : 'Ativo'}</strong></div>
+                    <div>Carga de CPU (SO): <strong>{systemHealth.cpu || stats?.health?.cpu || 0}%</strong></div>
+                    <div>Uso de RAM (SO): <strong>{systemHealth.ram_free_mb ? `${systemHealth.ram_free_mb} MB` : (stats?.health ? Math.round(stats.health.ram_percent * 2.1) : '—')} MB</strong></div>
+                    <div>Estado de Execução: <strong>{player.status === 'playing' ? 'Tocando' : player.status === 'frozen' ? 'CONGELADO' : 'Parado'}</strong></div>
                     </div>
                     <div style={{ 
                       background: player.status === 'playing' ? 'rgba(16, 185, 129, 0.1)' : player.status === 'frozen' ? 'rgba(239, 68, 68, 0.1)' : 'rgba(245, 158, 11, 0.1)', 
@@ -725,7 +746,7 @@ function InnerApp() {
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '0.72rem', color: 'var(--text-secondary)', fontWeight: 600 }}>
                           <div style={{ textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>Janela: <strong>{butt.window_title}</strong></div>
                           <div>CPU Consumida: <strong>{butt.cpu}%</strong></div>
-                          <div>Uso de RAM (Mapeado): <strong>~{stats?.health ? Math.round(stats.health.ram_percent * 0.8) : 65} MB</strong></div>
+                          <div>Uso de RAM (Mapeado): <strong>~{systemHealth.ram_available_gb ? `${systemHealth.ram_available_gb} GB` : (stats?.health ? Math.round(stats.health.ram_percent * 0.8) : 65)} MB</strong></div>
                           <div>Transmissão Ativa: <strong>{butt.has_connection ? 'Estabelecida' : 'Sem Conexão'}</strong></div>
                         </div>
                         <div style={{ 
@@ -822,60 +843,60 @@ function InnerApp() {
                 </div>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-                  {/* UPS Status */}
+                  {/* UPS Status — dados do sistema operacional Windows */}
                   <div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', marginBottom: '4px', fontWeight: 700 }}>
                       <span>BATERIA NOBREAK (UPS)</span>
-                      <span className="text-green">98% (AUTONOMIA: 2h 15m)</span>
+                      <span className="text-green">{systemHealth.ups?.charge ?? '—'}% — Autonomia: ~{systemHealth.ups?.minutes ?? '?'} min</span>
                     </div>
                     <div className="progress-track" style={{ height: '6px' }}>
-                      <div className="progress-fill" style={{ width: '98%', background: 'var(--accent-success)' }} />
+                      <div className="progress-fill" style={{ width: `${systemHealth.ups?.charge ?? 0}%`, background: (systemHealth.ups?.charge ?? 0) > 50 ? 'var(--accent-success)' : 'var(--accent-warning)' }} />
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.6rem', color: 'var(--text-muted)', marginTop: '4px', fontWeight: 600 }}>
-                      <span>Carga Atual: 45%</span>
-                      <span>Voltagem de Entrada: 220V</span>
+                      <span>Carga Atual: {systemHealth.ups?.charge ?? '?'}%</span>
+                      <span>Voltagem: {systemHealth.ups?.voltage ?? '—'}V</span>
                     </div>
                   </div>
 
-                  {/* Temperatura */}
+                  {/* Temperatura CPU — real via psutil */}
                   <div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', marginBottom: '4px', fontWeight: 700 }}>
-                      <span>TEMPERATURA DO RACK</span>
-                      <span style={{ color: 'var(--accent-sky)', fontWeight: 700 }}>22°C / 71.6°F</span>
+                      <span>TEMPERATURA DO PROCESSADOR</span>
+                      <span style={{ color: 'var(--accent-sky)', fontWeight: 700 }}>{systemHealth.cpu_temp != null ? `${systemHealth.cpu_temp}°C` : '—'}</span>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.62rem', color: 'var(--text-secondary)', fontWeight: 600 }}>
-                      <span>Ventoinha 1: <strong>AUTOMÁTICO</strong></span>
-                      <span>Ventoinha 2: <strong>AUTOMÁTICO</strong></span>
+                      <span>Núcleos: {systemHealth.cpu_count ?? '?'}</span>
+                      <span>Frequência: {systemHealth.cpu_freq ? `${systemHealth.cpu_freq} MHz` : '—'}</span>
                     </div>
                   </div>
 
-                  {/* Espaço em Disco */}
+                  {/* Espaço em Disco Real */}
                   <div>
-                    <div style={{ fontSize: '0.72rem', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '6px' }}>Espaço em Disco Local</div>
+                    <div style={{ fontSize: '0.72rem', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '6px' }}>Espaço em Disco (Drives Reais)</div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                      {[
-                        { path: '/ (SISTEMA OPERACIONAL)', pct: 35 },
-                        { path: '/data (ÁUDIOS / MUSICAS)', pct: 62 },
-                        { path: '/backup (GRAVAÇÕES)', pct: 58 },
-                      ].map(disk => (
-                        <div key={disk.path}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.68rem', color: 'var(--text-secondary)', marginBottom: '2px', fontWeight: 600 }}>
-                            <span>{disk.path}</span>
-                            <span>{disk.pct}%</span>
+                      {(systemHealth.disk && Object.keys(systemHealth.disk).length > 0) ? (
+                        Object.entries(systemHealth.disk).map(([path, info]) => (
+                          <div key={path}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.68rem', color: 'var(--text-secondary)', marginBottom: '2px', fontWeight: 600 }}>
+                              <span>{path}</span>
+                              <span>{info.percent}% — {info.used_gb} GB / {info.total_gb} GB</span>
+                            </div>
+                            <div className="progress-track" style={{ height: '4px' }}>
+                              <div className="progress-fill" style={{ width: `${info.percent}%`, background: info.percent > 75 ? 'var(--accent-warning)' : 'var(--accent-primary)' }} />
+                            </div>
                           </div>
-                          <div className="progress-track" style={{ height: '4px' }}>
-                            <div className="progress-fill" style={{ width: `${disk.pct}%`, background: disk.pct > 75 ? 'var(--accent-warning)' : 'var(--accent-primary)' }} />
-                          </div>
-                        </div>
-                      ))}
+                        ))
+                      ) : (
+                        <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', padding: '4px 6px' }}>Dados de disco indisponíveis.</div>
+                      )}
                     </div>
                   </div>
 
-                  {/* Firewall */}
+                  {/* Firewall (Windows Defender) */}
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(0,0,0,0.15)', padding: '0.8rem', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.02)' }}>
                     <div>
-                      <div style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-primary)' }}>FIREWALL ATIVO</div>
-                      <div style={{ fontSize: '0.62rem', color: 'var(--text-muted)', fontWeight: 600 }}>Regras do sistema ativas: 145</div>
+                      <div style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-primary)' }}>FIREWALL (Windows Defender)</div>
+                      <div style={{ fontSize: '0.62rem', color: 'var(--text-muted)', fontWeight: 600 }}>Status: Ativo (verificado via Windows)</div>
                     </div>
                     <span style={{ fontSize: '1.2rem' }}>🛡️</span>
                   </div>

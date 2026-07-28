@@ -1,6 +1,6 @@
 """
 Router: Engine — Omni Core V2
-==============================
+==================================
 Endpoints para geração de grade musical e consulta de regras.
 
 Regras de negócio ficam em grade_rules.py.
@@ -20,17 +20,13 @@ from services import weather_service
 import psutil
 from core import state
 import os
+import time
 from scripts.streaming_stats import StreamingStats
 
 router = APIRouter(prefix="/api/engine", tags=["Engine"])
 
-# Configuração fictícia de streaming (no futuro virá do settings.json)
-streaming_stats = StreamingStats({
-    "enabled": True,
-    "server_type": "icecast",
-    "url": "http://localhost:8000/status-json.xsl",
-    "mount": "/stream"
-})
+# Streaming stats carrega config de config/settings.json (ou recebe override via settings do app)
+streaming_stats = StreamingStats()
 
 # ---------------------------------------------------------------------------
 # Estatísticas do acervo
@@ -88,10 +84,12 @@ def get_engine_stats(full: bool = False, db: Session = Depends(get_db)):
 
     try:
         clima = weather_service.get_natal_weather_mood()
-    except:
+    except Exception as e:
+        logger.warning(f"[EngineStats] Falha ao consultar clima ({e}). Usando fallback.")
         clima = "Ensolarado"
 
-    listeners = streaming_stats.get_listeners()
+    raw_listeners = streaming_stats.get_listeners()
+    listeners = max(0, raw_listeners)  # -1 → 0 na exibição (semântica de "não disponível")
 
     return {
         "total":       total,
@@ -105,6 +103,9 @@ def get_engine_stats(full: bool = False, db: Session = Depends(get_db)):
         "clima_natal": clima,
         "health":      health,
         "listeners":   listeners,
+        "streaming_enabled": streaming_stats.enabled,
+        "streaming_listeners_raw": raw_listeners,
+        "streaming_url": streaming_stats.url if streaming_stats.enabled else None,
         "is_full": full
     }
 

@@ -443,3 +443,78 @@ def get_system_logs(lines: int = 50):
             }
     except Exception as e:
         return {"error": str(e)}
+
+
+# ===================================================================
+# Hardware real — dados reais do Windows (sem inventar nada)
+# ===================================================================
+
+@router.get("/hardware/realtime")
+def get_hardware_realtime():
+    """Retorna dados reais do sistema: uptime, disco, rede, temperatura (se disponível)."""
+    try:
+        import psutil
+        # Uptime do sistema (segundos desde boot)
+        uptime_seconds = time.time() - psutil.boot_time()
+        days = int(uptime_seconds // 86400)
+        hours = int((uptime_seconds % 86400) // 3600)
+        minutes = int((uptime_seconds % 3600) // 60)
+        uptime_human = f"{days}d {hours}h {minutes}m"
+
+        # Disco
+        disk_usage = {}
+        for partition in psutil.disk_partitions():
+            try:
+                usage = psutil.disk_usage(partition.mountpoint)
+                disk_usage[partition.mountpoint] = {
+                    "total_gb": round(usage.total / (1024**3), 1),
+                    "used_gb": round(usage.used / (1024**3), 1),
+                    "percent": usage.percent,
+                }
+            except (PermissionError, OSError):
+                continue
+
+        # Rede: interfaces com tráfego ativo
+        net_io = psutil.net_io_counters()
+        net_addrs = psutil.net_if_addrs()
+        interfaces = list(net_io.bytes_sent > 0 or net_io.bytes_recv > 0 or True for _ in [1])  # placeholder
+        # Monta lista de interfaces com IPs
+        net_interfaces = []
+        for iface, addrs in net_addrs.items():
+            for addr in addrs:
+                if addr.family.name == 'AF_INET' and not addr.address.startswith('127.'):
+                    net_interfaces.append({
+                        "name": iface,
+                        "ip": addr.address,
+                        "bytes_sent": net_io.bytes_sent,
+                        "bytes_recv": net_io.bytes_recv,
+                    })
+                    break
+
+        # Temperatura (Windows: via psutil.sensors_temperatures se disponível)
+        cpu_temp = None
+        try:
+            temps = psutil.sensors_temperatures()
+            for name, entries in temps.items():
+                for entry in entries:
+                    if 'core' in name.lower() or 'cpu' in name.lower():
+                        cpu_temp = entry.current
+                        break
+                if cpu_temp is not None:
+                    break
+        except Exception:
+            pass
+
+        return {
+            "uptime_seconds": round(uptime_seconds),
+            "uptime_human": uptime_human,
+            "disk": disk_usage,
+            "network_interfaces": net_interfaces,
+            "cpu_temp_celsius": cpu_temp,
+            "cpu_count": psutil.cpu_count(),
+            "cpu_freq_current_mhz": psutil.cpu_freq().current if psutil.cpu_freq() else None,
+            "ram_total_gb": round(psutil.virtual_memory().total / (1024**3), 1),
+            "ram_available_gb": round(psutil.virtual_memory().available / (1024**3), 1),
+        }
+    except Exception as e:
+        return {"error": str(e)}
