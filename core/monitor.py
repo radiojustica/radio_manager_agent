@@ -475,7 +475,14 @@ class RadioMonitor:
                 if not is_active and process_status.get("zararadio") == "Running":
                     self.trigger_play_on_zara()
                     self.log_autopilot_action("PLAYBACK_RECOVERY", "Silêncio nos logs detectado. Comando PLAY (P) enviado ao ZaraRadio.", True)
-            self.audio_manager.limit_app_volume("ZaraRadio.exe")
+            # SEGURANÇA ACÚSTICA: nunca modificamos volume. Apenas monitoramos/avisamos.
+            safety = self.audio_manager.check_volume_safety("ZaraRadio.exe")
+            if safety.get("over_limit"):
+                self.logger.warning(
+                    f"[AUDIO-SAFETY] ZaraRadio.exe está com volume {safety['current_volume']:.2f} "
+                    f"acima do limite de referência {safety['reference_limit']:.2f}. "
+                    f"NÃO alteramos o volume por regra de segurança do TJRN."
+                )
             self.manage_tasks()
             self.reboot_blocker.prevent_sleep()
             if reboot_settings.get("abort_shutdown_periodically"): 
@@ -517,14 +524,14 @@ class RadioMonitor:
         is_live, title = self.vmix.is_session_live()
         if is_live and not self.live_session_active:
             self.live_session_active = True
-            self.audio_manager.limit_app_volume("ZaraRadio.exe", limit=0.0)
-            self.audio_manager.limit_app_volume("NDI Monitor.exe", limit=1.0)
+            # SEGURANÇA ACÚSTICA: não modificamos volume de ZaraRadio/NDI nem dispositivo.
+            self.logger.info(f"[LIVE] Sessão ao vivo iniciada: {title}. Volume NÃO foi alterado (regra TJRN).")
             self.log_event("LIVE_START", f"Live session started: {title}")
         elif not is_live and self.live_session_active:
             self.live_session_active = False
-            self.audio_manager.limit_app_volume("ZaraRadio.exe", limit=0.24)
+            # SEGURANÇA ACÚSTICA: não modificamos volume; apenas reagemos playback.
             self.trigger_play_on_zara()
-            self.audio_manager.limit_app_volume("NDI Monitor.exe", limit=0.0)
+            self.logger.info("[LIVE] Sessão ao vivo encerrada. Volume NÃO foi alterado (regra TJRN).")
             self.log_event("LIVE_END", "Live session ended.")
 
     def check_zara_track_and_trigger_vmix(self):

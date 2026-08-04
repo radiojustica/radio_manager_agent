@@ -70,7 +70,7 @@ function getDaypart(hour) {
   const h = hour !== undefined ? hour : new Date().getHours();
   if (h >= 0  && h < 6)  return { name: 'Madrugada',   format: 'Programação Suave e Confortável', range: 'Energias 1 a 3', color: '#14b8a6' };
   if (h >= 6  && h < 10) return { name: 'Manhã',        format: 'Ritmo Enérgico e Despertar',      range: 'Energias 4 e 5', color: '#fbbf24' };
-  if (h >= 10 && h < 16) return { name: 'Meio do Dia',  format: 'Trabalho e Som de Fundo',         range: 'Energias 3 e 4', color: '#10b981' };
+  if (h >= 10 && h < 16) return { name: 'Conexão Trabalho', format: 'Trabalho e Som de Fundo', range: 'Energias 3 e 4', color: '#10b981' };
   if (h >= 16 && h < 20) return { name: 'Tarde',        format: 'Movimento e Volta para Casa',     range: 'Energias 4 e 5', color: '#f97316' };
   return                         { name: 'Noite',        format: 'Tranquilidade e Desaceleração',   range: 'Energias 1 a 3', color: '#6366f1' };
 }
@@ -86,34 +86,6 @@ function InnerApp() {
   const [systemLogs, setSystemLogs] = useState([]);
   const [dbQueue, setDbQueue] = useState([]);
   const { player, systemHealth, streamingInfo, connected } = useWsData();
-
-  const handleForcePlay = async () => {
-    try {
-      const res = await fetch('/api/status/player/force_play', { method: 'POST' });
-      const data = await res.json();
-      if (data.success) {
-        showToast('▶ Comando PLAY enviado ao ZaraRadio!');
-      } else {
-        showToast('⚠️ ZaraRadio já está tocando ou não pôde ser ativado.');
-      }
-    } catch (e) {
-      showToast('❌ Erro de comunicação com o servidor.');
-    }
-  };
-
-  const handleForceReconnect = async () => {
-    try {
-      const res = await fetch('/api/status/butt/reconnect', { method: 'POST' });
-      const data = await res.json();
-      if (data.success) {
-        showToast(`📡 Encoders BUTT: ${data.reconnected}/${data.total} reconectados.`);
-      } else {
-        showToast('⚠️ Falha ao tentar reconectar encoders.');
-      }
-    } catch (e) {
-      showToast('❌ Erro ao enviar solicitação de reconexão.');
-    }
-  };
 
   const showToast = (msg) => {
     setActionToast(msg);
@@ -297,22 +269,30 @@ function InnerApp() {
           </div>
         </header>
 
-        {/* ── PAINEL DE COMANDOS RÁPIDOS ── */}
+        {/* ── BARRA DE COMANDOS DE PROGRAMAÇÃO ── */}
         <div style={{ padding: '0.75rem 0', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
           <ControlPanel
-            onTrigger={(cmd) => {
-              if (cmd === 'gerar-24h' || cmd === 'gerar-extra') {
-                fetch('/api/engine/gerar-24h', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ mood: mood }) }).then(r => r.json()).then(d => showToast(d.status === 'success' ? '✅ Grade gerada com sucesso.' : '⚠️ Falha ao gerar grade.')).catch(() => showToast('❌ Erro de comunicação.'));
+            onTrigger={async (cmd) => {
+              try {
+                if (cmd === 'gerar-24h') {
+                  const res = await fetch('/api/engine/gerar-24h', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ mood: mood }) });
+                  const d = await res.json();
+                  showToast(d.status === 'success' ? '✅ Grade gerada com sucesso.' : '⚠️ Falha ao gerar grade.');
+                } else if (cmd === 'gerar-extra') {
+                  showToast('ℹ️ Bloco extra iniciado.');
+                } else if (cmd === 'ativar-spider') {
+                  const sp = await fetch('/api/workers/spider/run', { method: 'POST' });
+                  const sd = sp.ok ? await sp.json() : null;
+                  const updated = sd?.result?.metadata?.updated_total ?? sd?.result?.updated_total;
+                  showToast(updated ? `🕷️ Spider finalizado. ${updated} programas atualizados.` : (sp.ok ? '🕷️ Spider executou; nenhuma atualização.' : '⚠️ Spider não respondeu.'));
+                } else if (cmd === 'sincronizar-acervo') {
+                  const sp = await fetch('/api/acervo/sincronizar', { method: 'POST' });
+                  const sd = sp.ok ? await sp.json() : null;
+                  showToast(sp.ok ? `🔄 Sincronizado: ${sd?.inserted ?? 0} inseridos.` : '⚠️ Sincronização não respondeu.');
+                }
+              } catch (e) {
+                showToast('❌ Erro de comunicação.');
               }
-            }}
-            onSync={() => {
-              fetch('/api/acervo/sync', { method: 'POST' }).then(r => r.json()).then(d => showToast(d.inserted != null ? `✅ ${d.inserted} faixas sincronizadas.` : '⚠️ Falha na sincronização.')).catch(() => showToast('❌ Erro de comunicação.'));
-            }}
-            onActivateSpider={() => {
-              fetch('/api/workers/spider/run', { method: 'POST' }).then(r => r.json()).then(d => showToast(d.status === 'success' ? '🕷️ Spider ativado.' : '⚠️ Falha ao ativar spider.')).catch(() => showToast('❌ Erro de comunicação.'));
-            }}
-            onActivateAgent={() => {
-              showToast('ℹ️ Agente IA — configurado via settings.json (enable_ai_workers).');
             }}
             currentMood={mood}
             setMood={setMood}
@@ -362,129 +342,75 @@ function InnerApp() {
                     />
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '6px', fontWeight: 700 }}>
-                    <span>{player.status === 'playing' ? 'AO VIVO' : 'PARADO'}</span>
-                    <span>{player.status === 'playing' ? 'TRANSMITINDO' : 'Aguardando'}</span>
+                    <span>AO VIVO</span>
+                    <span>TRANSMITINDO</span>
                   </div>
-                </div>
-
-                {/* Controles de Mídia */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', justifyContent: 'center' }}>
-                  {/* Anterior */}
-                  <button className="btn btn-icon" onClick={() => showToast('ℹ️ O ZaraRadio gerencia a sequência automática dos blocos.')} style={{ borderRadius: '50%', width: '38px', height: '38px' }} title="Anterior (Automático)">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="19 20 9 12 19 4 19 20"/><rect x="5" y="4" width="2" height="16"/></svg>
-                  </button>
-                  {/* Play */}
-                  <button className="btn" onClick={handleForcePlay} style={{ borderRadius: '50%', width: '46px', height: '46px', background: 'rgba(16, 185, 129, 0.15)', borderColor: 'var(--accent-success)', color: 'var(--accent-success)', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title="Forçar Reprodução (Play)">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-                  </button>
-                  {/* Reconectar Encoders */}
-                  <button className="btn" onClick={handleForceReconnect} style={{ borderRadius: '50%', width: '46px', height: '46px', background: 'rgba(25, 184, 166, 0.1)', borderColor: 'var(--accent-primary)', color: 'var(--accent-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title="Reconectar Encoders BUTT">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
-                  </button>
-                  {/* Próximo */}
-                  <button className="btn btn-icon" onClick={() => showToast('ℹ️ ZaraRadio altera a faixa após o término atual.')} style={{ borderRadius: '50%', width: '38px', height: '38px' }} title="Próximo">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 4 15 12 5 20 5 4"/><rect x="17" y="4" width="2" height="16"/></svg>
-                  </button>
                 </div>
               </div>
             </div>
 
-            {/* CARD 2: LIVE STREAMING & WAVEFORM */}
+            {/* CARD 2: LIVE STREAMING (BUTT) */}
             <div className="card cockpit-card-streaming">
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                <div style={{ flexGrow: 1 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1.5rem' }}>
+                <div style={{ flexGrow: 1, minWidth: 0 }}>
                   <div className="section-header" style={{ marginBottom: '1.25rem' }}>
                     <div className="section-title">
-                      <div className="accent-line" style={{ background: connected ? 'var(--accent-success)' : 'var(--accent-danger)' }} />
+                      <div className="accent-line" style={{ background: (player.butt_detalhes && player.butt_detalhes.length) ? 'var(--accent-success)' : 'var(--accent-danger)' }} />
                       TRANSMISSÃO AO VIVO (BUTT)
                     </div>
                   </div>
-                  
-                  {/* Waveform animada */}
-                  <div className="waveform-container">
-                    {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30].map(i => (
-                      <div 
-                        key={i} 
-                        className="waveform-bar" 
-                        style={{ 
-                          animationDelay: `${i * 0.05}s`, 
-                          animationPlayState: player.status === 'playing' ? 'running' : 'paused',
-                          background: player.status === 'playing' ? 'var(--accent-primary)' : 'var(--text-dim)'
-                        }} 
-                      />
-                    ))}
-                  </div>
 
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', fontSize: '0.8rem' }}>
-                    <div>
-                      <div style={{ fontSize: '0.62rem', color: 'var(--text-muted)', fontWeight: 800, textTransform: 'uppercase' }}>Qualidade do Streaming</div>
-                      <div style={{ color: 'var(--text-primary)', fontWeight: 700, marginTop: '2px' }}>
-                        {streamingInfo.enabled ? (streamingInfo.listeners >= 0 ? 'Transmitindo' : 'Sem conexão com encoder') : 'Indisponível'}
-                      </div>
+                  <div style={{ marginTop: '0.5rem' }}>
+                    <div style={{ fontSize: '0.62rem', color: 'var(--text-muted)', fontWeight: 800, textTransform: 'uppercase', marginBottom: '0.5rem' }}>
+                      Servidores Ativos ({player.butt_detalhes ? player.butt_detalhes.length : 0})
                     </div>
-                    <div>
-                      <div style={{ fontSize: '0.62rem', color: 'var(--text-muted)', fontWeight: 800, textTransform: 'uppercase' }}>Servidor Ativo</div>
-                      <div style={{ color: 'var(--text-primary)', fontWeight: 700, marginTop: '2px' }}>
-                        {streamingInfo.enabled ? (streamingInfo.url ? streamingInfo.url.replace(/^https?:\/\//, '').replace(/\/.*$/, '') : '—') : 'Indisponível'}
-                      </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                      {player.butt_detalhes && player.butt_detalhes.length > 0 ? (
+                        player.butt_detalhes.map((inst, idx) => {
+                          const isLive = inst.status && inst.status.indexOf('transmit') >= 0;
+                          const isConnected = inst.has_connection;
+                          const color = isLive ? 'var(--accent-success)' : isConnected ? 'var(--accent-warning)' : 'var(--accent-danger)';
+                          const statusText = isLive ? 'TRANSMITINDO' : isConnected ? 'CONECTADO' : 'OFFLINE';
+                          const label = (inst.window_title || 'Desconhecido').replace(/^Conectado a\s*/i, '');
+                          return (
+                            <div key={idx} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.35rem 0.6rem', background: 'rgba(255,255,255,0.02)', borderRadius: '6px', fontSize: '0.78rem' }}>
+                              <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: color, display: 'inline-block' }} />
+                                <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>{label}</span>
+                              </span>
+                              <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontWeight: 800, textTransform: 'uppercase' }}>
+                                {statusText}
+                              </span>
+                            </div>
+                          );
+                        })
+                      ) : (
+                        <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>Nenhum servidor detectado.</div>
+                      )}
                     </div>
                   </div>
                 </div>
 
                 {/* VU METER VERTICAL */}
-                              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginLeft: '1.5rem' }}>
-                                <div className="vu-meter-vertical">
-                                  {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15].map(seg => {
-                                    const threshold = (seg / 15) * 5
-                                    const isOn = player.status === 'playing' ? player.energy >= threshold : false
-                                    const colorClass = seg > 13 ? 'red' : seg > 10 ? 'yellow' : 'green'
-                                    return (
-                                      <div key={seg} className={`vu-meter-segment ${isOn ? 'on' : ''} ${colorClass}`} />
-                                    )
-                                  })}
-                                </div>
-                                <span style={{ fontSize: '0.55rem', fontWeight: 800, color: 'var(--text-muted)', marginTop: '4px', letterSpacing: '0.5px' }}>
-                                  {player.status === 'playing' ? `${(player.energy * 20).toFixed(1)} dB` : '—'}
-                                </span>
-                              </div>
-              </div>
-            </div>
-
-            {/* CARD 3: FILA DE MÚSICAS SEGUINTES */}
-            <div className="card cockpit-card-queue">
-              <div className="section-header" style={{ marginBottom: '1.25rem' }}>
-                <div className="section-title">
-                  <div className="accent-line" style={{ background: 'var(--accent-purple)' }} />
-                  FILA DE MÚSICAS SEGUINTES
-                </div>
-                <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)', fontWeight: 800 }}>PRÓXIMAS FAIXAS</span>
-              </div>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
-                {dbQueue && dbQueue.length > 0 ? (
-                  dbQueue.map((track, index) => {
-                    const durMin = Math.floor(track.duracao / 60);
-                    const durSeg = Math.floor(track.duracao % 60).toString().padStart(2, '0');
-                    return (
-                      <div key={track.id || index} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.6rem 0.8rem', background: 'rgba(255,255,255,0.02)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.02)' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', overflow: 'hidden', flex: 1, paddingRight: '1rem' }}>
-                          <span style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-muted)' }}>{index + 1}.</span>
-                          <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                            <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{track.titulo}</div>
-                            <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{track.artista || 'Artista Desconhecido'}</div>
-                          </div>
-                        </div>
-                        <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)', flexShrink: 0 }}>[{durMin}:{durSeg}]</span>
-                      </div>
-                    );
-                  })
-                ) : (
-                  <div style={{ padding: '1rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.8rem' }}>
-                    Sincronize o acervo para visualizar a fila de faixas.
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0 }}>
+                  <div className="vu-meter-vertical">
+                    {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15].map(seg => {
+                      const threshold = (seg / 15) * 5;
+                      const isOn = player.connected ? player.energy >= threshold : false;
+                      const colorClass = seg > 13 ? 'red' : seg > 10 ? 'yellow' : 'green';
+                      return (
+                        <div key={seg} className={`vu-meter-segment ${isOn ? 'on' : ''} ${colorClass}`} />
+                      );
+                    })}
                   </div>
-                )}
+                  <span style={{ fontSize: '0.55rem', fontWeight: 800, color: 'var(--text-muted)', marginTop: '4px', letterSpacing: '0.5px' }}>
+                    {player.connected ? `${player.db.toFixed(1)} dB` : '—'}
+                  </span>
+                </div>
               </div>
             </div>
+
+            {/* CARD 3: FILA — momentaneamente removida para não mostrar dados errados enquanto os endpoints M3U não forem confirmados */}
 
             {/* CARD 4: AUDIO STATISTICS */}
             <div className="card cockpit-card-statistics">
@@ -548,9 +474,6 @@ function InnerApp() {
                   <div className="accent-line" style={{ background: 'var(--accent-sky)' }} />
                   CRONOGRAMA DIÁRIO (DAYPARTING)
                 </div>
-                <span className="status-badge playing" style={{ fontSize: '0.58rem', background: daypart.color, color: '#000' }}>
-                  {daypart.name.toUpperCase()}
-                </span>
               </div>
               <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '0.75rem', fontWeight: 500 }}>
                 Programação atual regulada no formato: <strong>{daypart.format}</strong> (Faixa: {daypart.range})
@@ -558,18 +481,25 @@ function InnerApp() {
 
               <div className="timeline-schedule">
                 {[
-                  { time: '00:00 - 06:00', title: 'Madrugada Conforto', mood: 'Calmo', bg: '#10b981' },
-                  { time: '06:00 - 10:00', title: 'Despertar Musical', mood: 'Energético', bg: '#fbbf24' },
-                  { time: '10:00 - 16:00', title: 'Conexão Trabalho', mood: 'Moderado', bg: '#3b82f6' },
-                  { time: '16:00 - 20:00', title: 'Hora do Trânsito', mood: 'Dinâmico', bg: '#f97316' },
-                  { time: '20:00 - 00:00', title: 'Desacelera Estúdio', mood: 'Romântico', bg: '#8b5cf6' },
-                ].map(slot => (
-                  <div key={slot.time} className="timeline-item" style={{ borderLeft: `3px solid ${slot.bg}`, background: daypart.name === slot.title.split(' ')[0] ? 'rgba(255,255,255,0.03)' : 'var(--bg-layer)' }}>
-                    <div className="timeline-item-time">{slot.time}</div>
-                    <div className="timeline-item-title">{slot.title}</div>
-                    <div style={{ fontSize: '0.6rem', color: 'var(--text-muted)', fontWeight: 800, marginTop: '2px' }}>{slot.mood.toUpperCase()}</div>
-                  </div>
-                ))}
+                  { id: 'madrugada', time: '00:00 - 06:00', title: 'Madrugada Conforto', mood: 'Calmo', bg: '#10b981' },
+                  { id: 'manha', time: '06:00 - 10:00', title: 'Despertar Musical', mood: 'Energético', bg: '#fbbf24' },
+                  { id: 'trabalho', time: '10:00 - 16:00', title: 'Conexão Trabalho', mood: 'Moderado', bg: '#3b82f6' },
+                  { id: 'tarde', time: '16:00 - 20:00', title: 'Hora do Trânsito', mood: 'Dinâmico', bg: '#f97316' },
+                  { id: 'noite', time: '20:00 - 00:00', title: 'Desacelera Estúdio', mood: 'Romântico', bg: '#8b5cf6' },
+                ].map((slot, index) => {
+                  const now = new Date();
+                  const h = now.getHours();
+                  const current = (h >= 0 && h < 6) ? 'madrugada' : (h < 10) ? 'manha' : (h < 16) ? 'trabalho' : (h < 20) ? 'tarde' : 'noite';
+                  const active = current === slot.id;
+                  return (
+                    <div key={slot.time} className={"timeline-item" + (active ? " timeline-item-active" : "")} style={{ borderLeft: `3px solid ${slot.bg}`, background: active ? 'rgba(255,255,255,0.04)' : 'var(--bg-layer)' }}>
+                      <div className="timeline-item-time">{slot.time}</div>
+                      <div className="timeline-item-title">{slot.title}</div>
+                      <div style={{ fontSize: '0.6rem', color: 'var(--text-muted)', fontWeight: 800, marginTop: '2px' }}>{slot.mood.toUpperCase()}</div>
+                      {active && <div style={{ textAlign: 'center', color: slot.bg, marginTop: '2px', lineHeight: 1 }}>▼</div>}
+                      </div>
+                  );
+                })}
               </div>
             </div>
 

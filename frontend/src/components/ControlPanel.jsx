@@ -1,118 +1,69 @@
 import { useState } from 'react';
 
 const MOODS = [
-  { value: 'Ensolarado', label: '☀️ Ensolarado' },
-  { value: 'Chuvoso',    label: '🌧️ Chuvoso' },
-  { value: 'Nublado',    label: '☁️ Nublado' },
-  { value: 'Frio',       label: '❄️ Frio' },
+  { value: 'Ensolarado', label: 'Ensolarado' },
+  { value: 'Chuvoso',    label: 'Chuvoso' },
+  { value: 'Nublado',    label: 'Nublado' },
+  { value: 'Frio',       label: 'Frio' },
 ];
 
-function ActionButton({ label, onClick, disabled, loadingLabel, variant = '' }) {
+function CompactButton({ label, onClick, disabled, loadingLabel, variant, onResult }) {
   const [loading, setLoading] = useState(false);
-  const [feedback, setFeedback] = useState(null);
-
   const handleClick = async () => {
     setLoading(true);
-    setFeedback(null);
     try {
-      await onClick();
-      setFeedback({ ok: true, msg: '✓ Ok' });
-    } catch (e) {
-      setFeedback({ ok: false, msg: '✗ Erro' });
+      const result = await onClick();
+      if (onResult) onResult(result);
     } finally {
       setLoading(false);
-      setTimeout(() => setFeedback(null), 3000);
     }
   };
-
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-      <button
-        className={`btn ${variant}`}
-        onClick={handleClick}
-        disabled={disabled || loading}
-      >
-        {loading && <span className="spinner" />}
-        {loading ? (loadingLabel || 'Aguarde...') : label}
-      </button>
-      {feedback && (
-        <span style={{
-          fontSize: '0.62rem',
-          fontWeight: 700,
-          color: feedback.ok ? 'var(--accent-success)' : 'var(--accent-danger)',
-          textAlign: 'center',
-        }}>
-          {feedback.msg}
-        </span>
-      )}
-    </div>
+    <button
+      className={`btn ${variant}`}
+      onClick={handleClick}
+      disabled={disabled || loading}
+      title={label}
+      style={{ whiteSpace: 'nowrap' }}
+    >
+      {loading ? (loadingLabel || '...') : label}
+    </button>
   );
 }
 
-export default function ControlPanel({ onTrigger, onSync, onActivateAgent, onActivateSpider, currentMood, setMood }) {
+export default function ControlPanel({ onTrigger, currentMood, setMood }) {
   return (
-    <div className="card">
-      <div className="section-header" style={{ marginBottom: '1.5rem' }}>
-        <div className="section-title">
-          <div className="accent-line" />
-          CONTROLE DE PROGRAMAÇÃO
-        </div>
-        <span style={{ fontSize: '1.2rem' }}>⚡</span>
+    <div
+      style={{
+        display: 'flex',
+        flexWrap: 'wrap',
+        alignItems: 'center',
+        gap: '0.75rem',
+      }}
+    >
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+        <div className="accent-line" />
+        <div className="section-title">CONTROLE DE PROGRAMAÇÃO</div>
+        <span style={{ fontSize: '1rem' }}>⚡</span>
       </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-        {/* Mood Selector */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <label style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-muted)', flexShrink: 0, textTransform: 'uppercase', letterSpacing: '1px' }}>
-            Vibe Atual:
-          </label>
-          <select
-            value={currentMood}
-            onChange={(e) => setMood(e.target.value)}
-            className="btn select"
-            style={{ flexGrow: 1, textTransform: 'none' }}
-          >
-            {MOODS.map(m => (
-              <option key={m.value} value={m.value}>{m.label}</option>
-            ))}
-          </select>
-        </div>
+      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.5rem' }}>
+        <select
+          value={currentMood}
+          onChange={(e) => setMood(e.target.value)}
+          className="btn select"
+          style={{ textTransform: 'none' }}
+          title={currentMood}
+        >
+          {MOODS.map(m => (
+            <option key={m.value} value={m.value}>{m.label}</option>
+          ))}
+        </select>
 
-        {/* Action Buttons */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
-          <ActionButton
-            label="Gera 24h"
-            loadingLabel="Gerando..."
-            onClick={() => onTrigger('gerar-24h')}
-          />
-          <ActionButton
-            label="Bloco Extra"
-            loadingLabel="Gerando..."
-            onClick={() => onTrigger('gerar-extra')}
-          />
-        </div>
-
-        {/*
-        <ActionButton
-          label="🤖 Ativar Agente (IA)"
-          loadingLabel="Ativando..."
-          variant="btn-primary"
-          onClick={onActivateAgent}
-        />
-        */}
-
-        <ActionButton
-          label="🕷️ Ativar Spider"
-          loadingLabel="Escaneando..."
-          variant="btn-primary"
-          onClick={onActivateSpider}
-        />
-
-        <ActionButton
-          label="🔄 Sincronizar Acervo"
-          loadingLabel="Sincronizando..."
-          onClick={onSync}
-        />
+        <CompactButton label="Gera 24h" loadingLabel="Gerando..." onClick={() => onTrigger('gerar-24h')} />
+        <CompactButton label="Bloco Extra" loadingLabel="Gerando..." onClick={() => onTrigger('gerar-extra')} />
+        <CompactButton label="🕷️ Ativar Spider" loadingLabel="Escaneando..." variant="btn-primary" onClick={() => onTrigger('ativar-spider')} onResult={(r)=> { if(r?.spiderResult) try { window.dispatchEvent(new CustomEvent('spider-result', { detail: r.spiderResult })); } catch(e){} }} />
+        <CompactButton label="🔄 Sincronizar Acervo" loadingLabel="Sincronizando..." onClick={() => onTrigger('sincronizar-acervo')} onResult={(r)=> { if(r?.syncResult) try { window.dispatchEvent(new CustomEvent('sync-result', { detail: r.syncResult })); } catch(e){} }} />
       </div>
     </div>
   );

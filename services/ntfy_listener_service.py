@@ -35,6 +35,8 @@ import requests
 import unicodedata
 import re
 
+from scripts.volume_control import parse_volume_command
+
 logger = logging.getLogger("OmniCore.NtfyListener")
 
 # ---------------------------------------------------------------------------
@@ -290,6 +292,23 @@ class NtfyListenerService:
                     pattern, message[:60],
                 )
                 return
+
+        # ── Comando de volume explícito (operador remoto) ─────────────────────
+        vol_level = parse_volume_command(message)
+        if vol_level is not None:
+            from scripts.volume_control import set_usb_device_volume
+            res = set_usb_device_volume(vol_level)
+            if res.get("success"):
+                self._publicar(
+                    f"[OK] Volume da placa USB ajustado para {res['percent']}%.",
+                    title="Controle de Volume",
+                )
+            else:
+                self._publicar(
+                    f"[ERRO] Falha ao ajustar volume: {res.get('error')}",
+                    title="Controle de Volume",
+                )
+            return
 
         # ── Normaliza e tenta casar com comandos de worker registrados ────────
         normalized = _normalize(message)

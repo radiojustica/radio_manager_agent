@@ -36,6 +36,7 @@ def _carregar_config() -> dict:
         "boletim_a_cada_n":         8,
         "max_historico_artistas":   30,    # Reduzido de 80 para 30
         "max_historico_musicas":    80,    # Reduzido de 200 para 80
+        "min_faixas_entre_artista": 5,     # Mesmo artista só após 5 faixas (anti-repetição no bloco)
         "regional_a_cada_n":        8,     # 1 regional a cada ~30min (8 faixas)
         "duracao_estimada_musica_s":  210,
         "duracao_estimada_vinheta_s": 5,
@@ -400,6 +401,12 @@ class GestorFila:
         self.max_mus = CFG.get("max_historico_musicas", 80)
         self.historico_artistas, self.historico_musicas = self._carregar_historico()
         
+        # Janela de artistas recentes DENTRO DO BLOCO (anti-repetição local).
+        # Nenhum artista deve reaparecer antes de 'min_faixas_entre_artista' músicas.
+        self.min_faixas_entre_artista = CFG.get("min_faixas_entre_artista", 5)
+        self.bloco_artistas_recentes = []  # lista ordenada das últimas N extrações
+        self.bloco_contador = 0
+        
         # Estado do fluxo para o "Conceito de Programação"
         self.ultimo_estilo = None
 
@@ -493,8 +500,11 @@ class GestorFila:
         for i, m in enumerate(pool[:100]):
             art = clean_artist_name(m.artista, m.caminho)
             
-            # Pula se for repetição de artista ou música
-            if art in self.historico_artistas or m.caminho in self.historico_musicas:
+            # Pula se for repetição de artista (histórico persistente OU janela do bloco)
+            # ou de música já tocada.
+            if art in self.historico_artistas or art in self.bloco_artistas_recentes:
+                continue
+            if m.caminho in self.historico_musicas:
                 continue
             
             score = 0
@@ -526,6 +536,12 @@ class GestorFila:
                 self.tema_entregues = getattr(self, "tema_entregues", 0) + 1
             
             self._atualizar_historico(m.artista, m.caminho)
+            # Atualiza a janela de artistas do bloco (anti-repetição local)
+            art = clean_artist_name(m.artista, m.caminho)
+            self.bloco_artistas_recentes.append(art)
+            if len(self.bloco_artistas_recentes) > self.min_faixas_entre_artista:
+                self.bloco_artistas_recentes.pop(0)
+            self.bloco_contador += 1
             self.ultimo_estilo = m.estilo
             
             # Remove fisicamente de todos os pools para consistência de bloco único
@@ -538,13 +554,24 @@ class GestorFila:
                     pass
             return item_retornado
 
-        # Fallback de segurança: pega a primeira da fila (respeitando apenas repetição)
+        # Fallback de segurança: respeita ao menos a janela do bloco e o histórico
         for i, m in enumerate(pool):
             art = clean_artist_name(m.artista, m.caminho)
-            if art not in self.historico_artistas and m.caminho not in self.historico_musicas:
+            if art not in self.historico_artistas and art not in self.bloco_artistas_recentes \
+               and m.caminho not in self.historico_musicas:
+                self._atualizar_historico(m.artista, m.caminho)
+                self.bloco_artistas_recentes.append(art)
+                if len(self.bloco_artistas_recentes) > self.min_faixas_entre_artista:
+                    self.bloco_artistas_recentes.pop(0)
+                self.bloco_contador += 1
+                return pool.pop(i)
+        
+        # Último recurso: se o acervo for muito pequeno, libera a janela do bloco
+        # para evitar silêncio, mantendo a proteção de música idêntica.
+        for i, m in enumerate(pool):
+            if m.caminho not in self.historico_musicas:
                 self._atualizar_historico(m.artista, m.caminho)
                 return pool.pop(i)
-
         return pool.pop(0)
 
 # ===========================================================================

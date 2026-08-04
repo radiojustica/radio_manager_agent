@@ -29,9 +29,35 @@ class OmniSpider:
         self.targets = []
         self._setup_targets()
 
+    def _load_drive_base(self):
+        """
+        Descobre a raiz de produção no Drive a partir de config/settings.json.
+        Usa a chave 'grade.pasta_drive_boletins' e sobe um nível (remove
+        '01_BOLETINS_DIARIOS') para chegar em '00_PRODUCAO_2026'.
+        Fallback: caminho conhecido se o settings não estiver disponível.
+        """
+        try:
+            settings_path = os.path.join(
+                os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                "config", "settings.json"
+            )
+            if os.path.exists(settings_path):
+                with open(settings_path, "r", encoding="utf-8") as f:
+                    cfg = json.load(f)
+                drive_boletins = cfg.get("grade", {}).get("pasta_drive_boletins")
+                if drive_boletins:
+                    # pasta_drive_boletins => ...\00_PRODUCAO_2026\01_BOLETINS_DIARIOS
+                    # subimos um nível para obter ...\00_PRODUCAO_2026
+                    return os.path.dirname(drive_boletins)
+        except Exception as e:
+            logger.warning(f"Não foi possível ler drive_base do settings.json: {e}")
+        # Fallback (caminho real observado no servidor)
+        return r"D:\SERVIDOR\DRIVE\RADIO TJRN CONTEÚDO\00_PRODUCAO_2026"
+
     def _setup_targets(self):
-        drive_base = r"H:\Meu Drive\RADIO TJRN CONTEÚDO\00_PRODUCAO_2026"
-        
+        drive_base = self._load_drive_base()
+        logger.info(f"🕷️ Spider drive_base resolvido: {drive_base}")
+
         # 1. Boletins
         self.targets.append({
             "type": "daily_multiple",
@@ -189,6 +215,11 @@ class OmniSpider:
         return {"success": True, "updated": updated, "message": f"{target['name']}: {updated} atualizações."}
 
     def _sync_daily_single(self, target):
+        """
+        NJUD é um único jornal por dia. Sincroniza o arquivo mais recente
+        (por data) para um único arquivo plano em dest/target_filename,
+        igual aos programas do tipo highest_number.
+        """
         logger.info(f"🕷️ Spider varrendo: {target['name']}")
         source = target['source']
         dest = target['dest']
@@ -197,47 +228,46 @@ class OmniSpider:
             return {"success": False, "error": "Fonte não encontrada"}
 
         os.makedirs(dest, exist_ok=True)
-        for day in ["SEGUNDA", "TERCA", "QUARTA", "QUINTA", "SEXTA"]:
-            os.makedirs(os.path.join(dest, day), exist_ok=True)
 
         found_items = []
         for root, _, files in os.walk(source):
             for f in files:
                 info = target['parser'](f, os.path.join(root, f))
-                if info and info['day_name'] in ["SEGUNDA", "TERCA", "QUARTA", "QUINTA", "SEXTA"]:
+                if info:
                     found_items.append(info)
 
-        updated = 0
-        items_by_day = {}
-        for item in found_items:
-            day = item['day_name']
-            if day not in items_by_day: items_by_day[day] = []
-            items_by_day[day].append(item)
+        if not found_items:
+            return {"success": True, "updated": 0, "message": f"{target['name']}: Nenhum arquivo válido encontrado."}
 
-        for day, items in items_by_day.items():
-            if not items: continue
-            max_item = max(items, key=lambda x: x['date'])
-            
-            day_dest = os.path.join(dest, day)
-            meta_file = os.path.join(day_dest, "spider_meta.json")
-            target_file = os.path.join(day_dest, target['target_filename'])
-            
-            # Check se atualizado
-            if os.path.exists(target_file) and os.path.exists(meta_file):
+        max_item = max(found_items, key=lambda x: x['date'])
+
+        meta_file = os.path.join(dest, "spider_meta.json")
+        target_file = os.path.join(dest, target['target_filename'])
+
+        # Verifica se já está atualizado
+        if os.path.exists(target_file) and os.path.exists(meta_file):
+            try:
+                with open(meta_file, 'r', encoding='utf-8') as mf:
+                    meta = json.load(mf)
+                    if meta.get('filename') == max_item['filename']:
+                        return {"success": True, "updated": 0, "message": f"{target['name']}: Tudo em dia ({max_item['filename']})."}
+            except Exception:
+                pass
+
+        # Remove arquivos de sincronizações anteriores (mantém documentos protegidos)
+        for f in os.listdir(dest):
+            fp = os.path.join(dest, f)
+            if os.path.isfile(fp) and f.lower().endswith(('.mp3', '.json')):
                 try:
-                    with open(meta_file, 'r', encoding='utf-8') as mf:
-                        meta = json.load(mf)
-                        if meta.get('filename') == max_item['filename']:
-                            continue
-                except: pass
-                
-            clean_dir(day_dest)
-            shutil.copy2(max_item['filepath'], target_file)
-            with open(meta_file, 'w', encoding='utf-8') as mf:
-                json.dump({"filename": max_item['filename'], "date": str(max_item['date'])}, mf)
-            updated += 1
-            
-        return {"success": True, "updated": updated, "message": f"{target['name']}: {updated} atualizações."}
+                    os.remove(fp)
+                except OSError:
+                    pass
+
+        shutil.copy2(max_item['filepath'], target_file)
+        with open(meta_file, 'w', encoding='utf-8') as mf:
+            json.dump({"filename": max_item['filename'], "date": str(max_item['date'])}, mf)
+        logger.info(f"🕷️ Atualizado {target['name']} -> {target['target_filename']} ({max_item['filename']})")
+        return {"success": True, "updated": 1, "message": f"{target['name']}: Atualizado para {max_item['filename']}."}
 
     def _sync_highest_number(self, target):
         logger.info(f"🕷️ Spider varrendo: {target['name']}")

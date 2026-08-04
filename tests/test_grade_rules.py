@@ -186,5 +186,94 @@ class TestGradeRules(unittest.TestCase):
         self.assertGreater(len(faixas), 10,
                            f"Bloco gerou apenas {len(faixas)} faixas - deveria gerar muito mais para preencher 2h")
 
+    def test_montar_bloco_sem_repeticao_de_artista(self):
+        """
+        REGRESSÃO: garante que o mesmo ARTISTA não se repita dentro de um bloco,
+        respeitando a janela 'min_faixas_entre_artista'. Reproduz o padrão real do
+        acervo (vários arquivos do mesmo artista, nomes 'ARTISTA - TÍTULO').
+        """
+        from director.grade_rules import montar_bloco, clean_artist_name
+        from scripts.artist_cleaner import clean_artist_name as limpar
+
+        # Acervo com vários artistas, cada um com múltiplas faixas (como na vida real)
+        artistas = {
+            "Camaroes - Orquestra Guitarrística": [
+                "Camaroes - Orquestra Guitarrística - Espionagem Industrial",
+                "Camaroes - Orquestra Guitarrística - A Trama",
+                "Camaroes - Orquestra Guitarrística - Com a Água no Pescoço",
+                "Camaroes - Orquestra Guitarrística - Trintão",
+            ],
+            "Ivanildo do Sax": [
+                "Ivanildo do Sax - Quem não Jiló",
+                "Ivanildo do Sax - Turnura",
+                "Ivanildo do Sax - Rosa - Nada Além",
+                "Ivanildo do Sax - O Mundo é um Moinho",
+                "Ivanildo do Sax - Noites Cariocas",
+                "Ivanildo do Sax - Lucinha",
+            ],
+            "Orquestra Boca Seca": [
+                "Orquestra Boca Seca - Olhos Coloridos",
+                "Orquestra Boca Seca - Balança Pema",
+            ],
+            "Orq. Sinfônica do RN": [
+                "ORQ.SINFÔNICA DO RN - Pedacinhos do Céu",
+                "ORQ.SINFÔNICA DO RN - Delicado",
+            ],
+        }
+        acervo = []
+        for art, musicas in artistas.items():
+            for tit in musicas:
+                # artista vazio (como no acervo real) -> extração vem do arquivo
+                acervo.append(DummyMusica(
+                    f"D:\\RADIO\\MUSICAS\\{tit}.mp3",
+                    artista="Desconhecido",
+                    estilo="mpb / contemporâneo",
+                    energia=3,
+                    duracao=210,
+                ))
+
+        assets = {
+            "vinhetas": [f"D:\\RADIO\\VINHETAS\\vh{i}.mp3" for i in range(3)],
+            "spots": [f"D:\\RADIO\\SPOTS\\spot{i}.mp3" for i in range(3)],
+            "boletins": [f"D:\\SERVIDOR\\BOLETINS\\SEGUNDA\\b{i}.mp3" for i in range(3)],
+        }
+
+        playlist = montar_bloco(
+            acervo, duracao_alvo_s=7200,
+            assets=assets, hora_inicio=10, mood="Nublado"
+        )
+
+        # Coleta apenas as músicas (ignora vinhetas/spots/boletins/programas)
+        musicas_na_playlist = []
+        for linha in playlist:
+            if not linha or linha.startswith("#"):
+                continue
+            base = os.path.basename(linha).lower()
+            if "vh" in base or "spot" in base or "boletim" in base or "jornal" in base \
+               or "giro" in base or "levemente" in base or "memoria" in base:
+                continue
+            musicas_na_playlist.append(linha)
+
+        self.assertGreater(len(musicas_na_playlist), 0, "Nenhuma música na playlist")
+
+        # Verifica a janela de não-repetição de artista
+        janela = 5
+        artistas_seq = [limpar("Desconhecido", p) for p in musicas_na_playlist]
+        for i in range(len(artistas_seq)):
+            art = artistas_seq[i]
+            # nenhum artista igual nas 'janela' faixas anteriores
+            anterior = artistas_seq[max(0, i - janela):i]
+            self.assertNotIn(
+                art, anterior,
+                f"Artista '{art}' repetido dentro da janela de {janela} faixas "
+                f"(pos {i}): {artistas_seq[max(0,i-janela):i+1]}"
+            )
+
+        # Sanidade: cada um dos 4 artistas deve aparecer ao menos uma vez
+        unicos = set(artistas_seq)
+        self.assertGreaterEqual(len(unicos), 4, f"Esperados >=4 artistas distintos, veio {unicos}")
+
+
 if __name__ == "__main__":
     unittest.main()
+

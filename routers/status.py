@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends
 import os
 import time
 import json
+import math
 import logging
 from datetime import datetime
 from core.time_utils import now_local
@@ -44,28 +45,28 @@ def get_nowplaying_path():
 
 def analisar_instancias_butt():
     """
-    Analisa cada processo BUTT em execução. Cache de 10 segundos para evitar overhead.
+    Analisa cada processo BUTT em execução (apenas leitura).
+    Critério estável: um encoder conectado ao Icecast mantém um socket TCP
+    ESTABLISHED enquanto transmite. Logo: ESTABLISHED => TRANSMITINDO (estável),
+    não-conectado => OFFLINE. Não usamos CPU (oscila e causa flicker no dashboard).
+    Cache de 10s para evitar overhead de enumeração de janelas.
     """
     agora = time.time()
     if CACHE_BUTT["payload"] and agora - CACHE_BUTT["timestamp"] < 10.0:
         return CACHE_BUTT["payload"]
 
     instancias = []
-    # ... (rest of the code for analysis)
-    # I'll rewrite it to be sure
     for proc in psutil.process_iter(['pid', 'name']):
         try:
             if proc.info['name'] and proc.info['name'].lower() == "butt.exe":
                 pid = proc.info['pid']
                 p = psutil.Process(pid)
-                
-                # CPU (amostra curta para não travar)
-                cpu = p.cpu_percent(interval=0.05)
-                
-                # Conexões de rede
+
+                # Conexões de rede (apenas leitura)
                 conexoes = p.net_connections(kind='inet')
                 has_connection = any(conn.status == 'ESTABLISHED' for conn in conexoes)
-                
+
+                # Título da janela (apenas leitura) para identificar mountpoint
                 window_title = "Desconhecido"
                 def enum_callback(hwnd, hwnd_list):
                     if win32gui.IsWindowVisible(hwnd):
@@ -76,33 +77,28 @@ def analisar_instancias_butt():
                 hwnd_list = []
                 win32gui.EnumWindows(enum_callback, hwnd_list)
                 if hwnd_list: window_title = hwnd_list[0]
-                
-                if has_connection and cpu > 0.5:
-                    status = "transmitindo"
-                elif has_connection and cpu <= 0.5:
-                    status = "conectado (ocioso?)"
-                elif not has_connection and cpu < 0.5:
-                    status = "parado"
-                else:
-                    status = "indeterminado"
-                
+
+                # Status estável (sem depender de CPU)
                 if "disconnected" in window_title.lower():
                     status = "desconectado"
-                elif "connected" in window_title.lower():
-                    if status == "parado": status = "conectado (não transmitindo?)"
-                
+                elif has_connection:
+                    status = "transmitindo"
+                else:
+                    status = "parado"
+
                 instancias.append({
                     "pid": pid,
                     "status": status,
-                    "cpu": round(cpu, 1),
                     "has_connection": has_connection,
                     "window_title": window_title[:50]
                 })
-        except: continue
-        
+        except Exception:
+            continue
+
     CACHE_BUTT["payload"] = instancias
     CACHE_BUTT["timestamp"] = agora
     return instancias
+
 
 def verificar_zara_status():
     """
@@ -163,8 +159,21 @@ def get_now_playing(db: Session = Depends(get_db)):
     status = verificar_zara_status()
     
     butt_instances = analisar_instancias_butt()
-    butt_ativos = sum(1 for b in butt_instances if b['status'] in ('transmitindo', 'conectado (ocioso?)'))
-    
+    butt_ativos = sum(1 for b in butt_instances if b['status'] == 'transmitindo')
+
+    # Nível de áudio REAL da placa USB "RADIO" (apenas leitura) -> dB
+    try:
+        from scripts.audio_manager import AudioManager
+        _am = AudioManager()
+        _peak = _am.get_master_peak("RADIO")
+        audio_connected = _peak >= 0.0
+        audio_db = 20.0 * (math.log10(_peak) if _peak > 0 else -60.0)
+        if audio_db < -60.0:
+            audio_db = -60.0
+    except Exception:
+        audio_connected = False
+        audio_db = -60.0
+
     if status == "playing":
         nowplaying_path = get_nowplaying_path()
         if os.path.exists(nowplaying_path):
@@ -270,6 +279,8 @@ def get_now_playing(db: Session = Depends(get_db)):
         "title": title, 
         "status": status, 
         "energy": energy, 
+        "connected": audio_connected,
+        "db": round(audio_db, 1),
         "butt_count": len(butt_instances),
         "butt_ativos": butt_ativos,
         "butt_detalhes": butt_instances,
