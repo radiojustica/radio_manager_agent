@@ -165,7 +165,10 @@ function InnerApp() {
         const res = await fetch('/api/status/logs/system?lines=20');
         if (res.ok) {
           const data = await res.json();
-          if (data.lines) {
+          // O endpoint retorna "logs" (fallback "lines" p/ compatibilidade)
+          if (data.logs) {
+            setSystemLogs(data.logs);
+          } else if (data.lines) {
             setSystemLogs(data.lines);
           }
         }
@@ -421,26 +424,8 @@ function InnerApp() {
                       </span>
                     </div>
                   )}
-                </div>
 
-                {/* Controle de Transmissão Externa (NDI / Tribunal Pleno) */}
-                <button
-                  onClick={toggleExternalSource}
-                  style={{
-                    alignSelf: 'flex-start',
-                    padding: '0.5rem 1rem',
-                    borderRadius: '8px',
-                    border: externalSource.active ? '1px solid var(--accent-danger)' : '1px solid var(--accent-sky)',
-                    background: externalSource.active ? 'rgba(239,68,68,0.12)' : 'rgba(56,189,248,0.12)',
-                    color: externalSource.active ? 'var(--accent-danger)' : 'var(--accent-sky)',
-                    fontWeight: 800,
-                    fontSize: '0.78rem',
-                    cursor: 'pointer',
-                    letterSpacing: '0.5px'
-                  }}
-                >
-                  {externalSource.active ? '■ ENCERRAR TRANSMISSÃO EXTERNA' : '▶ INICIAR TRANSMISSÃO EXTERNA (NDI)'}
-                </button>
+                </div>
 
                 {/* Nível de Áudio AO VIVO (dado real da placa USB) */}
                 <div>
@@ -524,6 +509,26 @@ function InnerApp() {
                       )}
                     </div>
                   </div>
+
+                  {/* Controle de Transmissão Externa (NDI / Tribunal Pleno) — movido para equilibrar o card */}
+                  <button
+                    onClick={toggleExternalSource}
+                    style={{
+                      marginTop: '1rem',
+                      width: '100%',
+                      padding: '0.6rem 1rem',
+                      borderRadius: '8px',
+                      border: externalSource.active ? '1px solid var(--accent-danger)' : '1px solid var(--accent-sky)',
+                      background: externalSource.active ? 'rgba(239,68,68,0.12)' : 'rgba(56,189,248,0.12)',
+                      color: externalSource.active ? 'var(--accent-danger)' : 'var(--accent-sky)',
+                      fontWeight: 800,
+                      fontSize: '0.78rem',
+                      cursor: 'pointer',
+                      letterSpacing: '0.5px'
+                    }}
+                  >
+                    {externalSource.active ? '■ ENCERRAR TRANSMISSÃO EXTERNA' : '▶ INICIAR TRANSMISSÃO EXTERNA (NDI)'}
+                  </button>
                 </div>
               </div>
             </div>
@@ -631,8 +636,8 @@ function InnerApp() {
               </div>
             </div>
 
-            {/* CARD 6: CLIMA, CURADORIA & INTEGRIDADE */}
-            <div className="card cockpit-card-weather">
+            {/* CARD 6: CLIMA, CURADORIA & INTEGRIDADE — coluna esquerda; o card de Log fica à direita */}
+            <div className="card cockpit-card-weather" style={{ gridColumn: '1' }}>
               <div className="section-header" style={{ marginBottom: '1.25rem' }}>
                 <div className="section-title">
                   <div className="accent-line" style={{ background: 'var(--accent-warning)' }} />
@@ -726,8 +731,8 @@ function InnerApp() {
               </div>
             </div>
 
-            {/* CARD 7: LOG COMPLETO DO SISTEMA (reutiliza systemLogs do poll) */}
-            <div className="card" style={{ gridColumn: '1 / -1' }}>
+            {/* CARD 7: LOG COMPLETO DO SISTEMA (reutiliza systemLogs do poll) — coluna direita, ao lado do card de Clima */}
+            <div className="card" style={{ gridColumn: '2' }}>
               <div className="section-header" style={{ marginBottom: '1rem' }}>
                 <div className="section-title">
                   <div className="accent-line" style={{ background: 'var(--accent-sky)' }} />
