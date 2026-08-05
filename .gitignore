@@ -47,3 +47,9 @@ NJUD_extracted/
 
 # Backups legados grandes (não versionar - excede 100MB do GitHub)
 legacy_backup/OmniCoreV2.exe
+
+# Build artifacts grandes (não versionar)
+dist/omni_core.exe
+build/omni_core/omni_core.pkg
+*.exe
+*.pkg
