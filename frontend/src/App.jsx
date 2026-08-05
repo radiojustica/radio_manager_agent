@@ -557,7 +557,9 @@ function InnerApp() {
 
                 {/* Dynamic Range (estimado do sinal real) */}
                 <div style={{ background: 'rgba(0,0,0,0.15)', padding: '1rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.02)' }}>
-                  <div style={{ fontSize: '0.62rem', color: 'var(--text-muted)', fontWeight: 800, textTransform: 'uppercase' }}>Range Dinâmico (Estimado)</div>
+                  <div style={{ fontSize: '0.62rem', color: 'var(--text-muted)', fontWeight: 800, textTransform: 'uppercase' }}>
+                    <TermTooltip label="Range Dinâmico (Estimado)" tip="Diferença entre o pico e a média de volume da janela (≈8s), em dB. Indica a 'resspiração' da música: faixas muito comprimidas têm range baixo (~3-5 dB); acousticas naturais têm range maior. Calculado do sinal real." />
+                  </div>
                   <div style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--text-primary)', marginTop: '4px' }}>
                     {player.connected && player.dynamic_range != null ? `${player.dynamic_range} dB` : '—'}
                   </div>
@@ -565,7 +567,9 @@ function InnerApp() {
 
                 {/* Uptime da Transmissão (real: há quanto o áudio está ao vivo) */}
                 <div style={{ background: 'rgba(0,0,0,0.15)', padding: '1rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.02)' }}>
-                  <div style={{ fontSize: '0.62rem', color: 'var(--text-muted)', fontWeight: 800, textTransform: 'uppercase' }}>Uptime da Transmissão</div>
+                  <div style={{ fontSize: '0.62rem', color: 'var(--text-muted)', fontWeight: 800, textTransform: 'uppercase' }}>
+                    <TermTooltip label="Uptime da Transmissão" tip="Tempo contínuo que o áudio está ao vivo (ZaraRadio tocando + sinal conectado). Zera se a transmissão cair. Útil para saber há quanto a sessão está estável no ar." />
+                  </div>
                   <div style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--text-primary)', marginTop: '4px' }}>
                     {player.connected && player.status === 'playing'
                       ? (() => {
@@ -581,7 +585,9 @@ function InnerApp() {
 
                 {/* Silêncio (sessão) — segundos desde o último pico de áudio real */}
                 <div style={{ background: 'rgba(0,0,0,0.15)', padding: '1rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.02)' }}>
-                  <div style={{ fontSize: '0.62rem', color: 'var(--text-muted)', fontWeight: 800, textTransform: 'uppercase' }}>Silêncio (Sessão)</div>
+                  <div style={{ fontSize: '0.62rem', color: 'var(--text-muted)', fontWeight: 800, textTransform: 'uppercase' }}>
+                    <TermTooltip label="Silêncio (Sessão)" tip="Segundos acumulados sem pico de áudio relevante na sessão atual. Se passar de ~3s, fica vermelho — indica possível queda de áudio no ar. Derivado do último pico real detectado pelo Guardian." />
+                  </div>
                   <div style={{ fontSize: '1.4rem', fontWeight: 800, color: (player.silence_seconds || 0) > 3 ? 'var(--accent-danger)' : 'var(--text-primary)', marginTop: '4px' }}>
                     {player.connected ? `${(player.silence_seconds || 0).toFixed(1)} s` : '—'}
                   </div>
