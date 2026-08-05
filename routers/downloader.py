@@ -28,22 +28,28 @@ async def get_recommendations(days: int = 5):
         return {"success": False, "error": str(e)}
 
 def _process_downloads(queries: list[str], estilo: str):
-    """Processo em background para baixar e catalogar músicas via DownloaderWorker."""
+    """
+    Processa os downloads em background chamando o serviço real de download
+    (yt-dlp) DIRETAMENTE — sem depender do subagente de IA, que pode estar
+    indisponível (ex.: API de LLM bloqueada). Isso garante que a fila de
+    processamento e o histórico reflitam o estado real das transferências.
+    """
     try:
-        logger.info(f"[Background] Disparando processamento de {len(queries)} downloads.")
-        result = worker_manager_instance.run_cycle("DownloaderWorker", queries=queries, estilo=estilo)
-        status = result.get('result', {}).get('status', 'unknown')
-        logger.info(f"[Background] Processamento concluído com status: {status}")
-        
-        # Log detalhado de resultados
-        metadata = result.get('result', {}).get('metadata', {})
-        if metadata:
-            logger.info(
-                f"[Background] Resumo: {metadata.get('success', 0)} sucesso, "
-                f"{metadata.get('failed', 0)} falhas, {metadata.get('skipped', 0)} puladas"
-            )
+        from services.downloader_service import downloader_instance
+        logger.info(f"[Background] Processando {len(queries)} downloads (download direto).")
+        resultados = []
+        for q in queries:
+            try:
+                res = downloader_instance.search_and_download(q, destination=None)
+                resultados.append({"query": q, "result": res})
+            except Exception as e:
+                logger.error(f"[Background] Erro ao baixar '{q}': {e}")
+                resultados.append({"query": q, "result": {"success": False, "error": str(e)}})
+        ok = sum(1 for r in resultados if r["result"].get("success"))
+        falhas = len(resultados) - ok
+        logger.info(f"[Background] Download concluído: {ok} ok, {falhas} falhas.")
     except Exception as e:
-        logger.error(f"[Background] Falha crítica ao acionar DownloaderWorker: {e}", exc_info=True)
+        logger.error(f"[Background] Falha crítica ao acionar downloads: {e}", exc_info=True)
 
 @router.post("/download")
 async def trigger_downloads(req: DownloadRequest, background_tasks: BackgroundTasks):
@@ -54,8 +60,9 @@ async def trigger_downloads(req: DownloadRequest, background_tasks: BackgroundTa
 
 @router.get("/progress")
 async def get_download_progress():
-    """Retorna o progresso atual de todos os downloads ativos."""
+    """Retorna o progresso atual de downloads ativos E o histórico durável."""
     from services.downloader_service import downloader_instance
     return {
-        "active": downloader_instance.active_progress
+        "active": downloader_instance.active_progress,
+        "history": downloader_instance.history,
     }

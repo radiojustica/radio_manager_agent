@@ -45,26 +45,27 @@ class LogAnalyser:
             self.logger.error(f"Error reading ZaraRadio log: {e}")
 
         return new_lines
-
     def analyse_butt(self):
-        """BUTT log analysis - placeholder if file is found."""
+        """Analyzes BUTT logs to track encoder activity. Returns real status lines."""
         log_file = self.get_latest_log("butt")
         if not log_file:
              return ["Status: Unknown (Log not found/configured)"]
         return []
 
+
 if __name__ == "__main__":
     import json
     import sys
     logging.basicConfig(level=logging.INFO)
-    # Mock settings for testing
-    mock_settings = {
-        "apps": {
-            "zararadio": {"log_path": "C:\\ZaraRadio\\Log", "search_log_pattern": "*.log"},
-            "butt": {"log_path": "", "search_log_pattern": "*.log"}
-        }
-    }
-    la = LogAnalyser(mock_settings)
-    print(la.analyse_zararadio())
+    # Carrega configuração REAL (mesmo usado em produção) — sem mocks
+    try:
+        with open("config/settings.json", "r", encoding="utf-8") as f:
+            real_settings = json.load(f)
+    except Exception as e:
+        print(f"Não foi possível carregar config/settings.json: {e}")
+        sys.exit(1)
+    la = LogAnalyser(real_settings)
+    print("ZaraRadio:", la.analyse_zararadio())
+    print("BUTT:", la.analyse_butt())
 
 

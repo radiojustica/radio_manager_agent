@@ -1,23 +1,23 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 const ProgressBar = ({ percentage, status, speed, eta }) => (
-  <div style={{ marginBottom: '1rem', background: 'rgba(255,255,255,0.02)', padding: '12px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
-    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', marginBottom: '8px', fontWeight: 700 }}>
-      <span style={{ color: 'var(--text-secondary)' }}>{status?.toUpperCase()}</span>
-      <span style={{ color: 'var(--accent-primary)' }}>{percentage?.toFixed(1)}%</span>
+  <div style={{ marginBottom: '0.5rem', background: 'rgba(255,255,255,0.02)', padding: '10px 12px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
+    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', marginBottom: '6px', fontWeight: 700 }}>
+      <span style={{ color: 'var(--text-secondary)', textTransform: 'uppercase' }}>{status || 'aguardando'}</span>
+      <span style={{ color: 'var(--accent-primary)' }}>{(percentage || 0).toFixed(0)}%</span>
     </div>
     <div style={{ width: '100%', height: '6px', background: 'rgba(255,255,255,0.1)', borderRadius: '3px', overflow: 'hidden' }}>
-      <div 
-        style={{ 
-          width: `${percentage}%`, 
-          height: '100%', 
-          background: 'var(--accent-primary)', 
+      <div
+        style={{
+          width: `${percentage || 0}%`,
+          height: '100%',
+          background: 'var(--accent-primary)',
           transition: 'width 0.3s ease-out',
           boxShadow: '0 0 10px var(--accent-primary)'
-        }} 
+        }}
       />
     </div>
-    <div style={{ display: 'flex', gap: '15px', marginTop: '8px', fontSize: '0.65rem', color: 'var(--text-muted)', fontWeight: 600 }}>
+    <div style={{ display: 'flex', gap: '15px', marginTop: '6px', fontSize: '0.62rem', color: 'var(--text-muted)', fontWeight: 600 }}>
       {speed && <span>⚡ {speed}</span>}
       {eta && <span>⏳ {eta}</span>}
     </div>
@@ -29,8 +29,12 @@ export default function AcquisitionPage() {
   const [selected, setSelected] = useState({});
   const [loading, setLoading] = useState(false);
   const [activeDownloads, setActiveDownloads] = useState({});
+  const [history, setHistory] = useState([]);
   const [manualLinks, setManualLinks] = useState('');
   const [statusMsg, setStatus] = useState('');
+  // Confirmação de ação
+  const [confirm, setConfirm] = useState(null); // { queries, type, label }
+  const [busy, setBusy] = useState(false);
 
   const fetchRecommendations = async () => {
     setLoading(true);
@@ -41,6 +45,8 @@ export default function AcquisitionPage() {
       if (data.success) {
         setRecs(data.recommendations);
         setStatus(`Análise concluída. ${data.recommendations.length} sugestões encontradas.`);
+      } else {
+        setStatus(`Erro: ${data.error || 'falha na análise'}`);
       }
     } catch (e) {
       setStatus('Erro ao buscar recomendações.');
@@ -54,22 +60,17 @@ export default function AcquisitionPage() {
       const res = await fetch('/api/downloader/progress');
       const data = await res.json();
       setActiveDownloads(data.active || {});
+      setHistory(data.history || []);
     } catch (e) {
       console.error("Erro ao buscar progresso:", e);
     }
   };
 
-  useEffect(() => {
-    const hasActive = Object.values(activeDownloads).some(d => d.status !== 'completed' && d.status !== 'failed');
-    if (hasActive || Object.keys(activeDownloads).length > 0) {
-      const interval = setInterval(fetchProgress, 2000);
-      return () => clearInterval(interval);
-    }
-  }, [activeDownloads]);
-
-  // Initial fetch for progress in case something is already running
+  // Polling contínuo enquanto houver downloads ativos ou ação em andamento
   useEffect(() => {
     fetchProgress();
+    const interval = setInterval(fetchProgress, 2000);
+    return () => clearInterval(interval);
   }, []);
 
   const handleToggle = (idx) => {
@@ -83,23 +84,31 @@ export default function AcquisitionPage() {
       setSelected({});
     } else {
       const newSelected = {};
-      recommendations.forEach((_, idx) => {
-        newSelected[idx] = true;
-      });
+      recommendations.forEach((_, idx) => { newSelected[idx] = true; });
       setSelected(newSelected);
     }
   };
 
-  const triggerDownloads = async (type) => {
+  const prepareDownload = (type) => {
     let queries = [];
     if (type === 'recs') {
       queries = recommendations.filter((_, idx) => selected[idx]).map(r => r.sugestao);
     } else {
-      queries = manualLinks.split('\n').filter(l => l.trim() !== '');
+      queries = manualLinks.split('\n').map(l => l.trim()).filter(l => l !== '');
     }
-
     if (queries.length === 0) return;
+    const label = type === 'recs'
+      ? `Baixar ${queries.length} música(s) selecionada(s) na recomendação?`
+      : `Iniciar ${queries.length} download(s) da captura direta?`;
+    setConfirm({ queries, type, label });
+  };
 
+  const executeDownload = async () => {
+    if (!confirm) return;
+    const { queries } = confirm;
+    setConfirm(null);
+    setBusy(true);
+    setStatus('Iniciando downloads... acompanhe a Fila de Processamento abaixo.');
     try {
       const res = await fetch('/api/downloader/download', {
         method: 'POST',
@@ -107,15 +116,19 @@ export default function AcquisitionPage() {
         body: JSON.stringify({ queries, estilo: 'outros' })
       });
       const data = await res.json();
-      setStatus(data.message);
-      if (type === 'manual') setManualLinks('');
-      fetchProgress(); // Start polling immediately
+      setStatus(data.message || 'Download iniciado.');
+      if (confirm.type === 'manual') setManualLinks('');
+      fetchProgress();
     } catch (e) {
       setStatus('Erro ao iniciar downloads.');
+    } finally {
+      setBusy(false);
     }
   };
 
-  const downloadEntries = Object.entries(activeDownloads).filter(([_, d]) => d.status !== 'completed');
+  const activeEntries = Object.entries(activeDownloads).filter(([_, d]) => d.status !== 'completed');
+  const completedCount = history.filter(h => h.status === 'completed').length;
+  const failedCount = history.filter(h => h.status === 'failed').length;
 
   return (
     <div className="acervo-container anim-fade-in" style={{ maxWidth: '1400px', margin: '0 auto', padding: '2rem' }}>
@@ -125,18 +138,18 @@ export default function AcquisitionPage() {
       </div>
 
       <div className="main-layout-flex" style={{ display: 'flex', gap: '2.5rem', alignItems: 'flex-start' }}>
+
+        {/* COLUNA ESQUERDA: RECOMENDAÇÕES */}
         <div style={{ flex: 2, display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
-          
-          {/* SEÇÃO DE SUGESTÕES */}
           <div className="premium-card" style={{ padding: '2rem' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
               <div>
                 <h3 style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--accent-primary)', marginBottom: '4px' }}>RECOMENDAÇÕES DO DIRETOR</h3>
                 <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Top tendências dos últimos 5 dias</p>
               </div>
-              <button 
-                className="btn-action" 
-                onClick={fetchRecommendations} 
+              <button
+                className="btn-action"
+                onClick={fetchRecommendations}
                 disabled={loading}
                 style={{ background: 'rgba(56, 189, 248, 0.1)', color: 'var(--accent-primary)', border: '1px solid var(--accent-primary)' }}
               >
@@ -184,9 +197,10 @@ export default function AcquisitionPage() {
 
             {recommendations.length > 0 && (
               <div style={{ marginTop: '2rem', display: 'flex', justifyContent: 'flex-end' }}>
-                <button 
-                  className="btn-action primary" 
-                  onClick={() => triggerDownloads('recs')}
+                <button
+                  className="btn-action primary"
+                  onClick={() => prepareDownload('recs')}
+                  disabled={busy}
                   style={{ padding: '12px 30px', fontWeight: 800 }}
                 >
                   📥 BAIXAR SELECIONADAS
@@ -196,64 +210,98 @@ export default function AcquisitionPage() {
           </div>
         </div>
 
+        {/* COLUNA DIREITA: CAPTURA + FILA + HISTÓRICO */}
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
-          
-          {/* DOWNLOAD MANUAL */}
+
+          {/* CAPTURA DIRETA */}
           <div className="premium-card" style={{ padding: '2rem' }}>
             <h3 style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--accent-primary)', marginBottom: '1.5rem' }}>CAPTURA DIRETA</h3>
-            <textarea 
+            <textarea
               value={manualLinks}
               onChange={(e) => setManualLinks(e.target.value)}
               placeholder="Cole links do YouTube ou nomes de faixas aqui... (uma por linha)"
-              style={{ 
-                width: '100%', height: '180px', background: 'rgba(0,0,0,0.2)', 
+              style={{
+                width: '100%', height: '180px', background: 'rgba(0,0,0,0.2)',
                 border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px',
                 color: '#fff', padding: '1.2rem', fontSize: '0.85rem', fontFamily: "'Fira Code', monospace",
                 resize: 'none', marginBottom: '1.5rem'
               }}
             />
-            <button 
-              className="btn-action block" 
-              onClick={() => triggerDownloads('manual')}
+            <button
+              className="btn-action block"
+              onClick={() => prepareDownload('manual')}
+              disabled={busy}
               style={{ width: '100%', padding: '12px', background: 'var(--accent-primary)', color: '#000', fontWeight: 900 }}
             >
               🚀 INICIAR DOWNLOADS
             </button>
           </div>
 
-          {/* TELEMETRIA DE DOWNLOADS ATIVOS */}
-          <div className="premium-card" style={{ padding: '2rem', minHeight: '300px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '2rem' }}>
-               <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: downloadEntries.length > 0 ? 'var(--accent-success)' : 'var(--text-muted)', boxShadow: downloadEntries.length > 0 ? '0 0 10px var(--accent-success)' : 'none' }}></div>
+          {/* FILA DE PROCESSAMENTO (AO VIVO) */}
+          <div className="premium-card" style={{ padding: '2rem', minHeight: '220px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '1.5rem' }}>
+               <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: activeEntries.length > 0 ? 'var(--accent-success)' : 'var(--text-muted)', boxShadow: activeEntries.length > 0 ? '0 0 10px var(--accent-success)' : 'none' }}></div>
                <h3 style={{ fontSize: '0.9rem', fontWeight: 800 }}>FILA DE PROCESSAMENTO</h3>
             </div>
 
-            {downloadEntries.length > 0 ? (
+            {activeEntries.length > 0 ? (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                {downloadEntries.map(([query, data]) => (
+                {activeEntries.map(([query, data]) => (
                   <div key={query}>
-                    <div style={{ fontSize: '0.7rem', fontWeight: 800, color: '#fff', marginBottom: '8px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {query}
+                    <div style={{ fontSize: '0.7rem', fontWeight: 800, color: '#fff', marginBottom: '6px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {data.title || query}
                     </div>
-                    <ProgressBar 
-                      percentage={data.percentage} 
-                      status={data.status} 
-                      speed={data.speed} 
-                      eta={data.eta} 
+                    <ProgressBar
+                      percentage={data.percentage}
+                      status={data.status}
+                      speed={data.speed}
+                      eta={data.eta}
                     />
                   </div>
                 ))}
               </div>
-            ) : (
-              <div style={{ padding: '3rem 0', textAlign: 'center', color: 'var(--text-muted)', border: '2px dashed rgba(255,255,255,0.05)', borderRadius: '16px' }}>
+            ) : history.length === 0 ? (
+              <div style={{ padding: '2.5rem 0', textAlign: 'center', color: 'var(--text-muted)', border: '2px dashed rgba(255,255,255,0.05)', borderRadius: '16px' }}>
                 <p style={{ fontSize: '0.75rem', fontWeight: 700 }}>NENHUM DOWNLOAD ATIVO</p>
+              </div>
+            ) : (
+              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>
+                {completedCount} finalizado(s) · {failedCount} com erro — veja o histórico abaixo.
+              </div>
+            )}
+          </div>
+
+          {/* HISTÓRICO DURÁVEL */}
+          <div className="premium-card" style={{ padding: '2rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
+              <h3 style={{ fontSize: '0.9rem', fontWeight: 800 }}>HISTÓRICO</h3>
+              <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>✓ {completedCount} · ✗ {failedCount}</span>
+            </div>
+            {history.length > 0 ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '320px', overflowY: 'auto' }}>
+                {history.map((h, i) => (
+                  <div key={i} style={{ display: 'flex', gap: '10px', alignItems: 'flex-start', padding: '10px 12px', background: 'rgba(0,0,0,0.15)', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.04)' }}>
+                    <span style={{ fontSize: '0.9rem', flexShrink: 0 }}>{h.status === 'completed' ? '✅' : '❌'}</span>
+                    <div style={{ minWidth: 0 }}>
+                      <div style={{ fontSize: '0.72rem', fontWeight: 700, color: '#fff', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{h.title || h.query}</div>
+                      {h.status === 'failed' && (
+                        <div style={{ fontSize: '0.62rem', color: 'var(--accent-danger)', marginTop: '2px' }}>{h.error}</div>
+                      )}
+                      <div style={{ fontSize: '0.6rem', color: 'var(--text-muted)', marginTop: '2px' }}>{h.timestamp}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div style={{ padding: '1.5rem 0', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.75rem' }}>
+                Nenhum download registrado ainda.
               </div>
             )}
           </div>
 
           {statusMsg && (
-            <div style={{ 
-              padding: '1.2rem', background: 'rgba(56, 189, 248, 0.05)', 
+            <div style={{
+              padding: '1.2rem', background: 'rgba(56, 189, 248, 0.05)',
               borderRadius: '12px', border: '1px solid rgba(56, 189, 248, 0.2)', color: 'var(--accent-primary)',
               fontSize: '0.8rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '12px'
             }}>
@@ -262,6 +310,23 @@ export default function AcquisitionPage() {
           )}
         </div>
       </div>
+
+      {/* MODAL DE CONFIRMAÇÃO */}
+      {confirm && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }} onClick={() => setConfirm(null)}>
+          <div style={{ background: '#161616', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '16px', padding: '2rem', maxWidth: '420px', width: '90%' }} onClick={e => e.stopPropagation()}>
+            <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#fff', marginBottom: '1rem' }}>Confirmar download</h3>
+            <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '1.5rem' }}>{confirm.label}</p>
+            <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', maxHeight: '120px', overflowY: 'auto', marginBottom: '1.5rem', fontFamily: "'Fira Code', monospace" }}>
+              {confirm.queries.map((q, i) => (<div key={i}>• {q}</div>))}
+            </div>
+            <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
+              <button onClick={() => setConfirm(null)} style={{ padding: '10px 20px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.15)', background: 'transparent', color: '#fff', fontWeight: 700, cursor: 'pointer' }}>Cancelar</button>
+              <button onClick={executeDownload} style={{ padding: '10px 20px', borderRadius: '10px', border: 'none', background: 'var(--accent-primary)', color: '#000', fontWeight: 900, cursor: 'pointer' }}>Confirmar</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

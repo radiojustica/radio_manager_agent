@@ -133,6 +133,12 @@ As seguintes melhorias foram implementadas e verificadas em execução real do s
 | — | `engine.py` sem "Configuração fictícia de streaming" | `routers/engine.py` | ✅ |
 | — | Endpoint `GET /hardware/realtime` com uptime real, disco, CPU, RAM, temperatura | `routers/status.py` | ✅ |
 | — | NtfyListener com normalização de texto (sem acentos, case-insensitive), matching tolerante e anti-loop reforçado | `services/ntfy_listener_service.py` | ✅ |
+| — | **Segurança Acústica:** `limit_app_volume`/`SetMasterVolume` removidos; `audio_manager.py` somente-leitura; monitor não altera volume | `scripts/audio_manager.py`, `core/monitor.py` | ✅ |
+| — | **Comando de volume manual via ntfy:** `volume NN%` ajusta placa `INTERNO / USB Audio CODEC` (ação explícita do operador) | `scripts/volume_control.py`, `services/ntfy_listener_service.py` | ✅ |
+| — | **Spider corrigido:** caminho do Drive lido de `config/settings.json`; NJUD copiado como `JORNAL_NJUD.mp3` plano | `scripts/omni_spider.py` | ✅ |
+| — | **Não-repetição de artista:** `clean_artist_name` reescrito (extrai ARTISTA, não título); regra existente de 30/80 agora funciona | `scripts/artist_cleaner.py`, `director/grade_rules.py` | ✅ |
+| — | **Status do BUTT estável:** `ESTABLISHED`=transmitindo (sem flicker por CPU); payload com `connected`/`db` reais | `routers/status.py` | ✅ |
+| — | Documentação revisada (OPERACAO, AUDIT_DOCUMENTATION v2.1.0, regras_programacao, README, REGISTRO) | `docs/*`, `README.md`, `REGISTRO_MELHORIAS_28_07_2026.md` | ✅ |
 | — | `core/monitor.py`: import corrigido (`from typing import Optional`) | `core/monitor.py` | ✅ |
 | — | Frontend rebuildado (`npm run build`) — dist atualizado | `frontend/dist/` | ✅ |
 

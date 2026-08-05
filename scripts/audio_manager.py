@@ -72,8 +72,15 @@ class AudioManager:
             self.logger.error(f"Erro ao obter pico de '{process_name}': {e}")
         return -1.0
 
-    def get_master_peak(self, device_name: str = "RADIO") -> float:
-        """Retorna o pico master do dispositivo (somente leitura). Thread-safe."""
+    def get_master_peak(self, device_name: str = "INTERNO") -> float:
+        """Retorna o pico master do dispositivo de transmissão (somente leitura).
+
+        No TJRN a placa de transmissão é USB e aparece com nomes como
+        'RADIO (USB Audio CODEC )' e/ou 'INTERNO (2- USB Audio CODEC )'.
+        Como só uma delas efetivamente carrega o áudio ao vivo, varremos todas
+        as que casam com as keywords e retornamos o MAIOR pico (o dispositivo ativo).
+        """
+        DEVICE_KEYWORDS = ["usb audio codec", "interno", "codec"]
         with self._lock:
             try:
                 try:
@@ -81,38 +88,35 @@ class AudioManager:
                 except Exception:
                     pass
 
-                if self._cached_meter and self._cached_device_name == device_name:
+                devices = AudioUtilities.GetAllDevices()
+                candidates = []
+                for d in devices:
                     try:
-                        return self._cached_meter.GetPeakValue()
+                        fn = d.FriendlyName.lower()
                     except Exception:
-                        self._cached_meter = None
+                        continue
+                    if any(k in fn for k in DEVICE_KEYWORDS):
+                        candidates.append(d)
 
-                if not self._cached_device or self._cached_device_name != device_name:
-                    devices = AudioUtilities.GetAllDevices()
-                    target_device = None
-                    for d in devices:
-                        if device_name.lower() in d.FriendlyName.lower():
-                            target_device = d
-                            break
-                    if not target_device:
-                        target_device = AudioUtilities.GetSpeakers()
+                if not candidates:
+                    candidates = [AudioUtilities.GetSpeakers()]
 
-                    self._cached_device = target_device
-                    self._cached_device_name = device_name
-                    self._cached_meter = None
-
-                if not self._cached_meter:
-                    interface = self._cached_device._dev.Activate(
-                        IAudioMeterInformation._iid_, comtypes.CLSCTX_ALL, None
-                    )
-                    self._cached_meter = interface.QueryInterface(IAudioMeterInformation)
-
-                return self._cached_meter.GetPeakValue()
+                best_peak = -1.0
+                for dev in candidates:
+                    try:
+                        interface = dev._dev.Activate(
+                            IAudioMeterInformation._iid_, comtypes.CLSCTX_ALL, None
+                        )
+                        meter = interface.QueryInterface(IAudioMeterInformation)
+                        p = meter.GetPeakValue()
+                        if p > best_peak:
+                            best_peak = p
+                    except Exception:
+                        continue
+                return best_peak
 
             except Exception as e:
-                self.logger.error(f"Erro ao obter pico master do dispositivo '{device_name}': {e}")
-                self._cached_meter = None
-                self._cached_device = None
+                self.logger.error(f"Erro ao obter pico master: {e}")
                 return -1.0
             finally:
                 try:

@@ -4,6 +4,7 @@ import threading
 from pathlib import Path
 from typing import Optional, Dict, Any
 from uuid import uuid4
+from core.time_utils import now_local
 from services.youtube_dl_manager import YoutubeDLManager
 
 logger = logging.getLogger("OmniCore.DownloaderService")
@@ -24,7 +25,15 @@ class DownloaderService:
         self.target_dir.mkdir(exist_ok=True, parents=True)
         self.ydl_manager = YoutubeDLManager(ffmpeg_path=ffmpeg_path)
         self.active_progress: Dict[str, Dict[str, Any]] = {}  # {task_id: progress_data}
+        self.history: list[Dict[str, Any]] = []  # registro durável de finalizados/erros
         self._lock = threading.Lock()
+
+    def _registrar_historico(self, entry: Dict[str, Any]):
+        """Adiciona uma entrada durável ao histórico (máx. 50, mais recentes primeiro)."""
+        with self._lock:
+            self.history.insert(0, entry)
+            if len(self.history) > 50:
+                self.history = self.history[:50]
 
     def _progress_hook(self, d: Dict[str, Any], task_id: str):
         """Atualiza progresso de download com lock thread-safe."""
@@ -93,6 +102,10 @@ class DownloaderService:
                     self.active_progress[task_id].update(
                         {"status": "failed", "error": error_msg}
                     )
+                self._registrar_historico({
+                    "query": query, "status": "failed", "error": error_msg,
+                    "timestamp": now_local().isoformat()
+                })
                 return {"success": False, "error": error_msg}
 
             yt_title = info.get("title", "Unknown Title")
@@ -127,6 +140,10 @@ class DownloaderService:
                     self.active_progress[task_id].update(
                         {"status": "failed", "error": error_msg}
                     )
+                self._registrar_historico({
+                    "query": query, "status": "failed", "error": error_msg,
+                    "timestamp": now_local().isoformat()
+                })
                 return {"success": False, "error": error_msg}
 
             logger.info(f"[Downloader] Concluído: {yt_title} -> {actual_path}")
@@ -135,6 +152,11 @@ class DownloaderService:
                 self.active_progress[task_id].update(
                     {"status": "completed", "percentage": 100}
                 )
+
+            self._registrar_historico({
+                "query": query, "status": "completed", "title": yt_title,
+                "path": str(actual_path), "timestamp": now_local().isoformat()
+            })
 
             return {
                 "success": True,
@@ -152,6 +174,10 @@ class DownloaderService:
                 self.active_progress[task_id].update(
                     {"status": "failed", "error": error_msg}
                 )
+            self._registrar_historico({
+                "query": query, "status": "failed", "error": error_msg,
+                "timestamp": now_local().isoformat()
+            })
             return {"success": False, "error": error_msg}
         finally:
             # Cleanup automático após 60 segundos

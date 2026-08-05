@@ -28,6 +28,10 @@ giro_syncer = GiroSync()
 CACHE_STATUS = {"timestamp": 0, "payload": None}
 CACHE_BUTT = {"timestamp": 0, "payload": None}
 CACHE_ZARA_WINDOW = {"timestamp": 0, "status": "playing"}
+
+# ── Uptime de transmissão (estado em memória, derivado de dados reais) ──
+# Marca quando a transmissão (áudio conectado + tocando) inicia; zera ao cair.
+_TRANSMISSION_STARTED_AT = {"ts": None}
 LAST_SHOW_WINDOW_CALL = {"timestamp": 0}
 
 def get_nowplaying_path():
@@ -78,6 +82,14 @@ def analisar_instancias_butt():
                 win32gui.EnumWindows(enum_callback, hwnd_list)
                 if hwnd_list: window_title = hwnd_list[0]
 
+                # Métricas reais de CPU/RAM do processo (apenas leitura)
+                try:
+                    cpu_percent = round(p.cpu_percent(interval=0.1), 1)
+                    mem_mb = round(p.memory_info().rss / (1024 * 1024), 1)
+                except Exception:
+                    cpu_percent = None
+                    mem_mb = None
+
                 # Status estável (sem depender de CPU)
                 if "disconnected" in window_title.lower():
                     status = "desconectado"
@@ -90,7 +102,9 @@ def analisar_instancias_butt():
                     "pid": pid,
                     "status": status,
                     "has_connection": has_connection,
-                    "window_title": window_title[:50]
+                    "window_title": window_title[:50],
+                    "cpu_percent": cpu_percent,
+                    "mem_mb": mem_mb
                 })
         except Exception:
             continue
@@ -100,10 +114,32 @@ def analisar_instancias_butt():
     return instancias
 
 
+def _get_external_source_dict() -> dict:
+    """Retorna o estado da transmissão externa (NDI / Tribunal Pleno) para o payload."""
+    try:
+        from services.external_source_service import external_source_service
+        return external_source_service.to_dict()
+    except Exception:
+        return {"active": False, "source": None, "program": None, "started_at": None, "manual": False}
+
+
 def verificar_zara_status():
     """
     Verifica se o ZaraRadio está rodando ou travado. Cache de 5 segundos.
+    Se uma transmissão externa (ex.: NDI / Tribunal Pleno) está ativa, o
+    ZaraRadio deve estar pausado — retornamos "external" para o cockpit não
+    reportar o playout como quebrado.
     """
+    # Modo fonte externa: Zara intencionalmente fora do ar.
+    try:
+        from services.external_source_service import external_source_service
+        if external_source_service.is_active():
+            CACHE_ZARA_WINDOW["status"] = "external"
+            CACHE_ZARA_WINDOW["timestamp"] = time.time()
+            return "external"
+    except Exception:
+        pass
+
     agora = time.time()
     if agora - CACHE_ZARA_WINDOW["timestamp"] < 5.0:
         return CACHE_ZARA_WINDOW["status"]
@@ -161,11 +197,11 @@ def get_now_playing(db: Session = Depends(get_db)):
     butt_instances = analisar_instancias_butt()
     butt_ativos = sum(1 for b in butt_instances if b['status'] == 'transmitindo')
 
-    # Nível de áudio REAL da placa USB "RADIO" (apenas leitura) -> dB
+    # Nível de áudio REAL da placa USB de transmissão (apenas leitura) -> dB
     try:
         from scripts.audio_manager import AudioManager
         _am = AudioManager()
-        _peak = _am.get_master_peak("RADIO")
+        _peak = _am.get_master_peak("INTERNO")  # resolve p/ "INTERNO (2- USB Audio CODEC)" via keywords
         audio_connected = _peak >= 0.0
         audio_db = 20.0 * (math.log10(_peak) if _peak > 0 else -60.0)
         if audio_db < -60.0:
@@ -173,6 +209,29 @@ def get_now_playing(db: Session = Depends(get_db)):
     except Exception:
         audio_connected = False
         audio_db = -60.0
+
+    # Alimenta o tracker de nível (janela deslizante) com o dB real desta amostra
+    from services.level_tracker import level_tracker
+    level_tracker.feed(audio_db)
+    _lvl = level_tracker.snapshot()
+
+    # ── Silêncio (sessão) e Uptime de transmissão — derivados de dados reais ──
+    # Silêncio: tempo desde o último pico de áudio acima do limiar (Guardian já rastreia).
+    try:
+        from services.guardian_service import guardian_instance
+        _last_peak = getattr(guardian_instance, "last_audio_peak", None)
+        silence_seconds = round(time.time() - _last_peak, 1) if _last_peak else 0.0
+    except Exception:
+        silence_seconds = 0.0
+
+    # Uptime: enquanto houver áudio conectado E o player estiver tocando, acumula.
+    _transmitting = audio_connected and status == "playing"
+    if _transmitting:
+        if _TRANSMISSION_STARTED_AT["ts"] is None:
+            _TRANSMISSION_STARTED_AT["ts"] = time.time()
+    else:
+        _TRANSMISSION_STARTED_AT["ts"] = None
+    transmission_uptime_seconds = int(time.time() - _TRANSMISSION_STARTED_AT["ts"]) if _TRANSMISSION_STARTED_AT["ts"] else 0
 
     if status == "playing":
         nowplaying_path = get_nowplaying_path()
@@ -281,11 +340,16 @@ def get_now_playing(db: Session = Depends(get_db)):
         "energy": energy, 
         "connected": audio_connected,
         "db": round(audio_db, 1),
+        "lufs_st": _lvl.get("lufs_st"),
+        "dynamic_range": _lvl.get("dr"),
+        "silence_seconds": silence_seconds,
+        "transmission_uptime_seconds": transmission_uptime_seconds,
         "butt_count": len(butt_instances),
         "butt_ativos": butt_ativos,
         "butt_detalhes": butt_instances,
         "curadoria_status": curadoria_status,
         "sazonalidade": sazonalidade,
+        "external_source": _get_external_source_dict(),
         "updated_at": now_local().isoformat()
     }
     CACHE_STATUS["payload"] = payload
@@ -308,6 +372,32 @@ def force_zara_play():
     from services.guardian_service import guardian_instance
     result = guardian_instance.force_play()
     return {"success": result}
+
+@router.get("/external-source/status")
+def get_external_source_status():
+    """Estado da transmissão externa (NDI / Tribunal Pleno)."""
+    from services.external_source_service import external_source_service
+    return external_source_service.to_dict()
+
+@router.post("/external-source/start")
+def start_external_source(payload: dict = None):
+    """
+    Inicia manualmente a transmissão externa (override da agenda).
+    Body opcional: { "source": "NDI", "program": "Tribunal Pleno" }
+    """
+    from services.external_source_service import external_source_service
+    source = "NDI"
+    program = "Tribunal Pleno"
+    if isinstance(payload, dict):
+        source = payload.get("source", source)
+        program = payload.get("program", program)
+    return external_source_service.start(source=source, program=program, manual=True)
+
+@router.post("/external-source/stop")
+def stop_external_source():
+    """Encerra a transmissão externa (volta ao controle normal do ZaraRadio)."""
+    from services.external_source_service import external_source_service
+    return external_source_service.stop(manual=True)
 
 @router.get("/guardian/events")
 def get_guardian_events(limit: int = 5):
@@ -427,36 +517,7 @@ def sync_giro(db: Session = Depends(get_db)):
         autopilot_service.log_action(db, "SYNC_GIRO", msg, success=False)
     return res
 
-@router.get("/logs/system")
-def get_system_logs(lines: int = 50):
-    """Retorna as últimas N linhas do log do sistema (omni_system.log)."""
-    log_path = r"D:\RADIO\LOG ZARARADIO\omni_system.log"
-    if not os.path.exists(log_path):
-        return {"error": "Arquivo de log não encontrado", "path": log_path}
-    
-    try:
-        # Usa um buffer para ler o final do arquivo de forma eficiente
-        with open(log_path, "rb") as f:
-            f.seek(0, os.SEEK_END)
-            size = f.tell()
-            buffer_size = 1024 * 64 # 64KB
-            if size < buffer_size:
-                buffer_size = size
-                
-            f.seek(-buffer_size, os.SEEK_END)
-            content = f.read().decode("utf-8", errors="replace")
-            last_lines = content.splitlines()[-lines:]
-            
-            return {
-                "path": log_path,
-                "lines": last_lines,
-                "total_size_mb": round(size / (1024*1024), 2)
-            }
-    except Exception as e:
-        return {"error": str(e)}
-
-
-# ===================================================================
+@router.get("/hardware/realtime")
 # Hardware real — dados reais do Windows (sem inventar nada)
 # ===================================================================
 
@@ -488,8 +549,7 @@ def get_hardware_realtime():
         # Rede: interfaces com tráfego ativo
         net_io = psutil.net_io_counters()
         net_addrs = psutil.net_if_addrs()
-        interfaces = list(net_io.bytes_sent > 0 or net_io.bytes_recv > 0 or True for _ in [1])  # placeholder
-        # Monta lista de interfaces com IPs
+        # Monta lista de interfaces com IPs reais (não-loopback)
         net_interfaces = []
         for iface, addrs in net_addrs.items():
             for addr in addrs:

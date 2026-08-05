@@ -32,26 +32,16 @@ def listar_acervo(
     estilo: Optional[str] = None,
     energia_min: Optional[int] = None,
     energia_max: Optional[int] = None,
+    bpm_min: Optional[int] = None,
+    bpm_max: Optional[int] = None,
     auditado: Optional[bool] = None,
     redflag: Optional[bool] = None,
-    tema_especial: Optional[str] = None
+    tema_especial: Optional[str] = None,
+    sort_by: Optional[str] = Query(None, pattern="^(titulo|artista|estilo|energia|duracao|bpm|auditado_acustica|redflag)$"),
+    order: Optional[str] = Query("asc", pattern="^(asc|desc)$")
 ):
     """
-    Lista as músicas do acervo com suporte a filtros e paginação.
-
-    Args:
-        db: Sessão do banco de dados.
-        page: Número da página.
-        limit: Itens por página.
-        search: Termo para busca em título ou artista.
-        estilo: Filtro por estilo exato.
-        energia_min: Energia mínima (1-5).
-        energia_max: Energia máxima (1-5).
-        auditado: True para auditadas, False para pendentes.
-        redflag: True para bloqueadas, False para liberadas.
-
-    Returns:
-        dict com itens, total e informações de página.
+    Lista as músicas do acervo com suporte a filtros, ordenação e paginação.
     """
     query = db.query(Musica)
 
@@ -68,6 +58,10 @@ def listar_acervo(
         query = query.filter(Musica.energia >= energia_min)
     if energia_max is not None:
         query = query.filter(Musica.energia <= energia_max)
+    if bpm_min is not None:
+        query = query.filter(Musica.bpm >= bpm_min)
+    if bpm_max is not None:
+        query = query.filter(Musica.bpm <= bpm_max)
     if auditado is not None:
         query = query.filter(Musica.auditado_acustica == auditado)
     if redflag is not None:
@@ -77,6 +71,10 @@ def listar_acervo(
             query = query.filter(or_(Musica.tema_especial == None, Musica.tema_especial == ""))
         else:
             query = query.filter(Musica.tema_especial == tema_especial)
+
+    if sort_by:
+        col = getattr(Musica, sort_by)
+        query = query.order_by(col.desc() if order == "desc" else col.asc())
 
     total = query.count()
     items = query.offset((page - 1) * limit).limit(limit).all()
@@ -153,6 +151,60 @@ async def auditar_em_lote(
     )
     db.commit()
     return {"processados": len(ids)}
+
+@router.post("/batch/redflag")
+def batch_redflag(
+    payload: dict,
+    db: Session = Depends(get_db)
+):
+    """
+    Ferramenta de moderação em lote: bloqueia (redflag=true) ou libera (redflag=false)
+    várias músicas de uma vez. Body: {"ids": [int...], "redflag": bool}.
+    """
+    ids = payload.get("ids", [])
+    redflag = bool(payload.get("redflag", True))
+    if not ids:
+        raise HTTPException(status_code=400, detail="Lista de IDs vazia")
+    affected = db.query(Musica).filter(Musica.id.in_(ids)).update(
+        {Musica.redflag: redflag},
+        synchronize_session=False
+    )
+    db.commit()
+    return {"processados": affected, "redflag": redflag}
+
+@router.get("/distribuicao")
+def distribuicao_acervo(db: Session = Depends(get_db)):
+    """
+    Retorna dados reais de distribuição do acervo para montar gráficos no frontend:
+    total, auditadas, redflags, contagens por estilo e por faixa de energia.
+    """
+    from sqlalchemy import func
+    total = db.query(Musica).count()
+    auditadas = db.query(Musica).filter(Musica.auditado_acustica == True).count()
+    redflags = db.query(Musica).filter(Musica.redflag == True).count()
+
+    estilos_rows = (
+        db.query(Musica.estilo, func.count(Musica.id))
+        .group_by(Musica.estilo)
+        .order_by(func.count(Musica.id).desc())
+        .all()
+    )
+    estilos = [{"nome": e or "—", "qtd": q} for e, q in estilos_rows if e]
+
+    energia_rows = (
+        db.query(Musica.energia, func.count(Musica.id))
+        .group_by(Musica.energia)
+        .all()
+    )
+    energia_dist = {str(int(e or 0)): q for e, q in energia_rows}
+
+    return {
+        "total": total,
+        "auditadas": auditadas,
+        "redflags": redflags,
+        "estilos": estilos,
+        "energia_dist": energia_dist,
+    }
 
 @router.post("/importar")
 async def importar_csv(

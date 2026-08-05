@@ -111,17 +111,38 @@ async def websocket_endpoint(websocket: WebSocket):
 BASE_PATH = Path(__file__).resolve().parent.parent
 
 @app.get("/api/status/logs/system")
-async def get_system_logs():
-    """Lê as últimas 50 linhas do log do sistema de forma eficiente."""
-    log_file = BASE_PATH / "logs" / "omni_system.log"
-    if not log_file.exists():
+async def get_system_logs(lines: int = 50):
+    """Lê as últimas linhas do log do sistema de forma eficiente.
+
+    O log real (operacional: GuardianWorker, SpiderWorker, Curadoria, uvicorn)
+    vive em D:\\RADIO\\LOG ZARARADIO\\omni_system.log (pode ser muito grande).
+    Tentamos esse caminho primeiro, com fallback para o logs/ local do projeto.
+    """
+    import os as _os
+    candidates = [
+        r"D:\RADIO\LOG ZARARADIO\omni_system.log",
+        BASE_PATH / "logs" / "omni_system.log",
+    ]
+    log_file = None
+    for c in candidates:
+        if _os.path.exists(c) and _os.path.getsize(c) > 0:
+            log_file = c
+            break
+    if not log_file:
         return {"logs": ["Log file not found."]}
-    
+
     try:
-        with open(log_file, "r", encoding="utf-8") as f:
-            # Lendo as últimas 50 linhas
-            lines = f.readlines()
-            return {"logs": [line.strip() for line in lines[-50:]]}
+        # Lê apenas o final do arquivo (eficiente mesmo para arquivos gigantes)
+        with open(log_file, "rb") as f:
+            f.seek(0, _os.SEEK_END)
+            size = f.tell()
+            buffer_size = 1024 * 64  # 64KB
+            if size < buffer_size:
+                buffer_size = size
+            f.seek(-buffer_size, _os.SEEK_END)
+            content = f.read().decode("utf-8", errors="replace")
+            last_lines = [ln.strip() for ln in content.splitlines() if ln.strip()][-lines:]
+            return {"logs": last_lines, "path": str(log_file)}
     except Exception as e:
         return {"logs": [f"Error reading logs: {str(e)}"]}
 

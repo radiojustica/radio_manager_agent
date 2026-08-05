@@ -2,38 +2,9 @@
 
 ## ✓ STATUS DO SISTEMA: OPERACIONAL
 
-Data: 13 de Maio de 2026  
-Versão: 2.0.0  
-Ambiente: Windows Python 3.14
-
----
-
-## 📋 RESUMO DAS CORREÇÕES APLICADAS
-
-### ✓ Problema 1: Importação incorreta em api/start_api.py
-**Status:** RESOLVIDO
-
-```python
-# ❌ ANTES (linha 2):
-from main import app
-
-# ✓ DEPOIS:
-from api.manager import app
-```
-
-**Arquivo corrigido:** [api/start_api.py](api/start_api.py#L2)
-
----
-
-### ✓ Problema 2: Elevação de admin problemática
-**Status:** RESOLVIDO
-
-O sistema foi modificado para permitir execução sem privilégios elevados:
-
-- **Arquivo:** [core/system.py](core/system.py#L30)
-- **Mudança:** Função `run_as_admin()` agora retorna `bool` em vez de chamar `sys.exit()`
-- **Arquivo:** [core/launcher.py](core/launcher.py#L18)
-- **Mudança:** Launcher permite execução mesmo se elevação falhar
+Data: 04 de Agosto de 2026  
+Versão: 2.1.0  
+Ambiente: Windows (Python 3.11 em produção / 3.14 no venv do Hermes)
 
 ---
 
@@ -41,42 +12,44 @@ O sistema foi modificado para permitir execução sem privilégios elevados:
 
 ### Opção 1: INICIALIZAÇÃO NORMAL (Recomendada)
 ```powershell
-cd "c:\Users\STREAMING\.gemini\antigravity\scratch\radio_manager_agent"
-python start.py
+cd "c:\Users\STREAMING\.gemini\antigravity\scratch
+adio_manager_agent"
+python main.py
 ```
-
 **O que acontece:**
 - ✓ Carrega todos os workers
 - ✓ Inicia API em http://localhost:8001
-- ✓ Abre interface Tkinter
+- ✓ Abre interface Tkinter (oculta) + ícone na bandeja
 - ✓ Conecta ao vMix (172.16.217.226:8088)
-- ✓ Inicia scheduler de tarefas
+- ✓ Inicia scheduler de tarefas (APScheduler)
 
----
-
-### Opção 2: TESTE DE DIAGNÓSTICO
+### Opção 2: MODO HEADLESS (Apenas API)
 ```powershell
-python test_startup.py
+python main.py --headless
 ```
+Ideal para manter a API/dashboard no ar sem interface gráfica.
 
-**Output esperado:**
-```
-✓ Imports: OK
-✓ API: Iniciada (http://0.0.0.0:8001)
-✓ Workers: 10 registrados
-✓ Scheduler: APScheduler funcionando
-✓ Guardian Service: OK
-✓ vMix Integration: Conectado
+### Opção 3: LAUNCHER Windows
+```powershell
+START_OMNI.bat
 ```
 
 ---
 
-### Opção 3: MODO CLÁSSICO (Compatibilidade)
-```powershell
-python main.py
-```
+## 🔒 SEGURANÇA ACÚSTICA (NÃO NEGOCIÁVEL)
+1. **ZaraRadio nunca altera o dispositivo de áudio.**
+2. **O sistema NUNCA modifica volume automaticamente.** `scripts/audio_manager.py` é estritamente somente-leitura; `core/monitor.py` não chama `SetMasterVolume`.
+3. **Volume só por comando manual:** envie `volume NN%` (ex.: `volume 80`) pelo ntfy para ajustar a placa `INTERNO (2- USB Audio CODEC)`. Nunca é automático.
 
-> Nota: Este modo tenta elevar para admin, mas o sistema continua mesmo se falhar.
+---
+
+## 🕷️ SPIDER (Boletins / Jornais)
+O `SpiderWorker` varre o Google Drive (caminho real em `config/settings.json` → `grade.pasta_drive_*`) e abastece:
+- `D:\SERVIDOR\BOLETINS\{SEGUNDA..SEXTA}` (boletins diários)
+- `D:\SERVIDOR\PROGRAMAS\JORNAL\JORNAL_NJUD.mp3` (jornal mais recente)
+- `D:\SERVIDOR\PROGRAMAS\PROGRAMA_40\GIRONASCOMARCAS\GIRO_ATUAL.mp3`
+- `D:\SERVIDOR\PROGRAMAS\PROGRAMA_40\LEVEMENTE\LEVEMENTE_ATUAL.mp3`
+Disparo: botão "ATIVAR SPIDER" no dashboard ou comando ntfy `spider` / `varrer drive`.
 
 ---
 
@@ -87,11 +60,11 @@ python main.py
 | API (FastAPI/Uvicorn) | ✓ OK | 8001 | Respondendo normalmente |
 | Database (SQLite) | ✓ OK | - | core/radio_omni.db |
 | Guardian Service | ✓ OK | - | Monitorando sistema |
-| Workers (10 total) | ✓ OK | - | Todos registrados |
+| Workers (autônomos) | ✓ OK | - | Registrados no worker_manager |
 | APScheduler | ✓ OK | - | Scheduler ativo |
 | vMix Integration | ✓ OK | 8088 | Conectado (172.16.217.226) |
-| Frontend | ✓ OK | - | Build presente em frontend/dist |
-| Tkinter GUI | ⚠️ Requer Admin | - | Para acesso completo |
+| Frontend | ✓ OK | - | Build em frontend/dist |
+| Tray (pystray) | ✓ OK | - | Ícone na bandeja |
 
 ---
 
@@ -99,27 +72,20 @@ python main.py
 
 **Arquivo Principal:** [config/settings.json](config/settings.json)
 
-### Paths Configurados:
+### Paths Configurados (exemplo real):
 ```json
 {
-  "paths": {
-    "programacao": "D:\\RADIO\\PROGRAMACAO",
-    "programa_musicas": "D:\\PROGRAMA_MUSICAS"
-  },
   "grade": {
     "pasta_musicas": "D:\\RADIO\\MUSICAS",
     "pasta_programacao": "D:\\RADIO\\PROGRAMACAO",
     "pasta_vinhetas": "D:\\RADIO\\VINHETAS",
     "pasta_spots": "D:\\RADIO\\SPOTS",
-    "pasta_boletins_raiz": "D:\\SERVIDOR\\BOLETINS"
+    "pasta_boletins_raiz": "D:\\SERVIDOR\\BOLETINS",
+    "pasta_drive_boletins": "D:\\SERVIDOR\\DRIVE\\RADIO TJRN CONTEÚDO\\00_PRODUCAO_2026\\01_BOLETINS_DIARIOS",
+    "pasta_drive_njud": "D:\\SERVIDOR\\DRIVE\\RADIO TJRN CONTEÚDO\\00_PRODUCAO_2026\\02_JORNAIS_NJUD"
   }
 }
 ```
-
-### Verificar Conectividade:
-1. **ZaraRadio:** Necessário para operação completa
-2. **vMix:** Status verificável via HTTP 172.16.217.226:8088
-3. **Diretórios D:\RADIO\*:** Devem existir e ser acessíveis
 
 ---
 
@@ -128,9 +94,9 @@ python main.py
 ### Arquivos de Log:
 ```
 D:\RADIO\LOG ZARARADIO\omni_core.log       (Log principal)
-D:\RADIO\LOG ZARARADIO\test_startup.log    (Teste de inicialização)
 logs/omni_system.log                       (Local em projeto)
 logs/radio_agent_*.log                     (Histórico de execuções)
+D:\RADIO\logs\engine_history.json          (Histórico de artistas/músicas — anti-repetição)
 ```
 
 ### Verificar Status:
@@ -139,14 +105,13 @@ logs/radio_agent_*.log                     (Histórico de execuções)
 Get-Content "D:\RADIO\LOG ZARARADIO\omni_core.log" -Tail 50 -Wait
 
 # Ou via API
-curl http://localhost:8001/api/status
+curl http://localhost:8001/api/status/player/now
+curl http://localhost:8001/api/engine/stats
 ```
 
 ---
 
 ## 🔗 ACESSO À INTERFACE WEB
-
-Quando o sistema estiver rodando:
 
 ```
 Dashboard: http://localhost:8001
@@ -158,55 +123,31 @@ API Docs: http://localhost:8001/docs
 
 ## 🛠️ TROUBLESHOOTING
 
-### Problema: "Não é admin, tentando solicitar elevação..."
-**Solução:** Sistema continua normalmente em modo reduzido. Para acesso completo:
-1. Abra PowerShell como Administrador
-2. Execute: `python start.py`
-
 ### Problema: API não inicia
-**Verificar:**
 ```powershell
-# Verificar porta 8001
 netstat -ano | findstr :8001
-
-# Verificar imports
-python test_startup.py
-
-# Ver erro completo
 python main.py 2>&1 | Out-String
 ```
 
 ### Problema: vMix não conecta
-**Verificar:**
 ```powershell
-# Testar conectividade
 Test-NetConnection 172.16.217.226 -Port 8088
-
-# Ver logs
-Get-Content logs\engine_history.json
 ```
+
+### Problema: Spider não puxa boletins
+Verificar se `config/settings.json` tem `grade.pasta_drive_boletins` apontando para o servidor real (`D:\SERVIDOR\DRIVE\...`). O caminho antigo `H:\Meu Drive\...` não existe.
+
+### Problema: mesmo artista se repete na grade
+Verificar `D:\RADIO\logs\engine_history.json` (janela de 30 artistas). O `clean_artist_name` extrai o artista do padrão `ARTISTA - TÍTULO`. Se o metadado estiver vazio, o nome do arquivo deve seguir esse padrão.
 
 ---
 
-## 📦 DEPENDÊNCIAS INSTALADAS
+## 📦 DEPENDÊNCIAS PRINCIPAIS
 
 ```
-requests>=2.33.0
-pywinauto>=0.6.9
-psutil>=7.2.2
-pycaw>=20251023
-pywin32>=311
-comtypes>=1.4.16
-mutagen>=1.47.0
-pytest>=9.0.3
-fastapi>=0.111.0
-uvicorn>=0.30.0
-sqlalchemy>=2.0.0
-apscheduler>=3.10.0
-Pillow>=10.3.0
-pystray>=0.19.0
-librosa>=0.10.1
-soundfile>=0.12.1
+requests, psutil, pycaw, pywin32, comtypes, mutagen,
+pytest, fastapi, uvicorn, sqlalchemy, apscheduler,
+Pillow, pystray, librosa, soundfile
 ```
 
 ---
@@ -218,21 +159,22 @@ soundfile>=0.12.1
 - [ ] Guardian Service monitorando
 - [ ] Workers registrados e ativos
 - [ ] vMix conectado
-- [ ] Diretórios D:\RADIO\* existem e são acessíveis
-- [ ] Logs sendo gerados em D:\RADIO\LOG ZARARADIO\
+- [ ] Diretórios D:\RADIO\* e D:\SERVIDOR\* existem e são acessíveis
+- [ ] Logs sendo gerados
 - [ ] Dashboard web acessível
 - [ ] WebSocket conectado para live updates
+- [ ] Spider consegue puxar boletins (testar "ATIVAR SPIDER")
 
 ---
 
 ## 📞 SUPORTE
 
-Para problemas ou questões:
 1. Verificar logs em `D:\RADIO\LOG ZARARADIO\`
-2. Executar `python test_startup.py` para diagnóstico
-3. Revisar arquivo `LAUNCHER_README.md`
+2. Consultar [docs/AUDIT_DOCUMENTATION.md](docs/AUDIT_DOCUMENTATION.md)
+3. Consultar [docs/regras_programacao.md](docs/regras_programacao.md)
 
 ---
 
 **Omni Core V2 - Sistema de Automação de Rádio**  
-Versão: 2.0.0 | Data: 2026-05-13 | Status: ✓ OPERACIONAL
+Versão: 2.1.0 | Data: 2026-08-04 | Status: ✓ OPERACIONAL
+

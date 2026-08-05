@@ -200,6 +200,21 @@ class RadioMonitor:
 
     def ensure_apps_running(self):
         """Ensures ZaraRadio and BUTT instances are active."""
+        # ── MODO FONTE EXTERNA (ex.: NDI / Tribunal Pleno) ──
+        # Se uma transmissão externa está ativa, NÃO reiniciamos/forçamos o
+        # ZaraRadio — ele DEVE ficar pausado enquanto o NDI transmitting.
+        # O BUTT continua transmitindo a fonte externa.
+        try:
+            from services.external_source_service import external_source_service
+            if external_source_service.is_active():
+                self.logger.info(
+                    f"[FONTE-EXTERNA] Transmissão externa ativa ({external_source_service.to_dict().get('program')}). "
+                    f"Autocura do ZaraRadio INTENCIONALMENTE SUSPENSA — não reiniciar o playout."
+                )
+                return
+        except Exception:
+            pass
+
         apps_status = self.check_processes()
         zara_set = self.settings.get("apps", {}).get("zararadio", {})
 
@@ -459,7 +474,15 @@ class RadioMonitor:
         self.logger.info("--- Monitoring Cycle START ---")
         autopilot_active = self.is_autopilot_active()
         reboot_settings = self.settings.get("reboot_prevention", {})
-        
+
+        # Avalia agenda automática de transmissão externa (NDI / Tribunal Pleno)
+        try:
+            from services.external_source_service import external_source_service
+            external_source_service.evaluate_schedule()
+            external_active = external_source_service.is_active()
+        except Exception:
+            external_active = False
+
         if autopilot_active:
             self.ensure_apps_running()
             from services.guardian_service import guardian_instance
@@ -470,7 +493,7 @@ class RadioMonitor:
         process_status = self.check_processes()
         
         if autopilot_active:
-            if not self.suspended and not self.live_session_active:
+            if not self.suspended and not self.live_session_active and not external_active:
                 is_active = self.check_playback_activity()
                 if not is_active and process_status.get("zararadio") == "Running":
                     self.trigger_play_on_zara()

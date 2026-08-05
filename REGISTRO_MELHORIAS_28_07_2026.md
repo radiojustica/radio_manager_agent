@@ -156,3 +156,47 @@ O programa foi lançado e está rodando com sucesso:
 | `services/ntfy_listener_service.py` | Normalização de texto, matching tolerante, anti-loop reforçado |
 | `PLANO_MELHORIAS_RADIO_MANAGER_AGENT.md` | Atualizado com status real das melhorias |
 | `frontend/dist/` | Rebuildado com todas as atualizações |
+
+---
+
+## 6. Atualizações de 04/08/2026 (Sessão de Consolidação)
+
+### 6.1 Segurança Acústica — regra não negociável violada e corrigida
+**Problema:** `scripts/audio_manager.py` continha `limit_app_volume()` que chamava `volume.SetMasterVolume(...)` em ZaraRadio.exe e NDI Monitor.exe, e `core/monitor.py` o invocava 5× por ciclo. Isso violava a regra "o sistema nunca modifica volume".
+**Correção:**
+- `limit_app_volume` **removido** de `scripts/audio_manager.py`; a classe `AudioManager` agora é **estritamente somente-leitura** (mede pico/dB da placa USB via `IAudioMeterInformation`).
+- As 5 chamadas em `core/monitor.py` foram removidas e substituídas por aviso de log (`check_volume_safety`), sem qualquer `SetMasterVolume`.
+- Verificado: `grep` confirma zero chamadas a `limit_app_volume`/`SetMasterVolume` no código.
+
+### 6.2 Comando de volume manual via ntfy
+**Pedido:** enviar `volume 80%` pelo ntfy e ajustar a placa USB de transmissão.
+**Implementação:** `scripts/volume_control.py` (`set_usb_device_volume`) + parser `parse_volume_command` integrado ao `services/ntfy_listener_service.py`. A placa alvo é `INTERNO (2- USB Audio CODEC)` / `USB Audio CODEC` (busca por `["usb audio codec", "interno"]`). **É ação manual explícita do operador** — nunca chamada pelo monitor automático, preservando a regra de segurança.
+
+### 6.3 Spider corrigido (não puxava boletins/jornais)
+**Problema:** `scripts/omni_spider.py` usava `H:\Meu Drive\...` (inexistente) → todos os alvos falhavam.
+**Correção:** `_load_drive_base()` lê `config/settings.json` (`grade.pasta_drive_boletins`) e resolve o caminho real do servidor. NJUD agora copia para `JORNAL_NJUD.mp3` plano (sem subpastas erradas). Verificado: `updated_total: 56` (49 boletins, 5 NJUD, Giro #104, Levemente #111).
+
+### 6.4 Status do BUTT (flicker) e VU meter real
+**Problema:** status oscilava verde/amarelo (usava CPU do processo).
+**Correção:** `analisar_instancias_butt` em `routers/status.py` agora usa `ESTABLISHED` (socket TCP Icecast) = `transmitindo` (estável). Payload inclui `connected` e `db` reais (pico da placa USB) para o VU meter do dashboard. Removida a waveform morta do frontend; card de transmissão agora mostra servidores + VU meter.
+
+### 6.5 Não-repetição de artista na playlist
+**Problema:** mesmo artista se repetia no bloco (print do ZaraRadio confirmava: `Ivanildo do Sax`, `Camaroes` repetindo).
+**Causa:** `scripts/artist_cleaner.py` devolvia o título inteiro como "artista", derrotando a regra de histórico já existente (`GestorFila.historico_artistas`, 30 artistas / 80 músicas, cross-bloco).
+**Correção:** `clean_artist_name` reescrito para extrair o ARTISTA (antes de ` - `), normalizar e limpar sufixos. Não foi adicionada nenhuma regra conflitante — a regra existente agora funciona. Teste de regressão `test_montar_bloco_sem_repeticao_de_artista` criado (com isolamento do `engine_history.json`). `pytest` completo: **87 passed, 0 failed**.
+
+### 6.6 Status de Testes
+- `pytest` completo: **87 passed, 0 failed** (a falha pré-existente de `test_sazonalidade` não se reproduziu).
+
+### 6.7 Expurgação de Mocks (04/08/2026 — pass 2)
+Removidos dados fictícios remanescentes no frontend e backend, em prol do objetivo "zero mocks em rádio real":
+- **`frontend/src/App.jsx`**: Nível de Pico agora usa `player.db` real (era `energy*10`); LUFS e Range Dinâmico mostram `—` em vez de fórmulas arbitrárias (`energy*8+6`, `energy*14+3`); RAM do ZaraRadio/BUTT usa `systemHealth.ram_available_gb`/`ram_total_gb` reais (eram multiplicadores `ram_percent*2.1`/`*0.8`); VU meter e mini-waveforms reagem ao `player.db` real; gráfico SVG "MÉTRICA 100%" (histórico de rede falso) substituído por bloco de conectividade real (online/offline + uptime); comentários `MOCKUP 1/2` → `DADOS REAIS`.
+- **`scripts/audio_manager.py`**: `get_master_peak` corrigido para encontrar a placa USB de transmissão real (`RADIO (USB Audio CODEC )` / `INTERNO (2- USB Audio CODEC )`) via keywords — antes buscava "RADIO" e caía no speaker default, retornando `db=None`. Agora retorna o MAIOR pico entre as placas USB casadas (a ativa).
+- **`routers/status.py`**: chamada `get_master_peak("RADIO")` → `get_master_peak("INTERNO")`; removida linha `interfaces = ... or True` (placeholder morto que fabricava `[True]`).
+- **`scripts/log_analyser.py`**: bloco `__main__` com `mock_settings` substituído por leitura real de `config/settings.json`; `analyse_butt` sem rótulo "placeholder".
+
+**Verificação em produção:** `/api/status/player/now` retorna `db: -15.5, connected: True`; `/api/status/hardware/realtime` retorna `uptime: 7d 2h`, `ram_available_gb: 2.1`, `network_interfaces: [{Ethernet, 172.16.194.19, bytes reais}]`. `pytest`: **87 passed, 0 failed**.
+
+### 6.8 Barra de "Progresso" Falsa no Cockpit (04/08/2026)
+O card "STATUS DA PROGRAMAÇÃO" tinha uma barra de progresso **estática e falsa**: `width: player.status === 'playing' ? '55%' : '0%'` (sempre 55% quando tocando) com rótulos fixos "AO VIVO" / "TRANSMITINDO" — dava a impressão de transmissão ao vivo sem refletir estado real (violação da regra de zero-mocks).
+**Correção:** substituída por **medidor de nível de áudio real** usando `player.db`/`player.connected` (dB real da placa USB): a barra preenche conforme o nível (-60dB→0% a 0dB→100%), muda de cor por faixa (verde/amarelo/vermelho) e os rótulos agora são dinâmicos (`db real` ou "SILÊNCIO" à esquerda; "TRANSMITINDO"/`PARADO` à direita conforme `player.status`). `npm run build` OK; backend validado retornando `db: -15.5, connected: True`.

@@ -10,6 +10,7 @@ import AcquisitionPage from './components/AcquisitionPage';
 import AutopilotCard from './components/AutopilotCard';
 import SchedulePage from './components/SchedulePage';
 import QuarantineCard from './components/QuarantineCard';
+import ProcessMonitor from './components/ProcessMonitor';
 
 /* ── ICONS ─────────────────────────────────────────── */
 const Icon = {
@@ -48,12 +49,26 @@ const Icon = {
       <circle cx="12" cy="12" r="2"/><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5z"/><path d="M12 2a10 10 0 0 1 10 10 10 10 0 0 1-10 10 10 10 0 0 1-10-10 10 10 0 0 1 10-10z"/>
     </svg>
   ),
+  Radio: () => (
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="2"/><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5z"/><path d="M12 2a10 10 0 0 1 10 10 10 10 0 0 1-10 10 10 10 0 0 1-10-10 10 10 0 0 1 10-10z"/>
+    </svg>
+  ),
   Calendar: () => (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
       <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
     </svg>
   ),
 };
+
+/* ── Tooltip informativo para termos técnicos ── */
+const TermTooltip = ({ label, tip }) => (
+  <span className="term-tip">
+    <span>{label}</span>
+    <span className="tip-dot" aria-label="informação">i</span>
+    <span className="tip-body"><strong>{label}</strong>{tip}</span>
+  </span>
+);
 
 /* ── METADADOS DAS PÁGINAS ─────────────────────────── */
 const PAGES = {
@@ -77,7 +92,14 @@ function getDaypart(hour) {
 
 /* ── COMPONENTE PRINCIPAL DO APP ───────────────────── */
 function InnerApp() {
-  const [activeTab, setActiveTab] = useState('monitoramento');
+  // Persiste a aba ativa no localStorage para sobreviver a reloads.
+  const [activeTab, setActiveTab] = useState(() => {
+    try {
+      const saved = localStorage.getItem('omni_active_tab');
+      if (saved && PAGES[saved]) return saved;
+    } catch (e) { /* localStorage indisponível: ignora */ }
+    return 'monitoramento';
+  });
   const [stats, setStats] = useState({ total: 0, auditadas: 0, redflags: 0, health: null, energia_dist: {}, top_estilos: null, top_artistas: null });
   const [mood, setMood] = useState('Ensolarado');
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -86,11 +108,42 @@ function InnerApp() {
   const [systemLogs, setSystemLogs] = useState([]);
   const [dbQueue, setDbQueue] = useState([]);
   const { player, systemHealth, streamingInfo, connected } = useWsData();
+  const [externalSource, setExternalSource] = useState({ active: false, source: null, program: null, started_at: null, manual: false });
+
+  // Sincroniza o estado da transmissão externa com o payload do backend
+  useEffect(() => {
+    if (player && player.external_source) setExternalSource(player.external_source);
+  }, [player]);
+
+  const toggleExternalSource = async () => {
+    try {
+      const endpoint = externalSource.active ? '/api/external-source/stop' : '/api/external-source/start';
+      const resp = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: externalSource.active ? undefined : JSON.stringify({ source: 'NDI', program: 'Tribunal Pleno' })
+      });
+      const data = resp.ok ? await resp.json() : null;
+      if (data) {
+        setExternalSource(data);
+        showToast(data.active ? `📡 Transmissão externa INICIADA (${data.source} / ${data.program}).` : '✅ Transmissão externa encerrada. ZaraRadio retomado.');
+      } else {
+        showToast('⚠️ Falha ao comunicar com o backend.');
+      }
+    } catch (e) {
+      showToast('❌ Erro de comunicação.');
+    }
+  };
 
   const showToast = (msg) => {
     setActionToast(msg);
     setTimeout(() => setActionToast(null), 4000);
   };
+
+  // Persiste a aba ativa a cada troca (nav ou ação programática).
+  useEffect(() => {
+    try { localStorage.setItem('omni_active_tab', activeTab); } catch (e) { /* ignora */ }
+  }, [activeTab]);
 
 
   useEffect(() => {
@@ -299,52 +352,129 @@ function InnerApp() {
           />
         </div>
 
-        {/* ── COCKPIT DE TRANSMISSÃO (MOCKUP 1) ── */}
+        {/* ── COCKPIT DE TRANSMISSÃO (DADOS REAIS) ── */}
         {activeTab === 'monitoramento' && (
           <div className="cockpit-grid fade-in">
             {/* CARD 1: LIVE STATUS (PLAYER & CONTROLE) */}
             <div className="card cockpit-card-status">
               <div className="section-header" style={{ marginBottom: '1.25rem' }}>
                 <div className="section-title">
-                  <div className="accent-line" style={{ background: player.status === 'playing' ? 'var(--color-playing)' : 'var(--color-stopped)' }} />
+                  <div className="accent-line" style={{ background: externalSource.active ? 'var(--accent-sky)' : (player.status === 'playing' ? 'var(--color-playing)' : 'var(--color-stopped)') }} />
                   STATUS DA PROGRAMAÇÃO
                 </div>
-                <span className={`status-badge ${player.status === 'playing' ? 'playing' : 'stopped'}`}>
-                  {player.status === 'playing' ? 'NO AR' : 'PARADO'}
-                </span>
+                {externalSource.active ? (
+                  <span className="status-badge" style={{ background: 'rgba(56,189,248,0.12)', color: 'var(--accent-sky)', border: '1px solid var(--accent-sky)' }}>
+                    NDI AO VIVO
+                  </span>
+                ) : (
+                  <span className={`status-badge ${player.status === 'playing' ? 'playing' : 'stopped'}`}>
+                    {player.status === 'playing' ? 'NO AR' : 'PARADO'}
+                  </span>
+                )}
               </div>
+
+              {externalSource.active && (
+                <div style={{ marginBottom: '1rem', padding: '0.6rem 0.8rem', borderRadius: '8px', background: 'rgba(56,189,248,0.08)', border: '1px solid rgba(56,189,248,0.25)' }}>
+                  <div style={{ fontSize: '0.7rem', fontWeight: 800, color: 'var(--accent-sky)', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
+                    📡 Transmissão Externa Ativa
+                  </div>
+                  <div style={{ fontSize: '0.95rem', fontWeight: 800, color: 'var(--text-primary)', marginTop: '2px' }}>
+                    {externalSource.program || 'Tribunal Pleno'} — via {externalSource.source || 'NDI'}
+                  </div>
+                  <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: '2px' }}>
+                    ZaraRadio pausado intencionalmente · Autocura suspensa
+                    {externalSource.manual ? ' · (manual)' : ' · (agenda automática)'}
+                  </div>
+                </div>
+              )}
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
                 <div>
                   <div style={{ fontSize: '0.65rem', fontWeight: 800, color: 'var(--text-muted)', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: '0.25rem' }}>
-                    Tocando Agora:
+                    {externalSource.active ? 'Evento ao Vivo:' : 'Tocando Agora:'}
                   </div>
                   <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                    {player.title || 'Música de Programação — Sem Áudio Ativo'}
+                    {externalSource.active
+                      ? (externalSource.program || 'Transmissão Externa (NDI)')
+                      : (player.title || 'Música de Programação — Sem Áudio Ativo')}
                   </h2>
                   <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600, marginTop: '2px' }}>
-                    TRANSMISSÃO DIGITAL VIA ZARARADIO ENGINE
+                    {externalSource.active ? 'ÁUDIO EXTERNO (NDI) → BUTT' : 'TRANSMISSÃO DIGITAL VIA ZARARADIO ENGINE'}
                   </p>
+                  {/* Energia calculada da faixa em reprodução (0..1 do backend) */}
+                  {!externalSource.active && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginTop: '0.6rem' }}>
+                      <span style={{ fontSize: '0.62rem', color: 'var(--text-muted)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                        Energia da Faixa
+                      </span>
+                      <div style={{ flexGrow: 1, maxWidth: '180px', height: '6px', background: 'rgba(255,255,255,0.06)', borderRadius: '3px', overflow: 'hidden' }}>
+                        <div style={{
+                          width: `${(player.energy != null ? Math.max(0, Math.min(1, player.energy)) : 0) * 100}%`,
+                          height: '100%',
+                          background: 'linear-gradient(90deg, #22c55e, #fbbf24)',
+                          borderRadius: '3px'
+                        }} />
+                      </div>
+                      <span style={{ fontSize: '0.78rem', fontWeight: 800, color: 'var(--text-primary)' }}>
+                        {(player.energy != null ? player.energy : 0).toFixed(1)}
+                        <span style={{ color: 'var(--text-muted)', fontWeight: 600, fontSize: '0.65rem' }}> / 1.0</span>
+                      </span>
+                    </div>
+                  )}
                 </div>
 
-                {/* Progresso do Áudio */}
+                {/* Controle de Transmissão Externa (NDI / Tribunal Pleno) */}
+                <button
+                  onClick={toggleExternalSource}
+                  style={{
+                    alignSelf: 'flex-start',
+                    padding: '0.5rem 1rem',
+                    borderRadius: '8px',
+                    border: externalSource.active ? '1px solid var(--accent-danger)' : '1px solid var(--accent-sky)',
+                    background: externalSource.active ? 'rgba(239,68,68,0.12)' : 'rgba(56,189,248,0.12)',
+                    color: externalSource.active ? 'var(--accent-danger)' : 'var(--accent-sky)',
+                    fontWeight: 800,
+                    fontSize: '0.78rem',
+                    cursor: 'pointer',
+                    letterSpacing: '0.5px'
+                  }}
+                >
+                  {externalSource.active ? '■ ENCERRAR TRANSMISSÃO EXTERNA' : '▶ INICIAR TRANSMISSÃO EXTERNA (NDI)'}
+                </button>
+
+                {/* Nível de Áudio AO VIVO (dado real da placa USB) */}
                 <div>
-                  <div className="progress-track" style={{ height: '6px', borderRadius: '3px' }}>
-                    <div 
-                      className="progress-fill" 
-                      style={{ 
-                        width: player.status === 'playing' ? '55%' : '0%', 
-                        background: 'var(--accent-primary)',
-                        height: '100%',
-                        borderRadius: '3px',
-                        boxShadow: '0 0 8px var(--accent-primary)'
-                      }} 
-                    />
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '6px', fontWeight: 700 }}>
-                    <span>AO VIVO</span>
-                    <span>TRANSMITINDO</span>
-                  </div>
+                  {(() => {
+                    const db = player.connected ? player.db : -60.0;
+                    const levelNorm = Math.max(0, Math.min(1, (db + 60) / 60)); // -60dB..0dB -> 0..1
+                    const pct = (levelNorm * 100).toFixed(1);
+                    const color = levelNorm > 0.9 ? 'var(--accent-danger)'
+                      : levelNorm > 0.7 ? 'var(--accent-warning)'
+                      : 'var(--accent-primary)';
+                    return (
+                      <>
+                        <div className="progress-track" style={{ height: '6px', borderRadius: '3px' }}>
+                          <div
+                            className="progress-fill"
+                            style={{
+                              width: `${pct}%`,
+                              background: color,
+                              height: '100%',
+                              borderRadius: '3px',
+                              boxShadow: `0 0 8px ${color}`,
+                              transition: 'width 0.2s ease-out'
+                            }}
+                          />
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '6px', fontWeight: 700 }}>
+                          <span>{player.connected ? `${db.toFixed(1)} dB` : 'SILÊNCIO'}</span>
+                          <span style={{ color: player.status === 'playing' ? 'var(--accent-success)' : 'var(--text-muted)' }}>
+                            {player.status === 'playing' ? 'TRANSMITINDO' : 'PARADO'}
+                          </span>
+                        </div>
+                      </>
+                    );
+                  })()}
                 </div>
               </div>
             </div>
@@ -378,8 +508,13 @@ function InnerApp() {
                                 <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: color, display: 'inline-block' }} />
                                 <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>{label}</span>
                               </span>
-                              <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontWeight: 800, textTransform: 'uppercase' }}>
-                                {statusText}
+                              <span style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                                <span style={{ fontSize: '0.62rem', color: 'var(--text-muted)', fontWeight: 700 }}>
+                                  {(inst.cpu_percent != null) ? `CPU ${inst.cpu_percent}%` : ''} {(inst.mem_mb != null) ? `· ${inst.mem_mb} MB` : ''}
+                                </span>
+                                <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontWeight: 800, textTransform: 'uppercase' }}>
+                                  {statusText}
+                                </span>
                               </span>
                             </div>
                           );
@@ -389,23 +524,6 @@ function InnerApp() {
                       )}
                     </div>
                   </div>
-                </div>
-
-                {/* VU METER VERTICAL */}
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0 }}>
-                  <div className="vu-meter-vertical">
-                    {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15].map(seg => {
-                      const threshold = (seg / 15) * 5;
-                      const isOn = player.connected ? player.energy >= threshold : false;
-                      const colorClass = seg > 13 ? 'red' : seg > 10 ? 'yellow' : 'green';
-                      return (
-                        <div key={seg} className={`vu-meter-segment ${isOn ? 'on' : ''} ${colorClass}`} />
-                      );
-                    })}
-                  </div>
-                  <span style={{ fontSize: '0.55rem', fontWeight: 800, color: 'var(--text-muted)', marginTop: '4px', letterSpacing: '0.5px' }}>
-                    {player.connected ? `${player.db.toFixed(1)} dB` : '—'}
-                  </span>
                 </div>
               </div>
             </div>
@@ -422,46 +540,50 @@ function InnerApp() {
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                {/* Nível de Pico */}
+                {/* Loudness (curto-prazo, derivado do dB real) */}
                 <div style={{ background: 'rgba(0,0,0,0.15)', padding: '1rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.02)' }}>
-                  <div style={{ fontSize: '0.62rem', color: 'var(--text-muted)', fontWeight: 800, textTransform: 'uppercase' }}>Nível de Pico</div>
+                  <div style={{ fontSize: '0.62rem', color: 'var(--text-muted)', fontWeight: 800, textTransform: 'uppercase' }}>
+                    <TermTooltip label="Loudness (Curto-Prazo)" tip="Volume perceptual médio da janela recente de áudio (≈8s), em LUFS. Diferente do pico, reflete a 'altura sonora' percebida. Valores entre -23 e -14 LUFS são típicos de rádio." />
+                  </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: '4px' }}>
-                    <span style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--text-primary)' }}>{player.status === 'playing' ? `-${(player.energy * 10).toFixed(1)} dB` : '—'}</span>
+                    <span style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--text-primary)' }}>
+                      {player.connected && player.lufs_st != null ? `${player.lufs_st} LUFS` : '—'}
+                    </span>
                     <svg width="60" height="20" viewBox="0 0 60 20" style={{ marginBottom: '4px' }}>
-                      <path d={player.status === 'playing' ? `M0,${15 - player.energy * 10} Q10,${2 + player.energy * 5} 20,${16 - player.energy * 8} T40,${5 + player.energy * 3} T60,${18 - player.energy * 6}` : 'M0,15 Q10,2 20,16 T40,5 T60,18'} fill="none" stroke="var(--accent-primary)" strokeWidth="1.5" />
+                      <path d={player.connected && player.lufs_st != null ? `M0,${10 - Math.max(0, -player.lufs_st) * 0.06} Q15,${18 - Math.max(0, -player.lufs_st) * 0.12} 30,${8 + Math.max(0, -player.lufs_st) * 0.03} T60,${12 - Math.max(0, -player.lufs_st) * 0.06}` : 'M0,10 Q15,18 30,8 T60,12'} fill="none" stroke="#22c55e" strokeWidth="1.5" />
                     </svg>
                   </div>
                 </div>
 
-                {/* Loudness */}
-                <div style={{ background: 'rgba(0,0,0,0.15)', padding: '1rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.02)' }}>
-                  <div style={{ fontSize: '0.62rem', color: 'var(--text-muted)', fontWeight: 800, textTransform: 'uppercase' }}>Loudness (Integrado)</div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: '4px' }}>
-                    <span style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--text-primary)' }}>{player.status === 'playing' ? `-${(player.energy * 8 + 6).toFixed(1)} LUFS` : '—'}</span>
-                    <svg width="60" height="20" viewBox="0 0 60 20" style={{ marginBottom: '4px' }}>
-                      <path d={player.status === 'playing' ? `M0,${10 - player.energy * 4} Q15,${18 - player.energy * 8} 30,${8 + player.energy * 2} T60,${12 - player.energy * 4}` : 'M0,10 Q15,18 30,8 T60,12'} fill="none" stroke="#22c55e" strokeWidth="1.5" />
-                    </svg>
-                  </div>
-                </div>
-
-                {/* Dynamic Range */}
+                {/* Dynamic Range (estimado do sinal real) */}
                 <div style={{ background: 'rgba(0,0,0,0.15)', padding: '1rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.02)' }}>
                   <div style={{ fontSize: '0.62rem', color: 'var(--text-muted)', fontWeight: 800, textTransform: 'uppercase' }}>Range Dinâmico (Estimado)</div>
                   <div style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--text-primary)', marginTop: '4px' }}>
-                    {player.status === 'playing' ? `${(player.energy * 14 + 3).toFixed(1)} dB` : '—'}
+                    {player.connected && player.dynamic_range != null ? `${player.dynamic_range} dB` : '—'}
                   </div>
                 </div>
 
-                {/* Listeners */}
+                {/* Uptime da Transmissão (real: há quanto o áudio está ao vivo) */}
                 <div style={{ background: 'rgba(0,0,0,0.15)', padding: '1rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.02)' }}>
-                  <div style={{ fontSize: '0.62rem', color: 'var(--text-muted)', fontWeight: 800, textTransform: 'uppercase' }}>Ouvintes (Icecast)</div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '4px' }}>
-                    <span style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--text-primary)' }}>
-                      {streamingInfo.enabled ? (streamingInfo.listeners >= 0 ? streamingInfo.listeners : '—') : '—'}
-                    </span>
-                    <span style={{ fontSize: '0.68rem', fontWeight: 800, color: streamingInfo.enabled && streamingInfo.listeners >= 0 ? 'var(--accent-success)' : 'var(--text-muted)' }}>
-                      {streamingInfo.enabled ? (streamingInfo.listeners >= 0 ? 'NO AR' : 'SEM DADOS') : 'MONITOR FORA'}
-                    </span>
+                  <div style={{ fontSize: '0.62rem', color: 'var(--text-muted)', fontWeight: 800, textTransform: 'uppercase' }}>Uptime da Transmissão</div>
+                  <div style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--text-primary)', marginTop: '4px' }}>
+                    {player.connected && player.status === 'playing'
+                      ? (() => {
+                          const s = player.transmission_uptime_seconds || 0;
+                          const h = Math.floor(s / 3600);
+                          const m = Math.floor((s % 3600) / 60);
+                          const sec = s % 60;
+                          return `${h > 0 ? h + 'h ' : ''}${m}m ${sec}s`;
+                        })()
+                      : '—'}
+                  </div>
+                </div>
+
+                {/* Silêncio (sessão) — segundos desde o último pico de áudio real */}
+                <div style={{ background: 'rgba(0,0,0,0.15)', padding: '1rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.02)' }}>
+                  <div style={{ fontSize: '0.62rem', color: 'var(--text-muted)', fontWeight: 800, textTransform: 'uppercase' }}>Silêncio (Sessão)</div>
+                  <div style={{ fontSize: '1.4rem', fontWeight: 800, color: (player.silence_seconds || 0) > 3 ? 'var(--accent-danger)' : 'var(--text-primary)', marginTop: '4px' }}>
+                    {player.connected ? `${(player.silence_seconds || 0).toFixed(1)} s` : '—'}
                   </div>
                 </div>
               </div>
@@ -597,12 +719,41 @@ function InnerApp() {
                 </div>
               </div>
             </div>
+
+            {/* CARD 7: LOG COMPLETO DO SISTEMA (reutiliza systemLogs do poll) */}
+            <div className="card" style={{ gridColumn: '1 / -1' }}>
+              <div className="section-header" style={{ marginBottom: '1rem' }}>
+                <div className="section-title">
+                  <div className="accent-line" style={{ background: 'var(--accent-sky)' }} />
+                  LOG DO SISTEMA (TEMPO REAL)
+                </div>
+                <span style={{ fontSize: '0.62rem', color: 'var(--text-muted)', fontWeight: 800 }}>
+                  {systemLogs.length} linhas
+                </span>
+              </div>
+              <div style={{ maxHeight: '260px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '2px', background: 'rgba(0,0,0,0.25)', borderRadius: '8px', padding: '0.6rem' }}>
+                {systemLogs.length > 0 ? (
+                  systemLogs.slice(-40).reverse().map((line, idx) => (
+                    <div key={idx} style={{ fontSize: '0.66rem', fontFamily: 'monospace', color: 'var(--text-secondary)', whiteSpace: 'pre-wrap', wordBreak: 'break-word', borderBottom: '1px solid rgba(255,255,255,0.03)', paddingBottom: '2px' }}>
+                      {line}
+                    </div>
+                  ))
+                ) : (
+                  <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Carregando logs do sistema…</div>
+                )}
+              </div>
+            </div>
+
           </div>
         )}
 
-        {/* ── MONITOR DE INFRAESTRUTURA (MOCKUP 2) ── */}
+        {/* ── MONITOR DE INFRAESTRUTURA (DADOS REAIS) ── */}
         {activeTab === 'sistema' && (
           <div className="cockpit-grid fade-in">
+            {/* MONITORAMENTO DE PROCESSOS (ZaraRadio + todas as instâncias BUTT com CPU/RAM reais) */}
+            {/* grid-column 1/-1: ocupa a largura toda para não quebrar o grid 2-colunas abaixo */}
+            <ProcessMonitor player={player} systemHealth={systemHealth} style={{ gridColumn: '1 / -1' }} />
+
             {/* COLUNA ESQUERDA: SERVIDORES & REDE */}
             <div className="col-stack">
               {/* 1. CONECTIVIDADE DO SERVIDOR */}
@@ -656,7 +807,7 @@ function InnerApp() {
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '0.72rem', color: 'var(--text-secondary)', fontWeight: 600 }}>
                     <div>Status do Processo: <strong>{player.status === 'stopped' ? 'Dormindo' : 'Ativo'}</strong></div>
                     <div>Carga de CPU (SO): <strong>{systemHealth.cpu || stats?.health?.cpu || 0}%</strong></div>
-                    <div>Uso de RAM (SO): <strong>{systemHealth.ram_free_mb ? `${systemHealth.ram_free_mb} MB` : (stats?.health ? Math.round(stats.health.ram_percent * 2.1) : '—')} MB</strong></div>
+                    <div>Uso de RAM (SO): <strong>{systemHealth.ram_available_gb ? `${systemHealth.ram_available_gb} GB livres` : (systemHealth.ram_total_gb ? `${systemHealth.ram_total_gb} GB total` : '—')}</strong></div>
                     <div>Estado de Execução: <strong>{player.status === 'playing' ? 'Tocando' : player.status === 'frozen' ? 'CONGELADO' : 'Parado'}</strong></div>
                     </div>
                     <div style={{ 
@@ -676,7 +827,7 @@ function InnerApp() {
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '0.72rem', color: 'var(--text-secondary)', fontWeight: 600 }}>
                           <div style={{ textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>Janela: <strong>{butt.window_title}</strong></div>
                           <div>CPU Consumida: <strong>{butt.cpu}%</strong></div>
-                          <div>Uso de RAM (Mapeado): <strong>~{systemHealth.ram_available_gb ? `${systemHealth.ram_available_gb} GB` : (stats?.health ? Math.round(stats.health.ram_percent * 0.8) : 65)} MB</strong></div>
+                          <div>Uso de RAM (Mapeado): <strong>~{systemHealth.ram_available_gb ? `${systemHealth.ram_available_gb} GB` : (systemHealth.ram_total_gb ? `${systemHealth.ram_total_gb} GB` : '—')} livre</strong></div>
                           <div>Transmissão Ativa: <strong>{butt.has_connection ? 'Estabelecida' : 'Sem Conexão'}</strong></div>
                         </div>
                         <div style={{ 
@@ -700,46 +851,28 @@ function InnerApp() {
                 </div>
               </div>
 
-              {/* 3. HISTÓRICO DE CONECTIVIDADE */}
+              {/* 3. CONECTIVIDADE DE REDE (TEMPO REAL) */}
               <div className="card">
                 <div className="section-header" style={{ marginBottom: '1rem' }}>
                   <div className="section-title">
-                    <div className="accent-line" style={{ background: 'var(--accent-success)' }} />
-                    HISTÓRICO DE ESTABILIDADE DA INTERNET (ÚLTIMAS 24H)
+                    <div className="accent-line" style={{ background: stats?.health?.network_online ? 'var(--accent-success)' : 'var(--accent-danger)' }} />
+                    ESTABILIDADE DE REDE (TEMPO REAL)
                   </div>
-                  <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontWeight: 800 }}>MÉTRICA 100%</span>
+                  <span style={{ fontSize: '0.65rem', color: stats?.health?.network_online ? 'var(--accent-success)' : 'var(--accent-danger)', fontWeight: 800 }}>
+                    {stats?.health?.network_online ? 'ONLINE' : 'OFFLINE'}
+                  </span>
                 </div>
 
-                <div className="network-chart-container">
-                  <svg width="100%" height="100" viewBox="0 0 600 100" preserveAspectRatio="none">
-                    <defs>
-                      <linearGradient id="net-glow" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="var(--accent-success)" stopOpacity="0.25"/>
-                        <stop offset="100%" stopColor="var(--accent-success)" stopOpacity="0.0"/>
-                      </linearGradient>
-                    </defs>
-                    <path 
-                      d="M0,10 L50,8 L100,12 L150,5 L200,9 L250,5 L300,14 L350,8 L400,12 L450,5 L500,9 L550,5 L600,8 L600,100 L0,100 Z" 
-                      fill="url(#net-glow)" 
-                    />
-                    <path 
-                      d="M0,10 L50,8 L100,12 L150,5 L200,9 L250,5 L300,14 L350,8 L400,12 L450,5 L500,9 L550,5 L600,8" 
-                      fill="none" 
-                      stroke="var(--accent-success)" 
-                      strokeWidth="2.5" 
-                    />
-                    {/* Linhas de Grade */}
-                    <line x1="0" y1="50" x2="600" y2="50" stroke="rgba(255,255,255,0.03)" strokeDasharray="5,5" />
-                    <line x1="0" y1="90" x2="600" y2="90" stroke="rgba(255,255,255,0.03)" strokeDasharray="5,5" />
-                  </svg>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.65rem', color: 'var(--text-muted)', fontWeight: 700, marginTop: '8px' }}>
-                    <span>00h</span>
-                    <span>04h</span>
-                    <span>08h</span>
-                    <span>12h</span>
-                    <span>16h</span>
-                    <span>20h</span>
-                    <span>24h</span>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.6rem 0.8rem', background: 'rgba(0,0,0,0.12)', border: '1px solid rgba(255,255,255,0.02)', borderRadius: '6px' }}>
+                    <span style={{ fontSize: '0.78rem', fontWeight: 800, color: 'var(--text-primary)' }}>Estado da Conexão</span>
+                    <span style={{ fontSize: '0.72rem', fontWeight: 800, color: stats?.health?.network_online ? 'var(--accent-success)' : 'var(--accent-danger)' }}>
+                      {stats?.health?.network_online ? 'CONECTADO' : 'SEM CONEXÃO'}
+                    </span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.6rem 0.8rem', background: 'rgba(0,0,0,0.12)', border: '1px solid rgba(255,255,255,0.02)', borderRadius: '6px' }}>
+                    <span style={{ fontSize: '0.78rem', fontWeight: 800, color: 'var(--text-primary)' }}>Uptime do Servidor</span>
+                    <span style={{ fontSize: '0.72rem', fontWeight: 800, color: 'var(--text-primary)' }}>{systemHealth.uptime_human || '—'}</span>
                   </div>
                 </div>
 

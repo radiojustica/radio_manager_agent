@@ -13,7 +13,12 @@ Este documento define os padrões obrigatórios para a geração da grade musica
 *   **Separação de Artista:** Um artista não pode se repetir em um intervalo de **30 músicas** (aprox. 2 horas de programação).
 *   **Separação de Música:** A mesma faixa não pode se repetir em um intervalo de **80 músicas** (aprox. 5 horas).
 *   **Normalização:** Nomes de artistas devem ser comparados em CAIXA ALTA e sem espaços extras.
+*   **Implementação:** A extração e normalização do artista é feita em `scripts/artist_cleaner.py` (`clean_artist_name`), que:
+    *   Quando o metadado `artista` é "Desconhecido"/vazio, extrai a **primeira parte antes de ` - `** do nome do arquivo (padrão `ARTISTA - TÍTULO`).
+    *   Normaliza caixa, remove acentos e pontuação, e limpa sufixos de edição (`Ao Vivo`, `Remix`, `Acústico`, etc.).
+    *   **NÃO** inclui o título da música no nome do artista — garantindo que faixas diferentes do mesmo artista colidam na mesma chave de histórico e sejam protegidas pela regra de repetição.
 *   **Tratamento de Desconhecidos:** Caso o metadado do artista seja "Desconhecido" ou vazio, o sistema deve tentar extrair o nome do arquivo ou usar um fallback genérico, mas mantendo a restrição de repetição por título/caminho.
+*   **Persistência:** O histórico de artistas/músicas é mantido em `D:\RADIO\logs\engine_history.json` (janela de 30 artistas / 80 músicas) e é **cross-bloco** (vale para toda a grade de 24h).
 
 ## 3. Dayparting (Energia Acústica)
 A energia das músicas deve seguir o clima do dia e a faixa horária:

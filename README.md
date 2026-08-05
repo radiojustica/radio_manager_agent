@@ -41,6 +41,12 @@ As definições de blocos de programação, diretórios locais e horários de ex
 *   **Processamento XML Seguro (XXE):** Parse de dados vindos do vMix configurados para bloquear entidades externas.
 *   **Blindagem do Frontend:** Componentes React como o [`NowPlayingCard.jsx`](file:///c:/Users/STREAMING/.gemini/antigravity/scratch/radio_manager_agent/frontend/src/components/NowPlayingCard.jsx) tratam a desserialização de JSON via Websocket dentro de blocos defensivos `try-catch` para evitar travamentos visuais.
 
+### 4. Regras de Segurança Acústica (NÃO NEGOCIÁVEL)
+O sistema respeita duas restrições operacionais do TJRN:
+*   **ZaraRadio nunca altera o dispositivo de áudio.**
+*   **O sistema NUNCA modifica volume automaticamente.** O [`scripts/audio_manager.py`](file:///c:/Users/STREAMING/.gemini/antigravity/scratch/radio_manager_agent/scripts/audio_manager.py) é estritamente somente-leitura (mede pico/dB para telemetria, não chama `SetMasterVolume`).
+*   **Controle de volume é manual e explícito:** o comando ntfy `volume NN%` (ex.: `volume 80`) ajusta apenas a placa de transmissão (`INTERNO / USB Audio CODEC`) via [`scripts/volume_control.py`](file:///c:/Users/STREAMING/.gemini/antigravity/scratch/radio_manager_agent/scripts/volume_control.py), e **nunca** é disparado pelo monitor automático. Qualquer modificação automática de volume é tratada como bug crítico.
+
 ---
 
 ## 🚀 Como Executar

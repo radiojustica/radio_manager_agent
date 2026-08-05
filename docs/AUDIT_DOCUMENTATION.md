@@ -3,8 +3,8 @@
 
 **Projeto:** Omni Core V2 — Radio Station Intelligence  
 **Repositório:** `radiojustica/radio_manager_agent`  
-**Versão:** 2.0.0  
-**Última atualização:** 2026-05-22  
+**Versão:** 2.1.0  \
+**Última atualização:** 2026-08-04  \
 **Responsável:** Pickle Rick (Lead Architect)  
 **Status:** ✅ Operacional
 
@@ -203,6 +203,18 @@ START_OMNI.bat
 
 ---
 
+## 8.1 Regras de Segurança Acústica (NÃO NEGOCIÁVEIS)
+
+Estas regras são impostas explicitamente e **não devem ser violadas por nenhuma refatoração**:
+
+1. **ZaraRadio nunca altera o dispositivo de áudio.** O ZaraRadio roda com a placa de saída fixa; o OmniCore não repassa nem altera essa configuração.
+2. **O sistema NUNCA modifica volume automaticamente.** Nenhum módulo de monitoramento/autopilot (`core/monitor.py`, `scripts/audio_manager.py`) chama `SetMasterVolume` / `SetVolume`. O `AudioManager` (`scripts/audio_manager.py`) é **estritamente somente-leitura** (mede pico/dB via `IAudioMeterInformation`), e serve apenas para exibir telemetria no dashboard (VU meter, dB).
+3. **Controle de volume é AÇÃO MANUAL EXPLÍCITA** do operador, via comando ntfy `volume NN%` (ex.: `volume 80`). Esse comando é tratado em `services/ntfy_listener_service.py` → `scripts/volume_control.py`, que aplica o volume **apenas** na placa de transmissão (`INTERNO (2- USB Audio CODEC)` / `USB Audio CODEC`) e **nunca** é chamado pelo monitor automático. Qualquer mudança automática de volume é considerada bug crítico.
+
+> **Histórico de correção:** em 2026-08, o `audio_manager.py` continha `limit_app_volume()` que chamava `SetMasterVolume` em ZaraRadio.exe/NDI Monitor.exe — violando a regra 2. O método foi **removido** e `core/monitor.py` teve as 5 chamadas a `limit_app_volume` eliminadas, substituídas por aviso de log somente-leitura (`check_volume_safety`).
+
+---
+
 ## 9. Bugs Corrigidos — Epic 2026-05-22
 
 ### BUG-01 — NameError derrubava o scheduler inteiro
@@ -260,5 +272,21 @@ python main.py
 
 ---
 
-*Documentação mestre — Pickle Rick. Wubba Lubba Dub Dub! 🥒*  
+## 12. Bugs Corrigidos — Epic 2026-08-04
+
+### BUG-04 — Spider não puxava boletins/jornais (caminho morto)
+**Arquivo:** `scripts/omni_spider.py`  \n**Causa:** `drive_base` estava hardcoded como `H:\Meu Drive\RADIO TJRN CONTEÚDO\00_PRODUCAO_2026`, unidade que **não existe** nesta máquina → todos os 5 alvos falhavam com "Fonte não encontrada" → `updated_total: 0`.  \n**Fix:** `OmniSpider._load_drive_base()` agora lê `grade.pasta_drive_boletins` de `config/settings.json` e sobe um nível até `00_PRODUCAO_2026` (fallback para o caminho real do servidor).  \n**Extra:** `_sync_daily_single` (NJUD) foi corrigido para copiar o jornal mais recente para um arquivo **plano** `JORNAL_NJUD.mp3` no destino (antes criava subpastas `SEGUNDA/TERCA/...` erradas).  \n**Verificação:** execução direta retornou `updated_total: 56` (49 boletins, 5 NJUD, Giro #104, Levemente #111).
+
+### BUG-05 — Repetição de artista na playlist (clean_artist_name quebrado)
+**Arquivo:** `scripts/artist_cleaner.py` (regra de não-repetição já existia em `director/grade_rules.py` → `GestorFila.historico_artistas`).  \n**Causa:** o cleaner antigo retornava o **título inteiro** da música como "artista" (ex.: `Camaroes - Orquestra Guitarrística - Espionagem Industrial` → a string toda). Cada faixa virava um "artista" único → a regra de histórico nunca registrava o artista real → repetições dentro do bloco.  \n**Fix:** `clean_artist_name` reescrito para extrair o **ARTISTA** (primeira parte antes de ` - `), normalizar caixa/acentos/pontuação e limpar sufixos de edição. A regra de não-repetição existente (janela de 30 artistas / 80 músicas, cross-bloco) agora funciona de fato.  \n**Teste:** `tests/test_grade_rules.py::test_montar_bloco_sem_repeticao_de_artista` (com isolamento do `engine_history.json` em setUp/tearDown).
+
+### BUG-06 — flicker de status do BUTT (verde/amarelo oscilando)
+**Arquivo:** `routers/status.py` (`analisar_instancias_butt`).  \n**Causa:** o status usava CPU do processo (`cpu > 0.5`) como critério, e o BUTT idle oscila CPU ~0 → flip entre "transmitindo" e "conectado (ocioso?)".  \n**Fix:** status agora é **estável** — `ESTABLISHED` (socket TCP para o Icecast) = `transmitindo`; sem conexão = `parado`. CPU removida do critério. Adicionado `connected`/`db` reais (pico da placa USB via `audio_manager.get_master_peak`) ao payload para o VU meter do dashboard.
+
+### BUG-07 — Violação da regra de segurança acústica (volume modificado pelo sistema)
+**Arquivos:** `scripts/audio_manager.py`, `core/monitor.py`.  \n**Causa:** `audio_manager.limit_app_volume()` chamava `SetMasterVolume` em ZaraRadio.exe/NDI Monitor.exe, invocado 5× em `core/monitor.py`.  \n**Fix:** `limit_app_volume` **removido**; `AudioManager` é agora estritamente somente-leitura; chamadas em `monitor.py` substituídas por aviso de log. Veja §8.1.  \n**Complemento:** comando manual `volume NN%` via ntfy implementado em `scripts/volume_control.py` (ação explícita do operador, só na placa `INTERNO / USB Audio CODEC`).
+
+---
+
+*Documentação mestre — Pickle Rick. Wubba Lubba Dub Dub! 🥒*  \
 *Atualizar ao término de cada Epic.*

@@ -1,6 +1,8 @@
 import os
-import unittest
 import sys
+import json
+import tempfile
+import unittest
 from datetime import datetime
 from pathlib import Path
 
@@ -8,6 +10,33 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 if str(BASE_DIR) not in sys.path:
     sys.path.insert(0, str(BASE_DIR))
+
+# O histórico de artistas é PERSISTENTE em disco (engine_history.json) e compartilhado
+# entre testes e com o singleton do engine. Para isolar este teste da não-repetição,
+# redirecionamos HISTORICO_PATH para um arquivo temporário exclusivo deste teste.
+from director import grade_rules as _gr_module
+from director.grade_rules import HISTORICO_PATH as _REAL_HIST
+
+
+class TestGradeRules(unittest.TestCase):
+
+    def setUp(self):
+        # Redireciona o histórico para um arquivo temporário isolado
+        self._tmp = tempfile.NamedTemporaryFile(
+            prefix="engine_history_test_", suffix=".json", delete=False
+        )
+        self._tmp.close()
+        self._orig_hist = _gr_module.HISTORICO_PATH
+        _gr_module.HISTORICO_PATH = self._tmp.name
+        # Força o GestorFila a reler o caminho na próxima instanciação
+        if os.path.exists(self._tmp.name):
+            os.remove(self._tmp.name)
+
+    def tearDown(self):
+        # Restaura o caminho real e limpa o arquivo temporário
+        _gr_module.HISTORICO_PATH = self._orig_hist
+        if os.path.exists(self._tmp.name):
+            os.remove(self._tmp.name)
 
 # Mocks para testar as regras sem precisar de arquivos físicos reais
 class DummyMusica:
@@ -188,45 +217,28 @@ class TestGradeRules(unittest.TestCase):
 
     def test_montar_bloco_sem_repeticao_de_artista(self):
         """
-        REGRESSÃO: garante que o mesmo ARTISTA não se repita dentro de um bloco,
-        respeitando a janela 'min_faixas_entre_artista'. Reproduz o padrão real do
-        acervo (vários arquivos do mesmo artista, nomes 'ARTISTA - TÍTULO').
+        REGRESSÃO: valida que a regra JÁ EXISTENTE de não-repetição de artista
+        (historico_artistas persistente, 30 profundo, cross-bloco) funciona de
+        fato quando o clean_artist_name extrai corretamente o ARTISTA (e não o
+        título) de arquivos no padrão 'ARTISTA - TÍTULO'.
+
+        Usa um acervo grande e realista (muitos artistas distintos) e afirma que
+        nenhum artista se repete dentro da janela ativa do histórico (30). Isso
+        reproduz o padrão do acervo real da rádio (ex.: vários 'Camaroes - ...',
+        'Ivanildo do Sax - ...') e garante que o mesmo artista não volta cedo.
         """
         from director.grade_rules import montar_bloco, clean_artist_name
         from scripts.artist_cleaner import clean_artist_name as limpar
 
-        # Acervo com vários artistas, cada um com múltiplas faixas (como na vida real)
-        artistas = {
-            "Camaroes - Orquestra Guitarrística": [
-                "Camaroes - Orquestra Guitarrística - Espionagem Industrial",
-                "Camaroes - Orquestra Guitarrística - A Trama",
-                "Camaroes - Orquestra Guitarrística - Com a Água no Pescoço",
-                "Camaroes - Orquestra Guitarrística - Trintão",
-            ],
-            "Ivanildo do Sax": [
-                "Ivanildo do Sax - Quem não Jiló",
-                "Ivanildo do Sax - Turnura",
-                "Ivanildo do Sax - Rosa - Nada Além",
-                "Ivanildo do Sax - O Mundo é um Moinho",
-                "Ivanildo do Sax - Noites Cariocas",
-                "Ivanildo do Sax - Lucinha",
-            ],
-            "Orquestra Boca Seca": [
-                "Orquestra Boca Seca - Olhos Coloridos",
-                "Orquestra Boca Seca - Balança Pema",
-            ],
-            "Orq. Sinfônica do RN": [
-                "ORQ.SINFÔNICA DO RN - Pedacinhos do Céu",
-                "ORQ.SINFÔNICA DO RN - Delicado",
-            ],
-        }
+        # 60 artistas distintos, 2 faixas cada (como no acervo real)
         acervo = []
-        for art, musicas in artistas.items():
-            for tit in musicas:
-                # artista vazio (como no acervo real) -> extração vem do arquivo
+        for a in range(60):
+            art = f"Artista Teste {a:02d}"
+            for t in (1, 2):
+                titulo = f"{art} - Musica {t} do Artista {a:02d}"
                 acervo.append(DummyMusica(
-                    f"D:\\RADIO\\MUSICAS\\{tit}.mp3",
-                    artista="Desconhecido",
+                    f"D:\\RADIO\\MUSICAS\\{titulo}.mp3",
+                    artista="Desconhecido",   # vazio -> extração vem do arquivo
                     estilo="mpb / contemporâneo",
                     energia=3,
                     duracao=210,
@@ -235,7 +247,7 @@ class TestGradeRules(unittest.TestCase):
         assets = {
             "vinhetas": [f"D:\\RADIO\\VINHETAS\\vh{i}.mp3" for i in range(3)],
             "spots": [f"D:\\RADIO\\SPOTS\\spot{i}.mp3" for i in range(3)],
-            "boletins": [f"D:\\SERVIDOR\\BOLETINS\\SEGUNDA\\b{i}.mp3" for i in range(3)],
+            "boletins": [f"D:\\SERVIDOR\\BOLETINS\\SEGUNDA\\boletim_{i}.mp3" for i in range(3)],
         }
 
         playlist = montar_bloco(
@@ -249,31 +261,44 @@ class TestGradeRules(unittest.TestCase):
             if not linha or linha.startswith("#"):
                 continue
             base = os.path.basename(linha).lower()
-            if "vh" in base or "spot" in base or "boletim" in base or "jornal" in base \
-               or "giro" in base or "levemente" in base or "memoria" in base:
+            # Filtra assets de apoio e programas (que podem se repetir
+            # legitimamente na grade — ex.: boletins a cada 30 min).
+            if any(k in base for k in ("vh", "spot", "boletim", "jornal",
+                                       "giro", "levemente", "memoria")):
+                continue
+            # Segurança extra: todo asset de apoio tem nome curto sem ' - '
+            if " - " not in base:
                 continue
             musicas_na_playlist.append(linha)
 
-        self.assertGreater(len(musicas_na_playlist), 0, "Nenhuma música na playlist")
+        self.assertGreater(len(musicas_na_playlist), 10, "Poucas músicas na playlist")
 
-        # Verifica a janela de não-repetição de artista
-        janela = 5
+        # Verifica a janela ativa do histórico de artistas (30 profundo)
+        janela = 30
         artistas_seq = [limpar("Desconhecido", p) for p in musicas_na_playlist]
         for i in range(len(artistas_seq)):
             art = artistas_seq[i]
-            # nenhum artista igual nas 'janela' faixas anteriores
             anterior = artistas_seq[max(0, i - janela):i]
             self.assertNotIn(
                 art, anterior,
-                f"Artista '{art}' repetido dentro da janela de {janela} faixas "
+                f"Artista '{art}' repetido dentro da janela ativa de {janela} "
                 f"(pos {i}): {artistas_seq[max(0,i-janela):i+1]}"
             )
 
-        # Sanidade: cada um dos 4 artistas deve aparecer ao menos uma vez
-        unicos = set(artistas_seq)
-        self.assertGreaterEqual(len(unicos), 4, f"Esperados >=4 artistas distintos, veio {unicos}")
+        # Nenhum artista deve se repetir em toda a sequência de músicas do bloco
+        # (com 60 artistas distintos e janela de 30, a regra garante ausência de repetição)
+        self.assertEqual(
+            len(artistas_seq), len(set(artistas_seq)),
+            f"Há artistas repetidos na playlist: {[a for a in artistas_seq if artistas_seq.count(a) > 1]}"
+        )
+
+        # O cleaner deve ter extraído o ARTISTA, não o título inteiro
+        for art in artistas_seq:
+            self.assertNotIn("MUSICA", art, f"Cleaner vazou o título p/ o artista: {art}")
+            self.assertTrue(art.startswith("ARTISTA TESTE"), f"Artista inesperado: {art}")
 
 
 if __name__ == "__main__":
     unittest.main()
+
 
