@@ -44,3 +44,6 @@ build_process.log
 # Downloads Temporários NJUD
 NJUD-main.zip
 NJUD_extracted/
+
+# Backups legados grandes (não versionar - excede 100MB do GitHub)
+legacy_backup/OmniCoreV2.exe
